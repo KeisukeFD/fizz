@@ -110,3 +110,27 @@ func TestVersionPattern(t *testing.T) {
 		t.Errorf("version %q does not match %s", v, re)
 	}
 }
+
+func TestLintNoNullable(t *testing.T) {
+	bad := `{"a":{"schema":{"type":"string","nullable":true}}}`
+	if err := specvalidate.LintNoNullable([]byte(bad)); err == nil ||
+		!strings.Contains(err.Error(), "/a/schema/nullable") {
+		t.Fatalf("expected nullable at /a/schema/nullable, got %v", err)
+	}
+	ok := `{"properties":{"nullable":{"type":"boolean"}},"example":{"nullable":true}}`
+	if err := specvalidate.LintNoNullable([]byte(ok)); err != nil {
+		t.Fatalf("property named nullable and examples must pass: %v", err)
+	}
+}
+
+func TestLintComponentNames(t *testing.T) {
+	bad := `{"components":{"schemas":{"Foo[Bar]":{},"Ok.1":{}},"x-ext":{"a b":1}}}`
+	err := specvalidate.LintComponentNames([]byte(bad))
+	if err == nil || !strings.Contains(err.Error(), "/components/schemas/Foo[Bar]") ||
+		strings.Contains(err.Error(), "Ok.1") || strings.Contains(err.Error(), "x-ext") {
+		t.Fatalf("unexpected result: %v", err)
+	}
+	if err := specvalidate.LintComponentNames([]byte(`{"openapi":"3.2.1"}`)); err != nil {
+		t.Fatal(err)
+	}
+}
