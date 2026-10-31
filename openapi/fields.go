@@ -12,6 +12,32 @@ import (
 // newSchemaFromStructField returns a new Schema builded
 // from the field's type and its tags.
 func (g *Generator) newSchemaFromStructField(sf reflect.StructField, required bool, fname string, parent reflect.Type) *Schema {
+	return g.fieldSchema(sf, required, fname, parent, valueForm{})
+}
+
+// valueForm tells how the default, enum and example tags of a field are
+// converted.
+type valueForm struct {
+	// param is set for a query, path or header parameter. D15 and D16
+	// differ from the body fields there.
+	param bool
+	// quoted is set for a field with the ",string" option: its values
+	// are the JSON strings that the field encodes as.
+	quoted bool
+}
+
+// convert converts the string s of a tag of a field of type t.
+func (vf valueForm) convert(s string, t reflect.Type) (any, error) {
+	v, err := convertValue(s, t, vf.param)
+	if err != nil || !vf.quoted {
+		return v, err
+	}
+	return wireForm(v)
+}
+
+// fieldSchema is newSchemaFromStructField with the conversion form of
+// the field's values. required is the requiredness declared by the tag.
+func (g *Generator) fieldSchema(sf reflect.StructField, required bool, fname string, parent reflect.Type, vf valueForm) *Schema {
 	sor := g.newSchemaFromType(sf.Type)
 	if sor == nil {
 		return nil
@@ -26,16 +52,18 @@ func (g *Generator) newSchemaFromStructField(sf reflect.StructField, required bo
 	// See section 'Common Mistakes' at
 	// https://swagger.io/docs/specification/describing-parameters/
 	if d := sf.Tag.Get(g.config.DefaultTag); d != "" {
-		if required {
-			g.error(&FieldError{
-				Message:  "field cannot be required and have a default value",
-				Name:     fname,
-				Type:     sf.Type,
-				TypeName: g.typeName(sf.Type),
-				Parent:   parent,
-			})
-		} else {
-			if v, err := stringToType(d, sf.Type); err != nil {
+		switch {
+		case required && !vf.param:
+			// D15: tonic never applies defaults to body fields, so the
+			// field stays required and the default is dropped.
+			g.warn(fmt.Sprintf("field %q is required: its default value %q is dropped", fname, d))
+		default:
+			if required {
+				// D15: tonic fills the default of a parameter before
+				// validation, so the parameter is not required.
+				g.warn(fmt.Sprintf("parameter %q has a default value: it is not required", fname))
+			}
+			if v, err := vf.convert(d, sf.Type); err != nil {
 				g.error(&FieldError{
 					Message:  fmt.Sprintf("default value %s cannot be converted to field type: %s", d, err),
 					Name:     fname,
@@ -51,7 +79,7 @@ func (g *Generator) newSchemaFromStructField(sf reflect.StructField, required bo
 	// Enum.
 	// Must be applied to the underlying items schema if the
 	// field is an array, instead of the field schema.
-	if enum := g.enumFromStructField(sf, fname, parent); len(enum) > 0 {
+	if enum := g.enumFromStructField(sf, fname, parent, vf); len(enum) > 0 {
 		switch {
 		case isArrayLike(sf.Type) && slices.Contains(schema.Type, "array") && schema.Items != nil:
 			// Copied items wrapper: the original may be shared.
@@ -83,7 +111,15 @@ func (g *Generator) newSchemaFromStructField(sf reflect.StructField, required bo
 
 	// Set example value from tag to schema
 	if e := strings.TrimSpace(sf.Tag.Get("example")); e != "" {
-		if parsed, err := parseExampleValue(sf.Type, e); err != nil {
+		if parsed, err := parseExample(sf.Type, e, vf.param); err != nil {
+			g.error(&FieldError{
+				Message:  fmt.Sprintf("could not parse the example value %q of field %q: %s", e, fname, err),
+				Name:     fname,
+				Type:     sf.Type,
+				TypeName: g.typeName(sf.Type),
+				Parent:   parent,
+			})
+		} else if parsed, err = quoteValue(parsed, vf); err != nil {
 			g.error(&FieldError{
 				Message:  fmt.Sprintf("could not parse the example value %q of field %q: %s", e, fname, err),
 				Name:     fname,
@@ -105,6 +141,14 @@ func (g *Generator) newSchemaFromStructField(sf reflect.StructField, required bo
 	}
 
 	return g.finishAnnotations(sor, schema)
+}
+
+// quoteValue returns v in its ",string" wire form if vf asks for it.
+func quoteValue(v any, vf valueForm) (any, error) {
+	if !vf.quoted {
+		return v, nil
+	}
+	return wireForm(v)
 }
 
 // isArrayLike reports whether t, once dereferenced, is a slice or array
@@ -165,7 +209,7 @@ func (g *Generator) annotatedItems(items *Schema, enum []any) *Schema {
 	return c
 }
 
-func (g *Generator) enumFromStructField(sf reflect.StructField, fname string, parent reflect.Type) []any {
+func (g *Generator) enumFromStructField(sf reflect.StructField, fname string, parent reflect.Type, vf valueForm) []any {
 	var enum []any
 
 	etag := sf.Tag.Get(g.config.EnumTag)
@@ -178,7 +222,8 @@ func (g *Generator) enumFromStructField(sf reflect.StructField, fname string, pa
 			sftype = sftype.Elem()
 		}
 		for _, val := range values {
-			if v, err := stringToType(val, sftype); err != nil {
+			val = strings.TrimSpace(val)
+			if v, err := vf.convert(val, sftype); err != nil {
 				g.error(&FieldError{
 					Message:  fmt.Sprintf("enum value %s cannot be converted to field type: %s", val, err),
 					Name:     fname,
@@ -219,7 +264,7 @@ func (g *Generator) flattenStructSchema(t, parent reflect.Type, schema *Schema) 
 // the ",string" option is encoded as a JSON string by encoding/json,
 // so its schema type becomes string.
 func (g *Generator) newSchemaFromField(f field, required bool, parent reflect.Type) *Schema {
-	sor := g.newSchemaFromStructField(f.sf, required, f.name, parent)
+	sor := g.fieldSchema(f.sf, required, f.name, parent, valueForm{quoted: f.quoted})
 	if sor == nil || !f.quoted || sor.Ref != "" || len(sor.Type) == 0 {
 		return sor
 	}

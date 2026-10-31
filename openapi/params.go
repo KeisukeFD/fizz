@@ -232,8 +232,16 @@ func (g *Generator) newParameterFromField(idx int, t reflect.Type) (*Parameter, 
 	required := g.isStructFieldRequired(field)
 
 	// Path parameters are always required.
-	if location == g.config.PathLocationTag {
+	isPath := location == g.config.PathLocationTag
+	if isPath {
 		required = true
+	}
+	// D15: a default makes a query or header parameter optional.
+	// The warning is recorded with the field's schema.
+	hasDefault := field.Tag.Get(g.config.DefaultTag) != ""
+	schemaRequired := required && !isPath
+	if schemaRequired && hasDefault {
+		required = false
 	}
 	// Consider invalid values as false.
 	deprecated, _ := strconv.ParseBool(field.Tag.Get(deprecatedTag))
@@ -244,7 +252,7 @@ func (g *Generator) newParameterFromField(idx int, t reflect.Type) (*Parameter, 
 		Description: field.Tag.Get(descriptionTag),
 		Required:    required,
 		Deprecated:  deprecated,
-		Schema:      g.newSchemaFromStructField(field, required, name, t),
+		Schema:      g.fieldSchema(field, schemaRequired, name, t, valueForm{param: true}),
 	}
 	// Style.
 	if location == g.config.QueryLocationTag {

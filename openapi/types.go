@@ -4,11 +4,13 @@ import (
 	"encoding"
 	"encoding/json"
 	"fmt"
+	"math"
 	"math/big"
 	"net"
 	"net/netip"
 	"reflect"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -256,8 +258,27 @@ func isImportedType(t reflect.Type) DataType {
 	return nil
 }
 
-// stringToType converts val to t's type and return the new value.
+// stringToType converts val, the value of a default or enum tag of a
+// body field, to t's type. Pointers are dereferenced. See convertValue.
 func stringToType(val string, t reflect.Type) (any, error) {
+	return convertValue(val, t, false)
+}
+
+// convertValue converts val to a value that encodes, as JSON, like a
+// value of type t does. Pointers are dereferenced.
+//
+// A Duration is documented as an integer number of nanoseconds, and is
+// stored as an int64, never as a time.Duration. A parameter accepts only
+// that integer (tonic cannot parse "1s" there, D16); a body field also
+// accepts a ParseDuration string.
+//
+// An invalid bool or a non-finite number is an error. A float32 is
+// emitted as the literal that was written, as a json.Number, so that it
+// is not widened to a float64 (0.1 stays 0.1).
+func convertValue(val string, t reflect.Type, param bool) (any, error) {
+	for t.Kind() == reflect.Pointer {
+		t = t.Elem()
+	}
 	// Compare type to know Golang types.
 	// IT MUST BE EXECUTED BEFORE swithing over
 	// primitives because a time.Duration is itself
@@ -266,21 +287,11 @@ func stringToType(val string, t reflect.Type) (any, error) {
 		return time.Parse(time.RFC3339, val)
 	}
 	if t.AssignableTo(tofDuration) {
-		// A Duration is documented as an integer number of
-		// nanoseconds, so a plain integer is accepted first.
-		if ns, err := strconv.ParseInt(val, 10, 64); err == nil {
-			return time.Duration(ns), nil
-		}
-		return time.ParseDuration(val)
+		return durationNanoseconds(val, param)
 	}
 	switch t.Kind() {
 	case reflect.Bool:
-		// ParseBool returns an error if the value
-		// is invalid and cannot be converted to a
-		// boolean. We assume that invalid values
-		// are always falsy.
-		v, _ := strconv.ParseBool(val)
-		return v, nil
+		return strconv.ParseBool(val)
 	case reflect.String:
 		return val, nil
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
@@ -288,9 +299,63 @@ func stringToType(val string, t reflect.Type) (any, error) {
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		return strconv.ParseUint(val, 10, t.Bits())
 	case reflect.Float32, reflect.Float64:
-		return strconv.ParseFloat(val, t.Bits())
+		v, err := parseFloat(val, t.Bits())
+		if err == nil && !finite(val) {
+			return nil, fmt.Errorf("%q is not a finite number", val)
+		}
+		return v, err
 	}
 	return nil, fmt.Errorf("unknown type %s", t.String())
+}
+
+// durationNanoseconds parses val as an integer number of nanoseconds or,
+// unless param is set, as a time.ParseDuration string.
+func durationNanoseconds(val string, param bool) (int64, error) {
+	ns, err := strconv.ParseInt(val, 10, 64)
+	if err == nil {
+		return ns, nil
+	}
+	if param {
+		return 0, fmt.Errorf("a parameter duration must be an integer number of nanoseconds: %w", err)
+	}
+	d, derr := time.ParseDuration(val)
+	if derr != nil {
+		return 0, derr
+	}
+	return int64(d), nil
+}
+
+// parseFloat parses val as a finite float of the given size. A float32
+// is returned as the literal of val (a json.Number), a float64 as a
+// float64.
+func parseFloat(val string, bits int) (any, error) {
+	f, err := strconv.ParseFloat(val, bits)
+	if err != nil {
+		return nil, err
+	}
+	if bits != 32 {
+		return f, nil
+	}
+	if lit := strings.TrimSpace(val); json.Valid([]byte(lit)) {
+		return json.Number(lit), nil
+	}
+	return json.Number(strconv.FormatFloat(f, 'g', -1, 32)), nil
+}
+
+// finite reports whether the float literal val is neither infinite nor NaN.
+func finite(val string) bool {
+	f, err := strconv.ParseFloat(val, 64)
+	return err == nil && !math.IsInf(f, 0) && !math.IsNaN(f)
+}
+
+// wireForm returns v as the string that a field with the ",string"
+// option carries: the JSON text of v, as a JSON string value.
+func wireForm(v any) (string, error) {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return "", err
+	}
+	return string(b), nil
 }
 
 var datatypes = [...]string{

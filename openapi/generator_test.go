@@ -1013,7 +1013,7 @@ func TestUnencodableTagExampleDropped(t *testing.T) {
 	_ = s
 	var found bool
 	for _, e := range g.Errors() {
-		if strings.Contains(e.Error(), "not JSON-encodable") && strings.Contains(e.Error(), "field=v") {
+		if strings.Contains(e.Error(), "example value") && strings.Contains(e.Error(), "field=v") {
 			found = true
 		}
 	}

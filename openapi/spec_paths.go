@@ -14,14 +14,14 @@ type Parameter struct {
 	Name            string                   `json:"name"`
 	In              string                   `json:"in"`
 	Description     string                   `json:"description,omitempty"`
-	Required        bool                     `json:"required,omitempty"`
-	Deprecated      bool                     `json:"deprecated,omitempty"`
+	Required        bool                     `json:"required,omitzero"`
+	Deprecated      bool                     `json:"deprecated,omitzero"`
 	AllowEmptyValue bool                     `json:"allowEmptyValue,omitzero"`
-	Schema          *Schema                  `json:"schema,omitempty"`
+	Schema          *Schema                  `json:"schema,omitzero"`
 	Style           string                   `json:"style,omitempty"`
-	Explode         *bool                    `json:"explode,omitempty"`
-	AllowReserved   bool                     `json:"allowReserved,omitempty"`
-	Example         any                      `json:"example,omitempty"`
+	Explode         *bool                    `json:"explode,omitzero"`
+	AllowReserved   bool                     `json:"allowReserved,omitzero"`
+	Example         any                      `json:"example,omitzero"`
 	Examples        map[string]*ExampleOrRef `json:"examples,omitempty"`
 	Content         map[string]*MediaType    `json:"content,omitempty"`
 
@@ -43,7 +43,7 @@ type RequestBodyOrRef = OrRef[RequestBody]
 type RequestBody struct {
 	Description string                `json:"description,omitempty"`
 	Content     map[string]*MediaType `json:"content"`
-	Required    bool                  `json:"required,omitempty"`
+	Required    bool                  `json:"required,omitzero"`
 
 	// Extensions holds the "x-" specification extensions. Keys are
 	// emitted sorted after the typed members. Use SetExtension to
@@ -58,14 +58,14 @@ type Operation struct {
 	Description  string                    `json:"description,omitempty"`
 	ID           string                    `json:"operationId,omitempty"`
 	Parameters   []*ParameterOrRef         `json:"parameters,omitempty"`
-	RequestBody  *RequestBody              `json:"requestBody,omitempty"`
+	RequestBody  *RequestBody              `json:"requestBody,omitzero"`
 	Responses    Responses                 `json:"responses,omitempty"`
 	Callbacks    map[string]*CallbackOrRef `json:"callbacks,omitempty"`
-	Deprecated   bool                      `json:"deprecated,omitempty"`
+	Deprecated   bool                      `json:"deprecated,omitzero"`
 	Servers      []*Server                 `json:"servers,omitempty"`
 	Security     []*SecurityRequirement    `json:"security,omitzero"`
 	XCodeSamples []*XCodeSample            `json:"x-codeSamples,omitempty"`
-	XInternal    bool                      `json:"x-internal,omitempty"`
+	XInternal    bool                      `json:"x-internal,omitzero"`
 
 	// Extensions holds the "x-" specification extensions. Keys are
 	// emitted sorted after the typed members. Use SetExtension to
@@ -105,9 +105,9 @@ type Link struct {
 	OperationRef string         `json:"operationRef,omitempty"`
 	OperationID  string         `json:"operationId,omitempty"`
 	Parameters   map[string]any `json:"parameters,omitempty"`
-	RequestBody  any            `json:"requestBody,omitempty"`
+	RequestBody  any            `json:"requestBody,omitzero"`
 	Description  string         `json:"description,omitempty"`
-	Server       *Server        `json:"server,omitempty"`
+	Server       *Server        `json:"server,omitzero"`
 
 	// Extensions holds the "x-" specification extensions. Keys are
 	// emitted sorted after the typed members. Use SetExtension to
@@ -134,12 +134,12 @@ type HeaderOrRef = OrRef[Header]
 // Header represents an HTTP header.
 type Header struct {
 	Description string                   `json:"description,omitempty"`
-	Required    bool                     `json:"required,omitempty"`
-	Deprecated  bool                     `json:"deprecated,omitempty"`
-	Schema      *Schema                  `json:"schema,omitempty"`
+	Required    bool                     `json:"required,omitzero"`
+	Deprecated  bool                     `json:"deprecated,omitzero"`
+	Schema      *Schema                  `json:"schema,omitzero"`
 	Style       string                   `json:"style,omitempty"`
-	Explode     *bool                    `json:"explode,omitempty"`
-	Example     any                      `json:"example,omitempty"`
+	Explode     *bool                    `json:"explode,omitzero"`
+	Example     any                      `json:"example,omitzero"`
 	Examples    map[string]*ExampleOrRef `json:"examples,omitempty"`
 	Content     map[string]*MediaType    `json:"content,omitempty"`
 
@@ -155,13 +155,13 @@ type MediaTypeOrRef = OrRef[MediaType]
 
 // MediaType represents the type of a media.
 type MediaType struct {
-	Schema         *Schema                  `json:"schema,omitempty"`
-	ItemSchema     *Schema                  `json:"itemSchema,omitempty"`
-	Example        any                      `json:"example,omitempty"`
+	Schema         *Schema                  `json:"schema,omitzero"`
+	ItemSchema     *Schema                  `json:"itemSchema,omitzero"`
+	Example        any                      `json:"example,omitzero"`
 	Examples       map[string]*ExampleOrRef `json:"examples,omitempty"`
 	Encoding       map[string]*Encoding     `json:"encoding,omitempty"`
 	PrefixEncoding []*Encoding              `json:"prefixEncoding,omitempty"`
-	ItemEncoding   *Encoding                `json:"itemEncoding,omitempty"`
+	ItemEncoding   *Encoding                `json:"itemEncoding,omitzero"`
 
 	// Extensions holds the "x-" specification extensions. Keys are
 	// emitted sorted after the typed members. Use SetExtension to
@@ -177,8 +177,8 @@ type ExampleOrRef = OrRef[Example]
 type Example struct {
 	Summary         string `json:"summary,omitempty"`
 	Description     string `json:"description,omitempty"`
-	Value           any    `json:"value,omitempty"`
-	DataValue       any    `json:"dataValue,omitempty"`
+	Value           any    `json:"value,omitzero"`
+	DataValue       any    `json:"dataValue,omitzero"`
 	SerializedValue string `json:"serializedValue,omitempty"`
 	ExternalValue   string `json:"externalValue,omitempty"`
 
@@ -194,11 +194,11 @@ type Encoding struct {
 	ContentType    string                  `json:"contentType,omitempty"`
 	Headers        map[string]*HeaderOrRef `json:"headers,omitempty"`
 	Style          string                  `json:"style,omitempty"`
-	Explode        *bool                   `json:"explode,omitempty"`
-	AllowReserved  bool                    `json:"allowReserved,omitempty"`
+	Explode        *bool                   `json:"explode,omitzero"`
+	AllowReserved  bool                    `json:"allowReserved,omitzero"`
 	Encoding       map[string]*Encoding    `json:"encoding,omitempty"`
 	PrefixEncoding []*Encoding             `json:"prefixEncoding,omitempty"`
-	ItemEncoding   *Encoding               `json:"itemEncoding,omitempty"`
+	ItemEncoding   *Encoding               `json:"itemEncoding,omitzero"`
 
 	// Extensions holds the "x-" specification extensions. Keys are
 	// emitted sorted after the typed members. Use SetExtension to

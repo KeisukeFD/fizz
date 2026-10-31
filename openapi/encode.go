@@ -2,7 +2,6 @@ package openapi
 
 import (
 	"bytes"
-	"encoding/json"
 	"encoding/json/jsontext"
 	jsonv2 "encoding/json/v2"
 	"errors"
@@ -14,15 +13,30 @@ import (
 	"go.yaml.in/yaml/v3"
 )
 
-// marshalOptions are the options of encoding/json (v1) expressed for the v2
-// engine: marshaling with them is what json.Marshal does. This keeps the
-// output of the document, including the user values held in "any" fields
-// (nil slices as null, legacy omitempty, escaping of <, >, & and U+2028/9),
-// the same as before v2, and the same whichever package the caller uses:
-// encoding/json (v1) calls the v2 methods of the model with these options,
-// and encoding/json/v2 callers get them from the methods. Map keys are
-// sorted (Deterministic is part of the set).
-var marshalOptions = json.DefaultOptionsV1()
+// marshalOptions are the options of encoding/json/v2 that the document is
+// marshaled with: the v2 defaults, with sorted map keys (Deterministic) and
+// the escaping and the nil slice and map as null of encoding/json (v1), which
+// keeps the output of the user values in "any" fields (a nil slice in an
+// example stays null, as the API's own encoding/json responses do) and the
+// output of encoding/json (v1) callers byte-identical: v1 escapes the
+// output of the json.Marshaler methods of the model itself. The same
+// options apply to the user values held in "any" fields, whichever package
+// the caller uses: encoding/json (v1) calls the v2 methods of the model,
+// and encoding/json/v2 callers get them from the methods.
+//
+// The model relies on the v2 semantics: "omitzero" on struct-valued and
+// bool fields (v2 "omitempty" drops an empty struct such as
+// "itemSchema: {}" or "components: {}", and a nil slice is an empty array,
+// not null), and no time.Duration in an "any" field (the defaults and
+// enums hold nanoseconds as int64).
+var marshalOptions = jsonv2.JoinOptions(
+	jsonv2.DefaultOptionsV2(),
+	jsonv2.Deterministic(true),
+	jsonv2.FormatNilSliceAsNull(true),
+	jsonv2.FormatNilMapAsNull(true),
+	jsontext.EscapeForHTML(true),
+	jsontext.EscapeForJS(true),
+)
 
 // unmarshalOptions pin the v2 decoding semantics: member names are matched
 // case-sensitively, as the specification requires, and duplicate names are

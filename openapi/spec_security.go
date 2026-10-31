@@ -20,7 +20,7 @@ type SecurityScheme struct {
 	In                string      `json:"in,omitempty"`
 	Name              string      `json:"name,omitempty"`
 	OpenIDConnectURL  string      `json:"openIdConnectUrl,omitempty"`
-	Flows             *OAuthFlows `json:"flows,omitempty"`
+	Flows             *OAuthFlows `json:"flows,omitzero"`
 	OAuth2MetadataURL string      `json:"oauth2MetadataUrl,omitempty"`
 
 	// Extensions holds the "x-" specification extensions. Keys are
@@ -31,11 +31,11 @@ type SecurityScheme struct {
 
 // OAuthFlows represents all the supported OAuth flows.
 type OAuthFlows struct {
-	Implicit            *OAuthFlow `json:"implicit,omitempty"`
-	Password            *OAuthFlow `json:"password,omitempty"`
-	ClientCredentials   *OAuthFlow `json:"clientCredentials,omitempty"`
-	AuthorizationCode   *OAuthFlow `json:"authorizationCode,omitempty"`
-	DeviceAuthorization *OAuthFlow `json:"deviceAuthorization,omitempty"`
+	Implicit            *OAuthFlow `json:"implicit,omitzero"`
+	Password            *OAuthFlow `json:"password,omitzero"`
+	ClientCredentials   *OAuthFlow `json:"clientCredentials,omitzero"`
+	AuthorizationCode   *OAuthFlow `json:"authorizationCode,omitzero"`
+	DeviceAuthorization *OAuthFlow `json:"deviceAuthorization,omitzero"`
 
 	// Extensions holds the "x-" specification extensions. Keys are
 	// emitted sorted after the typed members. Use SetExtension to

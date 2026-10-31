@@ -88,6 +88,7 @@ O3, O5–O15, O17–O30 and O32–O36 are adopted as proposed in ACCEPTANCE §5.
     - a `time.Duration` held in an `any` (`default`) has no default v2 representation.
 
     P3.6 settles how defaults and examples are converted (Duration values become ns), so it switches to the v2 defaults: `omitzero` on struct-valued and bool fields, and no Duration left in `any`. It keeps the G21 parity test green.
+    **Done in P3.6.** The options are the v2 defaults plus `Deterministic(true)`, `FormatNilSliceAsNull(true)`, `FormatNilMapAsNull(true)` and the HTML and JS escaping of v1, which keep the user values in `any` fields (a nil slice in an example stays `null`) and the v1 callers byte-identical. No existing golden changed.
 - **Binary size of `fizz.Embedded*UI`.** These make the root package import `docsui/embedded`. P8.3 must show (a test or a documented measurement) that a binary that does not call them carries no assets, because the linker drops the unreferenced `embed.FS`. If that does not hold, the selectors move to `docsui/embedded` and O1 goes back to the user.
 
 ## 5. Stub strategy (ACCEPTANCE §2, rule 2)

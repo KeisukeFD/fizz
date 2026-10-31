@@ -1,6 +1,7 @@
 package openapi
 
 import (
+	"encoding/json"
 	"net"
 	"net/url"
 	"reflect"
@@ -205,12 +206,12 @@ func TestStringToDurationType(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	vv, ok := v.(time.Duration)
+	vv, ok := v.(int64)
 	if !ok {
-		t.Errorf("expected converted value to be of type %T, got %T", dur, v)
+		t.Errorf("expected converted value to be of type int64, got %T", v)
 	}
-	if vv != dur {
-		t.Errorf("expected duration to equal %s, got %s", dur.String(), vv.String())
+	if time.Duration(vv) != dur {
+		t.Errorf("expected duration to equal %s, got %s", dur.String(), time.Duration(vv).String())
 	}
 }
 
@@ -221,20 +222,19 @@ func TestStringToType(t *testing.T) {
 		t reflect.Type
 		v any
 	}{
-		"coucou":  {rt(""), "coucou"},
-		"0":       {rt(int8(0)), int64(0)},
-		"1":       {rt(int16(0)), int64(1)},
-		"2":       {rt(int32(0)), int64(2)},
-		"3":       {rt(int64(0)), int64(3)},
-		"4":       {rt(uint8(4)), uint64(4)},
-		"5":       {rt(uint16(5)), uint64(5)},
-		"6":       {rt(uint32(6)), uint64(6)},
-		"7":       {rt(uint64(7)), uint64(7)},
-		"true":    {rt(true), true},
-		"f":       {rt(false), false},
-		"invalid": {rt(true), false},
-		"8":       {rt(float32(8)), float64(8.0)},
-		"9.1":     {rt(float64(9.1)), float64(9.1)},
+		"coucou": {rt(""), "coucou"},
+		"0":      {rt(int8(0)), int64(0)},
+		"1":      {rt(int16(0)), int64(1)},
+		"2":      {rt(int32(0)), int64(2)},
+		"3":      {rt(int64(0)), int64(3)},
+		"4":      {rt(uint8(4)), uint64(4)},
+		"5":      {rt(uint16(5)), uint64(5)},
+		"6":      {rt(uint32(6)), uint64(6)},
+		"7":      {rt(uint64(7)), uint64(7)},
+		"true":   {rt(true), true},
+		"f":      {rt(false), false},
+		"8":      {rt(float32(8)), json.Number("8")},
+		"9.1":    {rt(float64(9.1)), float64(9.1)},
 	}
 	for from, to := range tests {
 		vv, err := stringToType(from, to.t)

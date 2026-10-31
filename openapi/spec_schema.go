@@ -109,15 +109,15 @@ type Schema struct {
 	AllOf                []*Schema          `json:"allOf,omitempty"`
 	OneOf                []*Schema          `json:"oneOf,omitempty"`
 	AnyOf                []*Schema          `json:"anyOf,omitempty"`
-	Not                  *Schema            `json:"not,omitempty"`
-	Items                *Schema            `json:"items,omitempty"`
+	Not                  *Schema            `json:"not,omitzero"`
+	Items                *Schema            `json:"items,omitzero"`
 	PrefixItems          []*Schema          `json:"prefixItems,omitempty"`
 	Properties           map[string]*Schema `json:"properties,omitempty"`
-	AdditionalProperties *Schema            `json:"additionalProperties,omitempty"`
-	PropertyNames        *Schema            `json:"propertyNames,omitempty"`
+	AdditionalProperties *Schema            `json:"additionalProperties,omitzero"`
+	PropertyNames        *Schema            `json:"propertyNames,omitzero"`
 	Description          string             `json:"description,omitempty"`
 	Format               string             `json:"format,omitempty"`
-	Default              any                `json:"default,omitempty"`
+	Default              any                `json:"default,omitzero"`
 
 	// Const holds the "const" keyword. It cannot express
 	// "const": null yet, since a nil value is omitted.
@@ -130,26 +130,26 @@ type Schema struct {
 	ExclusiveMaximum json.Number `json:"exclusiveMaximum,omitzero"`
 	Minimum          json.Number `json:"minimum,omitzero"`
 	ExclusiveMinimum json.Number `json:"exclusiveMinimum,omitzero"`
-	MaxLength        *uint64     `json:"maxLength,omitempty"`
-	MinLength        *uint64     `json:"minLength,omitempty"`
+	MaxLength        *uint64     `json:"maxLength,omitzero"`
+	MinLength        *uint64     `json:"minLength,omitzero"`
 	Pattern          string      `json:"pattern,omitempty"`
-	MaxItems         *uint64     `json:"maxItems,omitempty"`
-	MinItems         *uint64     `json:"minItems,omitempty"`
-	UniqueItems      bool        `json:"uniqueItems,omitempty"`
-	MaxProperties    *uint64     `json:"maxProperties,omitempty"`
-	MinProperties    *uint64     `json:"minProperties,omitempty"`
+	MaxItems         *uint64     `json:"maxItems,omitzero"`
+	MinItems         *uint64     `json:"minItems,omitzero"`
+	UniqueItems      bool        `json:"uniqueItems,omitzero"`
+	MaxProperties    *uint64     `json:"maxProperties,omitzero"`
+	MinProperties    *uint64     `json:"minProperties,omitzero"`
 	Required         []string    `json:"required,omitempty"`
 	Enum             []any       `json:"enum,omitempty"`
-	Deprecated       bool        `json:"deprecated,omitempty"`
+	Deprecated       bool        `json:"deprecated,omitzero"`
 	ReadOnly         bool        `json:"readOnly,omitzero"`
 	WriteOnly        bool        `json:"writeOnly,omitzero"`
 
 	ContentMediaType string `json:"contentMediaType,omitzero"`
 	ContentEncoding  string `json:"contentEncoding,omitzero"`
 
-	Discriminator *Discriminator `json:"discriminator,omitempty"`
-	XML           *XML           `json:"xml,omitempty"`
-	ExternalDocs  *ExternalDocs  `json:"externalDocs,omitempty"`
+	Discriminator *Discriminator `json:"discriminator,omitzero"`
+	XML           *XML           `json:"xml,omitzero"`
+	ExternalDocs  *ExternalDocs  `json:"externalDocs,omitzero"`
 
 	// Extensions holds the "x-" specification extensions. Keys are
 	// emitted sorted after the typed members. Use SetExtension to

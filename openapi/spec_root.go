@@ -10,7 +10,7 @@ type OpenAPI struct {
 	Servers           []*Server              `json:"servers,omitempty"`
 	Paths             Paths                  `json:"paths,omitzero"`
 	Webhooks          map[string]*PathItem   `json:"webhooks,omitempty"`
-	Components        *Components            `json:"components,omitempty"`
+	Components        *Components            `json:"components,omitzero"`
 	Tags              []*Tag                 `json:"tags,omitempty"`
 	Security          []*SecurityRequirement `json:"security,omitempty"`
 	XTagGroups        []*XTagGroup           `json:"x-tagGroups,omitempty"`
@@ -48,10 +48,10 @@ type Info struct {
 	Summary        string   `json:"summary,omitempty"`
 	Description    string   `json:"description,omitempty"`
 	TermsOfService string   `json:"termsOfService,omitempty"`
-	Contact        *Contact `json:"contact,omitempty"`
-	License        *License `json:"license,omitempty"`
+	Contact        *Contact `json:"contact,omitzero"`
+	License        *License `json:"license,omitzero"`
 	Version        string   `json:"version"`
-	XLogo          *XLogo   `json:"x-logo,omitempty"`
+	XLogo          *XLogo   `json:"x-logo,omitzero"`
 
 	// Extensions holds the "x-" specification extensions. Keys are
 	// emitted sorted after the typed members. Use SetExtension to
@@ -121,17 +121,17 @@ type PathItem struct {
 	Ref         string            `json:"$ref,omitempty"`
 	Summary     string            `json:"summary,omitempty"`
 	Description string            `json:"description,omitempty"`
-	GET         *Operation        `json:"get,omitempty"`
-	PUT         *Operation        `json:"put,omitempty"`
-	POST        *Operation        `json:"post,omitempty"`
-	DELETE      *Operation        `json:"delete,omitempty"`
-	OPTIONS     *Operation        `json:"options,omitempty"`
-	HEAD        *Operation        `json:"head,omitempty"`
-	PATCH       *Operation        `json:"patch,omitempty"`
-	TRACE       *Operation        `json:"trace,omitempty"`
+	GET         *Operation        `json:"get,omitzero"`
+	PUT         *Operation        `json:"put,omitzero"`
+	POST        *Operation        `json:"post,omitzero"`
+	DELETE      *Operation        `json:"delete,omitzero"`
+	OPTIONS     *Operation        `json:"options,omitzero"`
+	HEAD        *Operation        `json:"head,omitzero"`
+	PATCH       *Operation        `json:"patch,omitzero"`
+	TRACE       *Operation        `json:"trace,omitzero"`
 	Servers     []*Server         `json:"servers,omitempty"`
 	Parameters  []*ParameterOrRef `json:"parameters,omitempty"`
-	Query       *Operation        `json:"query,omitempty"`
+	Query       *Operation        `json:"query,omitzero"`
 
 	// AdditionalOperations holds operations for HTTP methods
 	// that have no dedicated field, keyed by method name.
@@ -148,7 +148,7 @@ type Tag struct {
 	Name         string        `json:"name"`
 	Summary      string        `json:"summary,omitempty"`
 	Description  string        `json:"description,omitempty"`
-	ExternalDocs *ExternalDocs `json:"externalDocs,omitempty"`
+	ExternalDocs *ExternalDocs `json:"externalDocs,omitzero"`
 	Parent       string        `json:"parent,omitempty"`
 	Kind         string        `json:"kind,omitempty"`
 
