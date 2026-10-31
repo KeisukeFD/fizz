@@ -734,6 +734,99 @@ Lanes (file-disjoint):
 
 ---
 
+## Phase 10: Official-spec conformance suite (added 2026-10-31; release gate)
+
+Goal: prove that fizz output follows OAS 3.2.1 **and** matches real, official example documents, not only fizz's own goldens. Before this phase, the 3.2 meta-schema was the only external reference; no OAI document was ever used.
+
+Decisions (user, 2026-10-31):
+- **D22 Corpus.** Vendor official OAI material, pinned by commit and sha256. The 3.0/3.1 examples are **upgraded to 3.2.1** by a deterministic converter. Originals and upgraded copies are both committed, and every change is listed in a NOTICE (CC BY 4.0 requires this).
+- **D23 Reproduction rule.** A fizz app rebuilds each example. Its generated spec is compared as JSON with the upgraded official doc. Any difference fails unless it appears in a per-example allowlist with a reason. An allowlist entry that is no longer used also fails. Opus reviews every allowlist entry.
+- **D24 Timing.** Phase 10 runs before P9.5 and is above the cut line. The open review findings become red-until-done cases (FixedBy P10.7x).
+
+Sources (verified 2026-10-31):
+
+| Source | Pin | Licence | Content |
+|---|---|---|---|
+| OAI/learn.openapis.org `examples/` | main@82b82f372aa185a07ea11bc158619895ab21f741 | CC BY 4.0 | v3.0: api-with-examples, callback-example, link-example, petstore, petstore-expanded, uspto. v3.1: non-oauth-scopes, tictactoe, webhook-example. v3.2 (openapi 3.2.0): 3.2-query-example, 3.2-tags-example |
+| OAI/OpenAPI-Specification `tests/schema/{pass,fail}` | dev@0f9aa49039215e2ed414cdefe35f718273b77976 | Apache-2.0 | 15 pass and 5 fail YAML fixtures, all 3.1.x. There are no 3.2 fixtures upstream |
+| OAI/OpenAPI-Specification `versions/3.2.1.md` | main@4f86429f134f7e48b6351563549b4502fc69de52 | Apache-2.0 | 127 yaml blocks: 6 full 3.2.1 docs, the rest fragments |
+
+Rules for every task:
+- `go test` **never** touches the network. Fetching is done by a tool run by hand (the `docsui/internal/pinassets` pattern: verify by default, `-update` refetches and rewrites the manifest).
+- Vendored files are data. They are only parsed, never executed or used as templates.
+- Every corpus document must pass `specvalidate.Validate` after upgrading. A document that cannot is excluded in the manifest with a reason, never silently.
+
+**P10.0 Vendor corpus + fetch tool.** S · Haiku (fetch inventory) + Sonnet
+- Files: `internal/conformance/oai/{orig,MANIFEST.json,NOTICE,LICENSE-*}`, `internal/conformance/internal/fetchoai/`.
+- MANIFEST lists source repo, commit, path, sha256 and licence for each file.
+- Red first: `TestManifestMatchesFiles` (sha256 of every vendored file equals the manifest; no unlisted file).
+
+**P10.1 Upgrader to 3.2.1 + spec-text extraction.** M · Sonnet
+- Files: `internal/conformance/upgrade/`, `internal/conformance/oai/upgraded/`.
+- 3.0→3.1 rules follow the official 3.1 migration guide: `nullable` → type array (plus null in `enum`), boolean `exclusiveMinimum/Maximum` → numbers, `format: binary/base64` file fields → `contentMediaType`/`contentEncoding`, `example` kept. 3.1→3.2: set `openapi: 3.2.1` and nothing else (3.2 is a superset).
+- The converter records each change as a JSON-pointer list. NOTICE is generated from it.
+- Spec text: extract yaml fences from `versions/3.2.1.md`. Full documents are kept as-is. Fragments are wrapped by kind (Schema → `components/schemas`, Parameter → `components/parameters`, Path Item → `paths`, …). Fragments that cannot be classified are listed in the manifest as excluded, with a reason.
+- Red first: `TestUpgradeGolden` (converter output equals committed `upgraded/`), `TestCorpusValid` (every upgraded or extracted doc passes `Validate`).
+
+**P10.2 Validator conformance + semantic lints.** M · Sonnet
+- Files: `internal/specvalidate/{lint_semantic.go,conformance_test.go}`.
+- The upgraded OAI `pass` fixtures must validate. Each `fail` fixture must be rejected, and the expected failing pointer is recorded per fixture, so the rejection is for the right reason.
+- New `LintSemantics` for OAS rules JSON Schema cannot express:
+  - path template variables have exactly one `in: path, required: true` param;
+  - (name, in) is unique per operation;
+  - operationId is unique;
+  - a parameter has exactly one of `schema`/`content`;
+  - `in` is valid;
+  - header params named Accept, Content-Type or Authorization are reported (OAS: SHALL be ignored).
+- The lint must accept the whole official corpus. That tests the lint as much as fizz. Wire it into `MetaProblems`.
+- Red first: `TestOfficialPassFixtures`, `TestOfficialFailFixtures`, `TestLintSemanticsOnCorpus`.
+
+**P10.3 Model round-trip on the corpus.** M · Sonnet
+- Files: `internal/conformance/roundtrip_test.go`.
+- For every corpus doc: decode into `openapi.OpenAPI`, encode as JSON and YAML, then check the result is JSON-semantically equal to the input and still valid.
+- Every loss is a red case with FixedBy (a new task ID if needed), never an allowlist.
+- Red first: `TestCorpusRoundTrip`.
+
+**P10.4 Gate every golden.** S · Sonnet
+- Files: `internal/conformance/goldens_test.go`.
+- Walks the repo for golden JSON/YAML that is a whole OAS document (`testdata/spec.*`, `openapi/testdata/schemas/*` wrapped as components, kitchensink, acceptance) and runs `MetaProblems`. New goldens are covered automatically.
+- Red first: `TestAllGoldensValid`.
+
+**P10.5a/b/c Reproduction apps.** L total, 3 parallel lanes · Sonnet (Opus reviews allowlists)
+- Files: `internal/conformance/repro/<example>/{app.go,allow.json,repro_test.go}`. One dir per example, so the lanes are disjoint.
+- Each app uses only public fizz API (types, tags, options, hooks) to rebuild the example. The test compares the served `/openapi.json` with the upgraded official doc under D23.
+- An allowlist entry is `{pointer, kind: missing|extra|changed, reason}`. Allowed reasons:
+  - (a) naming fizz deliberately controls, e.g. component names (ADR);
+  - (b) an upstream example bug (link it);
+  - (c) a fizz limitation with a task ID.
+- (c) entries are listed in README "Known limitations".
+- Lanes:
+  - a: petstore, petstore-expanded, api-with-examples, uspto.
+  - b: callback-example, link-example, webhook-example, non-oauth-scopes, tictactoe.
+  - c: 3.2-query-example, 3.2-tags-example, plus the 6 full docs from the spec text where an app is feasible.
+- Red first: each `TestRepro<Name>`.
+
+**P10.6 Spec-driven contract tests.** M · Sonnet
+- Files: `internal/conformance/contract/`.
+- A small client reads a served spec. For each operation it serializes sample values (from example, default, enum, or else type) for every parameter, following the documented `style`/`explode`: form, simple, spaceDelimited, pipeDelimited, deepObject, cookie. It sends the request, and an echo handler asserts that the bound Go value equals the sent value.
+- Runs against the kitchen-sink fixture, `examples/market` and the P10.5 apps.
+- This catches doc/runtime drift (review findings 1, 4, 6).
+- Red first: `TestContractKitchenSink`, `TestContractMarket`, `TestContractRepro`.
+
+**P10.7 Fix the open review findings** (each one is red first in P10.2/P10.6 or as a kitchen-sink case, one commit per item):
+- **P10.7a** `mergeParameter`: an option's Content replaces the Schema (and vice versa). `applyParameters` rejects an invalid `In` with an op error.
+- **P10.7b** A non-deepObject query, header or path param of map or struct type is a generation error (same rule as cookies).
+- **P10.7c** A slice `default` tag is split on `,` and converted per element, as tonic does.
+- **P10.7d** Nullable items (`[]*T`) get null in `enum`/`const`.
+- **P10.7e** Slice header params. The doc says `simple` (comma-split), but tonic does not split. **Open question O-10a:** split in the bind hook, or document `explode`/single value?
+- **P10.7f** Reserved header param names (Accept, Content-Type, Authorization): op warning that points to security schemes / content.
+- **P10.7g** Carried over from earlier: duplicate path+method is silently overwritten (→ op error); `RegisterRequestBody` with nil Content emits `content: null` (→ error).
+
+**P10.8 Second validator (below the line).** S · Haiku (check whether any Go or CLI validator supports 3.2 at that time) + Sonnet
+- Only if one exists: cross-check the corpus and all goldens in a test-only module (`tools/` or `internal/conformance/x/`), so the library go.mod stays unchanged.
+
+---
+
 ## 13. DAG (explicit, with file sets)
 
 | Task | Depends on | Files touched (primary) | ∥ allowed with |
@@ -790,6 +883,15 @@ Lanes (file-disjoint):
 | P8.4 | P8.3, P2.6 | docs/compat.md | Phases 3–7 |
 | P9.1, P9.2, P9.3 | P7.2c (+P8.1 for 9.2/9.3) | MIGRATION.md / README.md / examples/market | each other |
 | P9.4 | P0.1 | workflows | anything |
+| P10.0 | — | internal/conformance/oai, internal/conformance/internal/fetchoai | anything |
+| P10.1 | P10.0 | internal/conformance/upgrade, oai/upgraded | anything outside conformance |
+| P10.2 | P10.1 | internal/specvalidate/*, internal/kitchensink/meta.go | P10.3, P10.4, P10.5x |
+| P10.3 | P10.1 | internal/conformance/roundtrip_test.go | P10.2, P10.4, P10.5x |
+| P10.4 | P10.2 | internal/conformance/goldens_test.go | P10.3, P10.5x |
+| P10.5a/b/c | P10.1 | internal/conformance/repro/<example>/ (one dir each) | each other, P10.2–P10.4 |
+| P10.6 | P10.5a | internal/conformance/contract | P10.7x |
+| P10.7a–g | their red case (P10.2/P10.6) | params_option.go / params.go / fields.go / generator.go / bindhook.go | serialized on chain H when they touch generator.go/params.go |
+| P10.8 | P10.4 | tools/ or internal/conformance/x | anything |
 | P9.5 | cut line | tags, notes | — |
 
 ## 14. Estimates and critical path (rough; agent-days plus review)
@@ -806,13 +908,14 @@ Lanes (file-disjoint):
 | 7 | ~8 d | ~5 d (P7.2a off-path) |
 | 8 | ~5 d | 0 (parallel) |
 | 9 | ~6 d | ~3 d |
+| 10 | ~14 d | ~7 d (P10.0→P10.1→P10.5a→P10.6→P10.7x) |
 | **Total** | **~89 d of work** | **~55 d ≈ 11 weeks for one maintainer** |
 
 **Critical path:** P0.1 → P0.2 → P0.4a → P1.0 → P1.1 → P1.2 → P1.3 → P2.2 → P2.1a–d → P2.3 → P2.5 → P2.6 → P3.1a → P3.1b → P3.3 → P3.5 → P3.4 → P3.6 → P6.1 → P4.2 → P4.2c → P4.6 → P4.9 → P4.8 → P4.7 → P4.3 → P5.1 → P6.5 → P6.4 → P6.6a → P6.6b → P6.6c → P7.1 → P7.2b → P7.2c → P9.1/P9.2 → v0.30.0.
 
 **Cut line for v0.30.0** (the "rc" of the overhaul):
-- **Above the line (blocking):** Phases 0–7, P8.1, P9.1, P9.2, P9.4.
-- **Below the line (may ship in v0.30.x):** P8.2, P8.3, P8.4, P9.3.
+- **Above the line (blocking):** Phases 0–7, P8.1, P9.1, P9.2, P9.4, P10.0–P10.7.
+- **Below the line (may ship in v0.30.x):** P8.2, P8.3, P8.4, P9.3, P10.8.
 
 ## 15. Release plan
 1. Branch `release-0.x` from tag v0.23.0. **Optional v0.23.1:** only a visited-set cycle fix in `buildSchemaRecursive`, `flattenStructSchema` and `buildParamsRecursive` (generator.go:523, :1032). The go directive and dependencies stay unchanged. Covered by the P0.4b/c cycle cases backported as plain tests.
@@ -856,6 +959,8 @@ Lanes (file-disjoint):
 3. **D15 on params** silently drops `required` when a default exists. Is a warning enough, or should it be a generation error?
 
 ---
+
+4. **O-10a (P10.7e):** slice header params: should the bind hook split `simple`-style values on `,`, or should the doc stop claiming it?
 
 ## Addendum — user decisions after v2 (2026-10-30)
 
