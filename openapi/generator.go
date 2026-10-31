@@ -138,6 +138,15 @@ func (g *Generator) error(err error) {
 	g.errors = append(g.errors, err)
 }
 
+// jsonEncodable reports whether v encodes as JSON with the options of
+// MarshalJSON. A document holding a value that does not (NaN, a
+// channel, a function...) could not be served, so user examples are
+// checked when they are registered.
+func jsonEncodable(v any) error {
+	_, err := marshalJSON(v)
+	return err
+}
+
 // UseFullSchemaNames defines whether the generator should generates
 // a full name for the components using the package name of the type
 // as a prefix.
@@ -293,10 +302,14 @@ func (g *Generator) AddOperation(path, method, tag string, in, out reflect.Type,
 			return nil, err
 		}
 	}
+	where := method + " " + path
+	if op.ID != "" {
+		where += " (" + op.ID + ")"
+	}
 	// Generate the default response from the tonic
 	// handler return type. If the handler has no output
 	// type, the response won't have a schema.
-	if err := g.setOperationResponse(op, out, strconv.Itoa(info.StatusCode), g.mediaType(), info.StatusDescription, info.Headers, nil, info.DefaultResponseExamples); err != nil {
+	if err := g.setOperationResponse(op, where, out, strconv.Itoa(info.StatusCode), g.mediaType(), info.StatusDescription, info.Headers, nil, info.DefaultResponseExamples); err != nil {
 		return nil, err
 	}
 	// Generate additional responses from the operation
@@ -304,6 +317,7 @@ func (g *Generator) AddOperation(path, method, tag string, in, out reflect.Type,
 	for _, resp := range info.Responses {
 		if resp != nil {
 			if err := g.setOperationResponse(op,
+				where,
 				reflect.TypeOf(resp.Model),
 				resp.Code,
 				g.mediaType(),

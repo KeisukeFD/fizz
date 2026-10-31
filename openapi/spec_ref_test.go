@@ -79,17 +79,3 @@ func TestOrRefValidate(t *testing.T) {
 		})
 	}
 }
-
-func TestOrRefMarshalYAML(t *testing.T) {
-	ref := &Reference{Ref: "#/x"}
-	val := &Parameter{Name: "n"}
-	if got, err := (&ParameterOrRef{Ref: ref}).MarshalYAML(); err != nil || got != any(ref) {
-		t.Errorf("ref: got %v, %v", got, err)
-	}
-	if got, err := (&ParameterOrRef{Value: val}).MarshalYAML(); err != nil || got != any(val) {
-		t.Errorf("value: got %v, %v", got, err)
-	}
-	if _, err := (&ParameterOrRef{}).MarshalYAML(); !errors.Is(err, ErrNilOrRef) {
-		t.Errorf("nil: got %v", err)
-	}
-}

@@ -1,6 +1,7 @@
 package openapi
 
 import (
+	"bytes"
 	"encoding/json"
 	"encoding/json/jsontext"
 	jsonv2 "encoding/json/v2"
@@ -9,6 +10,8 @@ import (
 	"maps"
 	"slices"
 	"strings"
+
+	"go.yaml.in/yaml/v3"
 )
 
 // marshalOptions are the options of encoding/json (v1) expressed for the v2
@@ -50,6 +53,54 @@ func decodeValue(dec *jsontext.Decoder, v any) error {
 // object is encoded on its own.
 func MarshalJSON(doc *OpenAPI) ([]byte, error) {
 	return jsonv2.Marshal(doc, jsonOptions())
+}
+
+// MarshalYAML returns the YAML encoding of doc, in block style with an
+// indentation of two spaces.
+//
+// The YAML document is derived from the JSON one: doc is encoded with
+// MarshalJSON, and that output is re-encoded as YAML. The two documents
+// therefore hold the same values, and any MarshalYAML method of a user
+// type (in an example, for instance) is ignored. Scalar tags are kept,
+// so strings that would read as another type in YAML ("123", "true",
+// "null", "~", "yes", "2026-10-30") are quoted.
+func MarshalYAML(doc *OpenAPI) ([]byte, error) {
+	j, err := MarshalJSON(doc)
+	if err != nil {
+		return nil, err
+	}
+	var n yaml.Node
+	if err := yaml.Unmarshal(j, &n); err != nil {
+		return nil, fmt.Errorf("openapi: decoding the JSON document as YAML: %w", err)
+	}
+	clearStyle(&n)
+
+	var buf bytes.Buffer
+	enc := yaml.NewEncoder(&buf)
+	enc.SetIndent(2)
+	if err := enc.Encode(&n); err != nil {
+		return nil, fmt.Errorf("openapi: encoding the YAML document: %w", err)
+	}
+	if err := enc.Close(); err != nil {
+		return nil, fmt.Errorf("openapi: encoding the YAML document: %w", err)
+	}
+	return buf.Bytes(), nil
+}
+
+// clearStyle resets the style of every node, which turns the flow
+// collections and quoted scalars of the JSON text into block style.
+// The tags are kept: the encoder quotes a string scalar only when its
+// plain form would resolve to another tag. The one exception is "<<",
+// which its resolver reports as a string while the decoder reads the
+// plain form as a merge key, so it is quoted here.
+func clearStyle(n *yaml.Node) {
+	n.Style = 0
+	if n.Kind == yaml.ScalarNode && n.Tag == "!!str" && n.Value == "<<" {
+		n.Style = yaml.DoubleQuotedStyle
+	}
+	for _, c := range n.Content {
+		clearStyle(c)
+	}
 }
 
 func marshalJSON(v any) ([]byte, error) {

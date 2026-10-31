@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"strings"
 	"testing"
-
-	"gopkg.in/yaml.v2"
 )
 
 func TestOperationOmitZero(t *testing.T) {
@@ -77,38 +75,6 @@ func TestPathsModelMarshal(t *testing.T) {
 			}
 			if string(b) != tt.want {
 				t.Errorf("got  %s\nwant %s", b, tt.want)
-			}
-		})
-	}
-}
-
-func TestOperationSecurityYAMLAndJSON(t *testing.T) {
-	tests := []struct {
-		name     string
-		sec      []*SecurityRequirement
-		wantYAML string
-		wantJSON string
-	}{
-		{"nil", nil, "operationId: o\n", `{"operationId":"o"}`},
-		{"empty", []*SecurityRequirement{}, "operationId: o\nsecurity: []\n", `{"operationId":"o","security":[]}`},
-		{"set", []*SecurityRequirement{{"k": {}}}, "operationId: o\nsecurity:\n- k: []\n", `{"operationId":"o","security":[{"k":[]}]}`},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			op := &Operation{ID: "o", Security: tt.sec}
-			y, err := yaml.Marshal(op)
-			if err != nil {
-				t.Fatal(err)
-			}
-			if string(y) != tt.wantYAML {
-				t.Errorf("yaml = %q, want %q", y, tt.wantYAML)
-			}
-			j, err := json.Marshal(op)
-			if err != nil {
-				t.Fatal(err)
-			}
-			if string(j) != tt.wantJSON {
-				t.Errorf("json = %s, want %s", j, tt.wantJSON)
 			}
 		})
 	}

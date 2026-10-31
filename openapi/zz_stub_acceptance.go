@@ -14,12 +14,6 @@ import (
 // FixedBy: P2.6
 const Version = ""
 
-// MarshalYAML is a stub.
-// FixedBy: P2.5
-func MarshalYAML(doc *OpenAPI) ([]byte, error) {
-	return nil, errors.New("stub: P2.5")
-}
-
 // Warning is a stub type.
 // FixedBy: P3.3
 type Warning struct {

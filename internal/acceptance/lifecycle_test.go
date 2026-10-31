@@ -129,7 +129,7 @@ func bGRows() []bGRow {
 			},
 		},
 		{
-			name: "r07-nan-example", fixedBy: "P2.5+P4.8", method: get, path: "/r07",
+			name: "r07-nan-example", fixedBy: "P2.5", method: get, path: "/r07",
 			register: func(f *fizz.Fizz) {
 				f.GET("/r07", bGOpts(fizz.ID("r07"),
 					fizz.ResponseWithExamples("400", "bad", new(bGOut), nil, map[string]any{"bad": math.NaN()})),

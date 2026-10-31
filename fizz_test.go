@@ -7,7 +7,6 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"os"
-	"reflect"
 	"sync"
 	"testing"
 	"time"
@@ -16,7 +15,6 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/loopfz/gadgeto/tonic"
 	"github.com/stretchr/testify/assert"
-	"gopkg.in/yaml.v2"
 
 	"github.com/wI2L/fizz/internal/golden"
 	"github.com/wI2L/fizz/openapi"
@@ -419,18 +417,8 @@ func TestSpecHandler(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	// see testdata/spec.yaml.
-	expectedYAML, err := os.ReadFile("testdata/spec.yaml")
-	if err != nil {
-		t.Error(err)
-	}
-	m, err := diffYAML(specYAML, expectedYAML)
-	if err != nil {
-		t.Error(err)
-	}
-	if !m {
-		t.Error("invalid YAML spec")
-	}
+	assert.Equal(t, "application/yaml", respYAML.Header.Get("Content-Type"))
+	golden.Assert(t, "testdata/spec.yaml", specYAML)
 }
 
 // TestInvalidContentTypeOpenAPIHandler tests that the
@@ -547,15 +535,4 @@ func TestOperationContext(t *testing.T) {
 			status, http.StatusOK,
 		)
 	}
-}
-
-func diffYAML(a, b []byte) (bool, error) {
-	var j1, j2 any
-	if err := yaml.Unmarshal(a, &j1); err != nil {
-		return false, err
-	}
-	if err := yaml.Unmarshal(b, &j2); err != nil {
-		return false, err
-	}
-	return reflect.DeepEqual(j2, j1), nil
 }

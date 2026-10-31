@@ -6,6 +6,7 @@ import (
 	"math"
 	"reflect"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -603,29 +604,29 @@ func TestSetOperationResponseError(t *testing.T) {
 	op := &Operation{
 		Responses: make(Responses),
 	}
-	err := g.setOperationResponse(op, reflect.TypeFor[*string](), "200", "application/json", "", nil, nil, nil)
+	err := g.setOperationResponse(op, "GET /test", reflect.TypeFor[*string](), "200", "application/json", "", nil, nil, nil)
 	assert.Nil(t, err)
 	assert.Equal(t, "OK", op.Responses["200"].Value.Description)
 
-	err = g.setOperationResponse(op, reflect.TypeFor[*string](), "429", "application/json", "testDesc", nil, nil, nil)
+	err = g.setOperationResponse(op, "GET /test", reflect.TypeFor[*string](), "429", "application/json", "testDesc", nil, nil, nil)
 	assert.Nil(t, err)
 	assert.Equal(t, "testDesc", op.Responses["429"].Value.Description)
 
 	// Add another response with same code.
-	err = g.setOperationResponse(op, reflect.TypeFor[*int](), "200", "application/xml", "", nil, nil, nil)
+	err = g.setOperationResponse(op, "GET /test", reflect.TypeFor[*int](), "200", "application/xml", "", nil, nil, nil)
 	assert.NotNil(t, err)
 
 	// Add invalid response code that cannot
 	// be converted to an integer.
-	err = g.setOperationResponse(op, reflect.TypeFor[*bool](), "two-hundred", "", "", nil, nil, nil)
+	err = g.setOperationResponse(op, "GET /test", reflect.TypeFor[*bool](), "two-hundred", "", "", nil, nil, nil)
 	assert.NotNil(t, err)
 
 	// Add out of range response code.
-	err = g.setOperationResponse(op, reflect.TypeFor[*bool](), "777", "", "", nil, nil, nil)
+	err = g.setOperationResponse(op, "GET /test", reflect.TypeFor[*bool](), "777", "", "", nil, nil, nil)
 	assert.NotNil(t, err)
 
 	// Cannot set both example and examples
-	err = g.setOperationResponse(op, reflect.TypeFor[*bool](), "404", "", "", nil, "notFoundExample", map[string]any{"badRequest": "message"})
+	err = g.setOperationResponse(op, "GET /test", reflect.TypeFor[*bool](), "404", "", "", nil, "notFoundExample", map[string]any{"badRequest": "message"})
 	assert.NotNil(t, err)
 }
 
@@ -639,7 +640,7 @@ func TestSetOperationResponseExample(t *testing.T) {
 
 	error1 := map[string]any{"error": "message1"}
 
-	err := g.setOperationResponse(op, reflect.TypeFor[*string](), "400", "application/json", "", nil, error1, nil)
+	err := g.setOperationResponse(op, "GET /test", reflect.TypeFor[*string](), "400", "application/json", "", nil, error1, nil)
 	assert.Nil(t, err)
 
 	// assert example set correctly
@@ -661,7 +662,7 @@ func TestSetOperationResponseExamples(t *testing.T) {
 	error1 := map[string]any{"error": "message1"}
 	error2 := map[string]any{"error": "message2"}
 
-	err := g.setOperationResponse(op, reflect.TypeFor[*string](), "400", "application/json", "", nil, nil,
+	err := g.setOperationResponse(op, "GET /test", reflect.TypeFor[*string](), "400", "application/json", "", nil, nil,
 		map[string]any{
 			"one": error1,
 			"two": error2,
@@ -985,4 +986,55 @@ func gen(t *testing.T) *Generator {
 	g.UseFullSchemaNames(false)
 
 	return g
+}
+
+// TestUnencodableExamplesDropped tests that examples that cannot be
+// encoded as JSON are recorded in Errors() and dropped.
+func TestUnencodableExamplesDropped(t *testing.T) {
+	g := gen(t)
+	op := &Operation{Responses: make(Responses)}
+
+	err := g.setOperationResponse(op, "GET /nan", reflect.TypeFor[*string](), "400", "application/json", "", nil, nil,
+		map[string]any{"bad": math.NaN(), "ch": make(chan int), "fn": func() {}, "ok": "fine"})
+	assert.NoError(t, err)
+	mt := op.Responses["400"].Value.Content["application/json"].Value
+	assert.Len(t, mt.Examples, 1)
+	assert.Contains(t, mt.Examples, "ok")
+	assert.Len(t, g.Errors(), 3)
+	for _, e := range g.Errors() {
+		assert.Contains(t, e.Error(), "GET /nan")
+		assert.Contains(t, e.Error(), "response 400")
+	}
+
+	err = g.setOperationResponse(op, "POST /x", reflect.TypeFor[*string](), "401", "application/json", "", nil,
+		math.Inf(1), nil)
+	assert.NoError(t, err)
+	assert.Nil(t, op.Responses["401"].Value.Content["application/json"].Value.Example)
+	assert.Len(t, g.Errors(), 4)
+	assert.Contains(t, g.Errors()[3].Error(), "POST /x")
+
+	// A generated document with these examples still encodes.
+	_, err = MarshalJSON(g.API())
+	assert.NoError(t, err)
+}
+
+type nanExample struct {
+	V float64 `json:"v" example:"NaN"`
+	W float64 `json:"w" example:"1.5"`
+}
+
+func TestUnencodableTagExampleDropped(t *testing.T) {
+	g := gen(t)
+	s := g.newSchemaFromType(reflect.TypeFor[nanExample]())
+	_ = s
+	var found bool
+	for _, e := range g.Errors() {
+		if strings.Contains(e.Error(), "not JSON-encodable") && strings.Contains(e.Error(), "field=v") {
+			found = true
+		}
+	}
+	assert.True(t, found, "errors: %v", g.Errors())
+	sc := g.api.Components.Schemas[g.typeName(reflect.TypeFor[nanExample]())]
+	assert.Empty(t, sc.Properties["v"].Examples)
+	assert.Equal(t, []any{1.5}, sc.Properties["w"].Examples)
 }

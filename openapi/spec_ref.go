@@ -14,9 +14,9 @@ var ErrNilOrRef = errors.New("openapi: OrRef has neither $ref nor value")
 // externally. Summary and Description override those of
 // the referenced component.
 type Reference struct {
-	Ref         string `json:"$ref" yaml:"$ref"`
-	Summary     string `json:"summary,omitempty" yaml:"summary,omitempty"`
-	Description string `json:"description,omitempty" yaml:"description,omitempty"`
+	Ref         string `json:"$ref"`
+	Summary     string `json:"summary,omitempty"`
+	Description string `json:"description,omitempty"`
 }
 
 // OrRef holds either a Reference or an inline Value of type T.
@@ -71,18 +71,6 @@ func (o OrRef[T]) MarshalJSON() ([]byte, error) { return marshalJSON(o) }
 
 // UnmarshalJSON implements json.Unmarshaler by delegating to v2.
 func (o *OrRef[T]) UnmarshalJSON(b []byte) error { return unmarshalJSON(b, o) }
-
-// MarshalYAML implements yaml.Marshaler with the same choice logic
-// as MarshalJSON.
-func (o OrRef[T]) MarshalYAML() (any, error) {
-	switch {
-	case o.Ref != nil:
-		return o.Ref, nil
-	case o.Value != nil:
-		return o.Value, nil
-	}
-	return nil, ErrNilOrRef
-}
 
 // Validate reports an error unless exactly one of Ref and Value is
 // set. It returns ErrNilOrRef when both are nil.

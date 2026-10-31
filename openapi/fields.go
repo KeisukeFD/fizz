@@ -90,6 +90,14 @@ func (g *Generator) newSchemaFromStructField(sf reflect.StructField, required bo
 				TypeName: g.typeName(sf.Type),
 				Parent:   parent,
 			})
+		} else if err := jsonEncodable(parsed); err != nil {
+			g.error(&FieldError{
+				Message:  fmt.Sprintf("the example value %q of field %q is not JSON-encodable, dropped: %s", e, fname, err),
+				Name:     fname,
+				Type:     sf.Type,
+				TypeName: g.typeName(sf.Type),
+				Parent:   parent,
+			})
 		} else {
 			schema.Examples = []any{parsed}
 		}

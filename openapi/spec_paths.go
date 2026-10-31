@@ -11,24 +11,24 @@ const (
 
 // Parameter describes a single operation parameter.
 type Parameter struct {
-	Name            string                   `json:"name" yaml:"name"`
-	In              string                   `json:"in" yaml:"in"`
-	Description     string                   `json:"description,omitempty" yaml:"description,omitempty"`
-	Required        bool                     `json:"required,omitempty" yaml:"required,omitempty"`
-	Deprecated      bool                     `json:"deprecated,omitempty" yaml:"deprecated,omitempty"`
-	AllowEmptyValue bool                     `json:"allowEmptyValue,omitzero" yaml:"allowEmptyValue,omitempty"`
-	Schema          *Schema                  `json:"schema,omitempty" yaml:"schema,omitempty"`
-	Style           string                   `json:"style,omitempty" yaml:"style,omitempty"`
-	Explode         *bool                    `json:"explode,omitempty" yaml:"explode,omitempty"`
-	AllowReserved   bool                     `json:"allowReserved,omitempty" yaml:"allowReserved,omitempty"`
-	Example         any                      `json:"example,omitempty" yaml:"example,omitempty"`
-	Examples        map[string]*ExampleOrRef `json:"examples,omitempty" yaml:"examples,omitempty"`
-	Content         map[string]*MediaType    `json:"content,omitempty" yaml:"content,omitempty"`
+	Name            string                   `json:"name"`
+	In              string                   `json:"in"`
+	Description     string                   `json:"description,omitempty"`
+	Required        bool                     `json:"required,omitempty"`
+	Deprecated      bool                     `json:"deprecated,omitempty"`
+	AllowEmptyValue bool                     `json:"allowEmptyValue,omitzero"`
+	Schema          *Schema                  `json:"schema,omitempty"`
+	Style           string                   `json:"style,omitempty"`
+	Explode         *bool                    `json:"explode,omitempty"`
+	AllowReserved   bool                     `json:"allowReserved,omitempty"`
+	Example         any                      `json:"example,omitempty"`
+	Examples        map[string]*ExampleOrRef `json:"examples,omitempty"`
+	Content         map[string]*MediaType    `json:"content,omitempty"`
 
 	// Extensions holds the "x-" specification extensions. Keys are
 	// emitted sorted after the typed members. Use SetExtension to
 	// validate keys.
-	Extensions map[string]any `json:",embed" yaml:",inline"`
+	Extensions map[string]any `json:",embed"`
 }
 
 // ParameterOrRef represents a Parameter that can be inlined
@@ -41,51 +41,36 @@ type RequestBodyOrRef = OrRef[RequestBody]
 
 // RequestBody represents a request body.
 type RequestBody struct {
-	Description string                `json:"description,omitempty" yaml:"description,omitempty"`
-	Content     map[string]*MediaType `json:"content" yaml:"content"`
-	Required    bool                  `json:"required,omitempty" yaml:"required,omitempty"`
+	Description string                `json:"description,omitempty"`
+	Content     map[string]*MediaType `json:"content"`
+	Required    bool                  `json:"required,omitempty"`
 
 	// Extensions holds the "x-" specification extensions. Keys are
 	// emitted sorted after the typed members. Use SetExtension to
 	// validate keys.
-	Extensions map[string]any `json:",embed" yaml:",inline"`
+	Extensions map[string]any `json:",embed"`
 }
 
 // Operation describes an API operation on a path.
 type Operation struct {
-	Tags         []string                  `json:"tags,omitempty" yaml:"tags,omitempty"`
-	Summary      string                    `json:"summary,omitempty" yaml:"summary,omitempty"`
-	Description  string                    `json:"description,omitempty" yaml:"description,omitempty"`
-	ID           string                    `json:"operationId,omitempty" yaml:"operationId,omitempty"`
-	Parameters   []*ParameterOrRef         `json:"parameters,omitempty" yaml:"parameters,omitempty"`
-	RequestBody  *RequestBody              `json:"requestBody,omitempty" yaml:"requestBody,omitempty"`
-	Responses    Responses                 `json:"responses,omitempty" yaml:"responses,omitempty"`
-	Callbacks    map[string]*CallbackOrRef `json:"callbacks,omitempty" yaml:"callbacks,omitempty"`
-	Deprecated   bool                      `json:"deprecated,omitempty" yaml:"deprecated,omitempty"`
-	Servers      []*Server                 `json:"servers,omitempty" yaml:"servers,omitempty"`
-	Security     []*SecurityRequirement    `json:"security,omitzero" yaml:"-"`
-	XCodeSamples []*XCodeSample            `json:"x-codeSamples,omitempty" yaml:"x-codeSamples,omitempty"`
-	XInternal    bool                      `json:"x-internal,omitempty" yaml:"x-internal,omitempty"`
+	Tags         []string                  `json:"tags,omitempty"`
+	Summary      string                    `json:"summary,omitempty"`
+	Description  string                    `json:"description,omitempty"`
+	ID           string                    `json:"operationId,omitempty"`
+	Parameters   []*ParameterOrRef         `json:"parameters,omitempty"`
+	RequestBody  *RequestBody              `json:"requestBody,omitempty"`
+	Responses    Responses                 `json:"responses,omitempty"`
+	Callbacks    map[string]*CallbackOrRef `json:"callbacks,omitempty"`
+	Deprecated   bool                      `json:"deprecated,omitempty"`
+	Servers      []*Server                 `json:"servers,omitempty"`
+	Security     []*SecurityRequirement    `json:"security,omitzero"`
+	XCodeSamples []*XCodeSample            `json:"x-codeSamples,omitempty"`
+	XInternal    bool                      `json:"x-internal,omitempty"`
 
 	// Extensions holds the "x-" specification extensions. Keys are
 	// emitted sorted after the typed members. Use SetExtension to
 	// validate keys.
-	Extensions map[string]any `json:",embed" yaml:",inline"`
-}
-
-// MarshalYAML keeps an empty, non-nil Security (security: [], meaning
-// "no authentication") in YAML output while omitting a nil one.
-//
-// Temporary: yaml.v2 has no omitzero support. Deleted by P2.5.
-func (o *Operation) MarshalYAML() (any, error) {
-	type plain Operation
-	if o.Security == nil {
-		return plain(*o), nil
-	}
-	return struct {
-		plain    `yaml:",inline"`
-		Security []*SecurityRequirement `yaml:"security"`
-	}{plain(*o), o.Security}, nil
+	Extensions map[string]any `json:",embed"`
 }
 
 // Responses represents a container for the expected responses
@@ -99,16 +84,16 @@ type ResponseOrRef = OrRef[Response]
 
 // Response describes a single response from an API.
 type Response struct {
-	Summary     string                     `json:"summary,omitempty" yaml:"summary,omitempty"`
-	Description string                     `json:"description,omitempty" yaml:"description,omitempty"`
-	Headers     map[string]*HeaderOrRef    `json:"headers,omitempty" yaml:"headers,omitempty"`
-	Content     map[string]*MediaTypeOrRef `json:"content,omitempty" yaml:"content,omitempty"`
-	Links       map[string]*LinkOrRef      `json:"links,omitempty" yaml:"links,omitempty"`
+	Summary     string                     `json:"summary,omitempty"`
+	Description string                     `json:"description,omitempty"`
+	Headers     map[string]*HeaderOrRef    `json:"headers,omitempty"`
+	Content     map[string]*MediaTypeOrRef `json:"content,omitempty"`
+	Links       map[string]*LinkOrRef      `json:"links,omitempty"`
 
 	// Extensions holds the "x-" specification extensions. Keys are
 	// emitted sorted after the typed members. Use SetExtension to
 	// validate keys.
-	Extensions map[string]any `json:",embed" yaml:",inline"`
+	Extensions map[string]any `json:",embed"`
 }
 
 // LinkOrRef represents a Link that can be inlined
@@ -117,17 +102,17 @@ type LinkOrRef = OrRef[Link]
 
 // Link represents a possible design-time link for a response.
 type Link struct {
-	OperationRef string         `json:"operationRef,omitempty" yaml:"operationRef,omitempty"`
-	OperationID  string         `json:"operationId,omitempty" yaml:"operationId,omitempty"`
-	Parameters   map[string]any `json:"parameters,omitempty" yaml:"parameters,omitempty"`
-	RequestBody  any            `json:"requestBody,omitempty" yaml:"requestBody,omitempty"`
-	Description  string         `json:"description,omitempty" yaml:"description,omitempty"`
-	Server       *Server        `json:"server,omitempty" yaml:"server,omitempty"`
+	OperationRef string         `json:"operationRef,omitempty"`
+	OperationID  string         `json:"operationId,omitempty"`
+	Parameters   map[string]any `json:"parameters,omitempty"`
+	RequestBody  any            `json:"requestBody,omitempty"`
+	Description  string         `json:"description,omitempty"`
+	Server       *Server        `json:"server,omitempty"`
 
 	// Extensions holds the "x-" specification extensions. Keys are
 	// emitted sorted after the typed members. Use SetExtension to
 	// validate keys.
-	Extensions map[string]any `json:",embed" yaml:",inline"`
+	Extensions map[string]any `json:",embed"`
 }
 
 // CallbackOrRef represents a Callback that can be inlined
@@ -148,20 +133,20 @@ type HeaderOrRef = OrRef[Header]
 
 // Header represents an HTTP header.
 type Header struct {
-	Description string                   `json:"description,omitempty" yaml:"description,omitempty"`
-	Required    bool                     `json:"required,omitempty" yaml:"required,omitempty"`
-	Deprecated  bool                     `json:"deprecated,omitempty" yaml:"deprecated,omitempty"`
-	Schema      *Schema                  `json:"schema,omitempty" yaml:"schema,omitempty"`
-	Style       string                   `json:"style,omitempty" yaml:"style,omitempty"`
-	Explode     *bool                    `json:"explode,omitempty" yaml:"explode,omitempty"`
-	Example     any                      `json:"example,omitempty" yaml:"example,omitempty"`
-	Examples    map[string]*ExampleOrRef `json:"examples,omitempty" yaml:"examples,omitempty"`
-	Content     map[string]*MediaType    `json:"content,omitempty" yaml:"content,omitempty"`
+	Description string                   `json:"description,omitempty"`
+	Required    bool                     `json:"required,omitempty"`
+	Deprecated  bool                     `json:"deprecated,omitempty"`
+	Schema      *Schema                  `json:"schema,omitempty"`
+	Style       string                   `json:"style,omitempty"`
+	Explode     *bool                    `json:"explode,omitempty"`
+	Example     any                      `json:"example,omitempty"`
+	Examples    map[string]*ExampleOrRef `json:"examples,omitempty"`
+	Content     map[string]*MediaType    `json:"content,omitempty"`
 
 	// Extensions holds the "x-" specification extensions. Keys are
 	// emitted sorted after the typed members. Use SetExtension to
 	// validate keys.
-	Extensions map[string]any `json:",embed" yaml:",inline"`
+	Extensions map[string]any `json:",embed"`
 }
 
 // MediaTypeOrRef represents a MediaType that can be inlined
@@ -170,18 +155,18 @@ type MediaTypeOrRef = OrRef[MediaType]
 
 // MediaType represents the type of a media.
 type MediaType struct {
-	Schema         *Schema                  `json:"schema,omitempty" yaml:"schema,omitempty"`
-	ItemSchema     *Schema                  `json:"itemSchema,omitempty" yaml:"itemSchema,omitempty"`
-	Example        any                      `json:"example,omitempty" yaml:"example,omitempty"`
-	Examples       map[string]*ExampleOrRef `json:"examples,omitempty" yaml:"examples,omitempty"`
-	Encoding       map[string]*Encoding     `json:"encoding,omitempty" yaml:"encoding,omitempty"`
-	PrefixEncoding []*Encoding              `json:"prefixEncoding,omitempty" yaml:"prefixEncoding,omitempty"`
-	ItemEncoding   *Encoding                `json:"itemEncoding,omitempty" yaml:"itemEncoding,omitempty"`
+	Schema         *Schema                  `json:"schema,omitempty"`
+	ItemSchema     *Schema                  `json:"itemSchema,omitempty"`
+	Example        any                      `json:"example,omitempty"`
+	Examples       map[string]*ExampleOrRef `json:"examples,omitempty"`
+	Encoding       map[string]*Encoding     `json:"encoding,omitempty"`
+	PrefixEncoding []*Encoding              `json:"prefixEncoding,omitempty"`
+	ItemEncoding   *Encoding                `json:"itemEncoding,omitempty"`
 
 	// Extensions holds the "x-" specification extensions. Keys are
 	// emitted sorted after the typed members. Use SetExtension to
 	// validate keys.
-	Extensions map[string]any `json:",embed" yaml:",inline"`
+	Extensions map[string]any `json:",embed"`
 }
 
 // ExampleOrRef represents an Example that can be inlined
@@ -190,33 +175,33 @@ type ExampleOrRef = OrRef[Example]
 
 // Example represents the example of a media type.
 type Example struct {
-	Summary         string `json:"summary,omitempty" yaml:"summary,omitempty"`
-	Description     string `json:"description,omitempty" yaml:"description,omitempty"`
-	Value           any    `json:"value,omitempty" yaml:"value,omitempty"`
-	DataValue       any    `json:"dataValue,omitempty" yaml:"dataValue,omitempty"`
-	SerializedValue string `json:"serializedValue,omitempty" yaml:"serializedValue,omitempty"`
-	ExternalValue   string `json:"externalValue,omitempty" yaml:"externalValue,omitempty"`
+	Summary         string `json:"summary,omitempty"`
+	Description     string `json:"description,omitempty"`
+	Value           any    `json:"value,omitempty"`
+	DataValue       any    `json:"dataValue,omitempty"`
+	SerializedValue string `json:"serializedValue,omitempty"`
+	ExternalValue   string `json:"externalValue,omitempty"`
 
 	// Extensions holds the "x-" specification extensions. Keys are
 	// emitted sorted after the typed members. Use SetExtension to
 	// validate keys.
-	Extensions map[string]any `json:",embed" yaml:",inline"`
+	Extensions map[string]any `json:",embed"`
 }
 
 // Encoding represents a single encoding definition
 // applied to a single schema property.
 type Encoding struct {
-	ContentType    string                  `json:"contentType,omitempty" yaml:"contentType,omitempty"`
-	Headers        map[string]*HeaderOrRef `json:"headers,omitempty" yaml:"headers,omitempty"`
-	Style          string                  `json:"style,omitempty" yaml:"style,omitempty"`
-	Explode        *bool                   `json:"explode,omitempty" yaml:"explode,omitempty"`
-	AllowReserved  bool                    `json:"allowReserved,omitempty" yaml:"allowReserved,omitempty"`
-	Encoding       map[string]*Encoding    `json:"encoding,omitempty" yaml:"encoding,omitempty"`
-	PrefixEncoding []*Encoding             `json:"prefixEncoding,omitempty" yaml:"prefixEncoding,omitempty"`
-	ItemEncoding   *Encoding               `json:"itemEncoding,omitempty" yaml:"itemEncoding,omitempty"`
+	ContentType    string                  `json:"contentType,omitempty"`
+	Headers        map[string]*HeaderOrRef `json:"headers,omitempty"`
+	Style          string                  `json:"style,omitempty"`
+	Explode        *bool                   `json:"explode,omitempty"`
+	AllowReserved  bool                    `json:"allowReserved,omitempty"`
+	Encoding       map[string]*Encoding    `json:"encoding,omitempty"`
+	PrefixEncoding []*Encoding             `json:"prefixEncoding,omitempty"`
+	ItemEncoding   *Encoding               `json:"itemEncoding,omitempty"`
 
 	// Extensions holds the "x-" specification extensions. Keys are
 	// emitted sorted after the typed members. Use SetExtension to
 	// validate keys.
-	Extensions map[string]any `json:",embed" yaml:",inline"`
+	Extensions map[string]any `json:",embed"`
 }

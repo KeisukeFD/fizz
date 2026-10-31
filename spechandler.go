@@ -28,7 +28,12 @@ func (f *Fizz) OpenAPI(info *openapi.Info, ct string) gin.HandlerFunc {
 		}
 	case "yaml":
 		return func(c *gin.Context) {
-			c.YAML(200, f.gen.API())
+			b, err := openapi.MarshalYAML(f.gen.API())
+			if err != nil {
+				_ = c.AbortWithError(500, err)
+				return
+			}
+			c.Data(200, "application/yaml", b)
 		}
 	}
 	panic("invalid content type, use JSON or YAML")
