@@ -350,6 +350,22 @@ The default name is still the package name and the type name (`PetsPet`), and th
 - `explode:"false"` is emitted (it used to be lost with the `bool`).
 - A default on a parameter makes it optional: `required` is dropped and a warning is recorded. On a body field, `required` is kept and the `default` is dropped, with a warning.
 
+### v0.30 conformance fixes (Phase 10)
+
+Found by checking the output against the official OpenAPI 3.2 examples and the spec text.
+
+- A `query`, `header` or `path` parameter of map or struct type is a generation error (the field is skipped), as a cookie already was. Only `style:"deepObject"` query parameters may be a map or a struct. Types that tonic binds from a string stay allowed: scalars, `time.Time`, `encoding.TextUnmarshaler` types and slices of them.
+- The `default` tag of a slice or array parameter is split on `,` and each element is converted with the element type, as tonic does: `default:"1,2,3"` on `[]int` is `"default": [1, 2, 3]`. It used to be a generation error. With `explode:"false"` the whole value is one element, as in tonic.
+- A header parameter named `Accept`, `Content-Type` or `Authorization` (any case) is dropped from the document with a warning, since OAS ignores them. Use security schemes for `Authorization` and the request or response content for the other two.
+- Registering the same method and path twice is an operation error that names both operations; the first one is kept (it was overwritten silently). `RegisterRequestBody` with a nil `Content` is an error.
+- Two routes whose path templates differ only in their variable names (`GET /x/:a` and `POST /x/:c`) are an operation error naming both: OAS does not allow two such path keys. Rename the variable to the same name.
+- A `fizz.Parameter` option with an `in` other than `path`, `query`, `querystring`, `header` or `cookie`, or with both `schema` and `content`, is an error and is not added. An option that sets `Content` replaces the inferred `schema` (and one that sets `Schema` replaces a `content`).
+- A cookie parameter is emitted with `style: cookie` (OAS 3.2: no percent-encoding), which matches how the bind hook reads the raw value. An explicit `style:"form"` tag still wins.
+- The `description` tag of a parameter is only on the parameter, no longer repeated in `parameter.schema.description`. Body and field schemas keep their descriptions.
+- The served document (`SpecHandler`, `Fizz.Document`) omits an empty `components` and an empty `paths`. A document with none of paths, components and webhooks keeps `"paths": {}`, which OAS 3.2 requires. `Generator().API()` is unchanged.
+- Nullable items (`[]*string` with an `enum`, or `validate:"dive,oneof=..."`) include `null` in their `enum`/`const`, like a nullable top-level schema.
+- The spec model keeps an empty `parameters` on a path item and on a link when decoding and encoding.
+
 ### Responses
 
 An empty examples map or a `nil` model no longer creates an empty media type. An empty description defaults to `Default response`, `<code> response` for a range such as `2XX`, the HTTP status text of a known code, and `Status <n>` otherwise. `"schema": null` no longer appears in a media type.
