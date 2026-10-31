@@ -61,6 +61,23 @@ func init() {
 			FixedBy: "P10.7a",
 		},
 		Case{
+			// Paths Object: templated paths that differ only in variable
+			// names MUST NOT both exist. gin accepts both routes (the
+			// methods differ), so the second is an operation error and
+			// is not documented under a new key.
+			Name: "paths/equivalent-templates-is-error",
+			Register: func(f *fizz.Fizz) {
+				f.Handle("/x/:a", "GET", []fizz.OperationOption{fizz.ID("getX")}, tonic.Handler(pHandler[struct{}], 200))
+				f.Handle("/x/:c", "POST", []fizz.OperationOption{fizz.ID("postX")}, tonic.Handler(pHandler[struct{}], 200))
+			},
+			Errors: []string{"POST /x/{c}", "GET /x/{a}"},
+			Expect: []Fragment{
+				{Pointer: "/paths/~1x~1{a}/get/operationId", JSON: `"getX"`},
+				{Pointer: "/paths/~1x~1{c}", Absent: true},
+			},
+			FixedBy: "P10.7h",
+		},
+		Case{
 			// Parameter Object, name: a header parameter named
 			// Authorization SHALL be ignored, so fizz warns (security
 			// schemes are the way) and does not emit it.

@@ -589,14 +589,32 @@ func (g *Generator) buildOperation(path, method, tag string, in, out reflect.Typ
 
 // checkRoute rejects a route that the document cannot hold: the same
 // path and method twice, which would silently replace the first
-// operation.
+// operation, or a path template that differs from the one of an existing
+// path only in its variable names, which OAS forbids as two path keys.
 func (g *Generator) checkRoute(path, method string) error {
 	if item := g.api.Paths[path]; item != nil {
 		if prev := operationAt(item, method); prev != nil {
 			return fmt.Errorf("route %s %s is already registered by operation %s", method, path, opName(prev))
 		}
 	}
+	norm := normalizeTemplate(path)
+	for _, other := range slices.Sorted(maps.Keys(g.api.Paths)) {
+		if other == path || normalizeTemplate(other) != norm {
+			continue
+		}
+		var routes []string
+		for _, m := range operationMethods(g.api.Paths[other]) {
+			routes = append(routes, m+" "+other)
+		}
+		return fmt.Errorf("route %s %s has the same path template as %s: path templates that differ only in their variable names are not allowed", method, path, strings.Join(routes, ", "))
+	}
 	return nil
+}
+
+// normalizeTemplate returns the path template with every variable name
+// removed, so that equivalent templates compare equal.
+func normalizeTemplate(path string) string {
+	return paramsInPathRe.ReplaceAllString(path, "{}")
 }
 
 // opName describes op for a diagnostic: its ID, or "(no ID)".
@@ -630,6 +648,17 @@ func operationAt(item *PathItem, method string) *Operation {
 		return item.Query
 	}
 	return item.AdditionalOperations[method]
+}
+
+// operationMethods returns the methods that item has an operation for.
+func operationMethods(item *PathItem) []string {
+	var ms []string
+	for _, m := range []string{"GET", "PUT", "POST", "DELETE", "OPTIONS", "HEAD", "PATCH", "TRACE", "QUERY"} {
+		if operationAt(item, m) != nil {
+			ms = append(ms, m)
+		}
+	}
+	return append(ms, slices.Sorted(maps.Keys(item.AdditionalOperations))...)
 }
 
 // snapshot is the generator state that building an operation may
