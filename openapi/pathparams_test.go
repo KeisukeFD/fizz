@@ -115,6 +115,44 @@ func TestWildcardPathParam(t *testing.T) {
 	}
 }
 
+type ppOrphan struct {
+	ID    string `path:"id"`
+	Other string `query:"other"`
+}
+
+type ppMixed struct {
+	ID  string `path:"id" description:"The ID."`
+	Org string `path:"org"`
+}
+
+func TestOrphanPathParamDropped(t *testing.T) {
+	g, ps := ppParams(t, "/a", reflect.TypeFor[ppOrphan](), nil)
+	if len(ps) != 1 || ps[0].Name != "other" || ps[0].In != "query" {
+		t.Fatalf("orphan path param must be dropped: %+v", ps)
+	}
+	errs := g.Errors()
+	if len(errs) != 1 {
+		t.Fatalf("got %d errors %v, want 1", len(errs), errs)
+	}
+	var w *Warning
+	if errors.As(errs[0], &w) && w.IsWarning() {
+		t.Errorf("must be an error, not a warning: %v", errs[0])
+	}
+	want := `path parameter "id" is not in the path template "/a": dropped`
+	if !strings.Contains(errs[0].Error(), want) {
+		t.Errorf("error = %v, want it to contain %q", errs[0], want)
+	}
+
+	// The parameter matching the template is untouched.
+	g, ps = ppParams(t, "/o/{id}", reflect.TypeFor[ppMixed](), nil)
+	if len(ps) != 1 || ps[0].Name != "id" || ps[0].Description != "The ID." || !ps[0].Required {
+		t.Fatalf("template-matching param must be untouched: %+v", ps)
+	}
+	if len(g.Errors()) != 1 || !strings.Contains(g.Errors()[0].Error(), `"org"`) {
+		t.Errorf("want one error naming org: %v", g.Errors())
+	}
+}
+
 func TestWarningsOnlyIsNotAnError(t *testing.T) {
 	g, _ := ppParams(t, "/u/{id}", nil, nil)
 	for _, e := range g.Errors() {

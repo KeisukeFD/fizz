@@ -117,6 +117,16 @@ const wildcardNote = "The value may contain '/'."
 // a warning is recorded. Parameters named in wildcards also get the
 // wildcardNote. The parameters are then sorted, if sorting is enabled.
 func (g *Generator) finishPathParams(op *Operation, path string, wildcards []string) {
+	// A path parameter that matches no template expression makes the
+	// document invalid (OAS 3.2): drop it and record an error.
+	op.Parameters = slices.DeleteFunc(op.Parameters, func(pr *ParameterOrRef) bool {
+		v := pr.Value
+		if v == nil || v.In != "path" || pathHasParam(path, v.Name) {
+			return false
+		}
+		g.error(fmt.Errorf("path parameter %q is not in the path template %q: dropped", v.Name, path))
+		return true
+	})
 	for _, m := range paramsInPathRe.FindAllStringSubmatch(path, -1) {
 		name := m[1]
 		var p *Parameter
