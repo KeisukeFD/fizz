@@ -19,6 +19,10 @@ type Parameter struct {
 // or referenced in the API description.
 type ParameterOrRef = OrRef[Parameter]
 
+// RequestBodyOrRef represents a RequestBody that can be inlined
+// or referenced in the API description.
+type RequestBodyOrRef = OrRef[RequestBody]
+
 // RequestBody represents a request body.
 type RequestBody struct {
 	Description string                `json:"description,omitempty" yaml:"description,omitempty"`
