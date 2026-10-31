@@ -22,7 +22,8 @@ import (
 // smaller one, and any other conflicting keyword moves to an allOf.
 //
 // A malformed tag is recorded as a *FieldError and no rule is applied.
-func (g *Generator) updateSchemaValidation(schema *Schema, sf reflect.StructField) *Schema {
+func (g *Generator) updateSchemaValidation(schema *Schema, field reflect.StructField, fname string, parent reflect.Type) *Schema {
+	sf := vfield{StructField: field, schemaName: fname, parent: parent}
 	ts := sf.Tag.Get(BinderTags.Validate)
 	if ts == "" {
 		return schema
@@ -39,12 +40,21 @@ func (g *Generator) updateSchemaValidation(schema *Schema, sf reflect.StructFiel
 	return schema
 }
 
+// vfield is the struct field being validated, with the name of its
+// schema or parameter and its parent struct type, for the FieldErrors.
+type vfield struct {
+	reflect.StructField
+	schemaName string
+	parent     reflect.Type
+}
+
 // fieldErr records a *FieldError for a validate tag problem.
-func (g *Generator) fieldErr(sf reflect.StructField, msg string, err error) {
+func (g *Generator) fieldErr(sf vfield, msg string, err error) {
 	g.error(&FieldError{
 		Message:  msg,
-		Name:     sf.Name,
-		Field:    sf.Name,
+		Name:     sf.schemaName,
+		Field:    sf.StructField.Name,
+		Parent:   sf.parent,
 		Type:     sf.Type,
 		TypeName: g.typeName(sf.Type),
 		Err:      err,
@@ -53,7 +63,7 @@ func (g *Generator) fieldErr(sf reflect.StructField, msg string, err error) {
 
 // applyLevel applies the rules of l to s, which describes a value of
 // type t, then descends into the dive and keys levels.
-func (g *Generator) applyLevel(s *Schema, t reflect.Type, l *vtag.Level, sf reflect.StructField) {
+func (g *Generator) applyLevel(s *Schema, t reflect.Type, l *vtag.Level, sf vfield) {
 	t = derefType(t)
 	for _, grp := range l.Rules {
 		g.applyGroup(s, t, grp, sf)
@@ -95,7 +105,7 @@ func (g *Generator) applyLevel(s *Schema, t reflect.Type, l *vtag.Level, sf refl
 
 // applyElem applies the element level l to cur. The Keys of l were
 // already consumed by the map above.
-func (g *Generator) applyElem(cur *Schema, et reflect.Type, l *vtag.Level, sf reflect.StructField) {
+func (g *Generator) applyElem(cur *Schema, et reflect.Type, l *vtag.Level, sf vfield) {
 	inner := *l
 	inner.Keys = nil
 	g.applyLevel(cur, et, &inner, sf)
@@ -116,7 +126,7 @@ func (g *Generator) useSite(s *Schema) *Schema {
 // applyGroup applies one AND-ed rule group to s. A group of several
 // alternatives (a|b) becomes an anyOf of single-keyword schemas, only
 // if every alternative maps to a keyword; otherwise it is dropped.
-func (g *Generator) applyGroup(s *Schema, t reflect.Type, grp vtag.Group, sf reflect.StructField) {
+func (g *Generator) applyGroup(s *Schema, t reflect.Type, grp vtag.Group, sf vfield) {
 	if len(grp) == 1 {
 		tmp := &Schema{}
 		if g.mapRule(tmp, t, grp[0], sf) {
@@ -143,7 +153,7 @@ func (g *Generator) applyGroup(s *Schema, t reflect.Type, grp vtag.Group, sf ref
 // mapRule translates r, applied to a value of type t, into the
 // keywords of s. It reports whether any keyword was produced. Rules
 // with an invalid parameter are recorded as a *FieldError and dropped.
-func (g *Generator) mapRule(s *Schema, t reflect.Type, r vtag.Rule, sf reflect.StructField) bool {
+func (g *Generator) mapRule(s *Schema, t reflect.Type, r vtag.Rule, sf vfield) bool {
 	k := kindOf(t)
 	fail := func(err error) bool {
 		g.fieldErr(sf, fmt.Sprintf("validate rule %q cannot be applied", ruleString(r)), err)

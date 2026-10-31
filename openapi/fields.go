@@ -2,6 +2,7 @@ package openapi
 
 import (
 	"fmt"
+	"github.com/wI2L/fizz/openapi/internal/vtag"
 	"reflect"
 	"slices"
 	"sort"
@@ -102,7 +103,7 @@ func (g *Generator) fieldSchema(sf reflect.StructField, required bool, fname str
 
 	// Update schema fields related to the JSON Validation
 	// spec based on the content of the validator tag.
-	schema = g.updateSchemaValidation(schema, sf)
+	schema = g.updateSchemaValidation(schema, sf, fname, parent)
 
 	// Allow overidding schema properties that were
 	// auto inferred manually via tags.
@@ -279,22 +280,31 @@ func (g *Generator) newSchemaFromField(f field, required bool, parent reflect.Ty
 	return sor
 }
 
-// isStructFieldRequired returns whether a struct field
-// is required. The information is read from the field
-// tag 'binding'.
+// isStructFieldRequired returns whether a struct field is required,
+// as read from its validate tag: the root level of the tag must have
+// a "required" rule of its own (not an OR group, not under "dive",
+// not "required_if" and the like) and must not be "omitempty".
+//
+// With "omitempty", validator v9 returns from the field as soon as
+// the value is empty and skips every following rule, "required"
+// included (validator.v9 validator.go, traverseField, case
+// typeOmitEmpty). The field is then not required.
+//
+// A malformed tag is not required. The FieldError is recorded by
+// updateSchemaValidation, not here: this function may be called
+// several times for a field.
 func (g *Generator) isStructFieldRequired(sf reflect.StructField) bool {
-	if t, ok := sf.Tag.Lookup(BinderTags.Validate); ok {
-		options := strings.SplitSeq(t, ",")
-		for o := range options {
-			// As soon as we see a 'dive' or 'keys'
-			// options, the following options won't
-			// apply to the given field.
-			if o == "dive" || o == "keys" {
-				return false
-			}
-			if o == "required" {
-				return true
-			}
+	ts := sf.Tag.Get(BinderTags.Validate)
+	if ts == "" {
+		return false
+	}
+	tag, err := vtag.Parse(ts)
+	if err != nil || tag.Skip || tag.Root.OmitEmpty {
+		return false
+	}
+	for _, grp := range tag.Root.Rules {
+		if len(grp) == 1 && grp[0].Name == "required" {
+			return true
 		}
 	}
 	return false
