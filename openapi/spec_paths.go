@@ -46,7 +46,7 @@ type RequestBodyOrRef = OrRef[RequestBody]
 // RequestBody represents a request body.
 type RequestBody struct {
 	Description string                `json:"description,omitempty"`
-	Content     map[string]*MediaType `json:"content"`
+	Content     map[string]*MediaType `json:"content,omitzero"`
 	Required    bool                  `json:"required,omitzero"`
 
 	// Extensions holds the "x-" specification extensions. Keys are

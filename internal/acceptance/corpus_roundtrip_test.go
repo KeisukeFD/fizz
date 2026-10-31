@@ -60,7 +60,5 @@ func TestCorpusEmptySchemaProperties(t *testing.T) {
 
 // A request body without "content" gains "content": null.
 func TestCorpusRequestBodyWithoutContent(t *testing.T) {
-	at.Pending(t, "P10.3f", func(tb testing.TB) {
-		exactRoundTrip[openapi.RequestBody](tb, `{"description":"d"}`)
-	})
+	exactRoundTrip[openapi.RequestBody](t, `{"description":"d"}`)
 }

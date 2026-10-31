@@ -20,11 +20,7 @@ import (
 // that is absent must round-trip exactly. This is never an allowlist: each
 // task is a spec-model bug listed in docs/plan/PLAN-v2.md (P10.3a...), and
 // once the task is in plan.Done its documents must pass.
-var roundTripFixedBy = map[string]string{
-	// request body without "content" gains "content": null.
-	"spectext/base-uri-within-content-1":        "P10.3f",
-	"spectext/resolving-relative-self-and-id-1": "P10.3f",
-}
+var roundTripFixedBy = map[string]string{}
 
 // diffJSON reports the semantic differences between want and got (at most
 // maxDiffs of them), or "" when they are equal. Key order and number
