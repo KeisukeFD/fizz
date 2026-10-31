@@ -5,9 +5,11 @@
             "type": "string"
         },
         "B": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
+            "type": [
+                "integer",
+                "null"
+            ],
+            "format": "int32"
         },
         "C": {
             "type": "boolean",
@@ -42,9 +44,11 @@
             "format": "date"
         },
         "J": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
+            "type": [
+                "integer",
+                "null"
+            ],
+            "format": "int32"
         },
         "K": {
             "type": "object",
@@ -67,24 +71,28 @@
                 }
             }
         },
+        "NI": {
+            "type": [
+                "integer",
+                "null"
+            ],
+            "format": "int32"
+        },
+        "NS": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
         "S": {
             "type": "integer",
             "format": "int32"
         },
-        "nnNnnN":{
-            "type":"string"
-        },
         "data": {
             "$ref": "#/components/schemas/V"
         },
-        "NS": {
-            "nullable": true,
+        "nnNnnN": {
             "type": "string"
-        },
-        "NI" : {
-            "nullable": true,
-            "type": "integer",
-            "format": "int32"
         }
     },
     "required": [

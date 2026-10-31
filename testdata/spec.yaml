@@ -129,7 +129,8 @@ components:
     FizzCustomTime:
       type: object
       description: This is Z
-      example: 2022-02-07T18:00:00
+      examples:
+        - 2022-02-07T18:00:00
     FizzT:
       type: object
       properties:
@@ -150,7 +151,6 @@ components:
           description: "A short message"
         value:
           description: "A nullable value of arbitrary type"
-          nullable: true
   securitySchemes:
     api_key:
       type: apiKey

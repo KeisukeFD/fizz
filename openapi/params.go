@@ -33,9 +33,7 @@ func (g *Generator) setOperationParams(op *Operation, t, parent reflect.Type, al
 		if sch != nil {
 			name := strings.Title(op.ID) + "Input"
 			g.api.Components.Schemas[name] = sch
-			op.RequestBody.Content[mt].Schema = &SchemaOrRef{Reference: &Reference{
-				Ref: componentsSchemaPath + name,
-			}}
+			op.RequestBody.Content[mt].Schema = &Schema{Ref: componentsSchemaPath + name}
 		}
 	}
 	// Extract all the path parameter names.
@@ -184,14 +182,14 @@ func (g *Generator) addStructFieldToOperation(op *Operation, t reflect.Type, idx
 		// have been added yet.
 		if _, ok := op.RequestBody.Content[mt]; !ok {
 			schema = &Schema{
-				Type:       "object",
-				Properties: make(map[string]*SchemaOrRef),
+				Type:       Types("object"),
+				Properties: make(map[string]*Schema),
 			}
 			op.RequestBody.Content[mt] = &MediaType{
-				Schema: &SchemaOrRef{Schema: schema},
+				Schema: schema,
 			}
 		} else {
-			schema = op.RequestBody.Content[mt].Schema.Schema
+			schema = op.RequestBody.Content[mt].Schema
 		}
 		fname := fieldNameFromTag(sf, mediaTags[g.mediaType()])
 

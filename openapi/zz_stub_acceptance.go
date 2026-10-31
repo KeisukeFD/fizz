@@ -14,10 +14,6 @@ import (
 // FixedBy: P2.6
 const Version = ""
 
-// TypeSet is a stub type.
-// FixedBy: P2.2
-type TypeSet []string
-
 // OrRef is a stub type.
 // FixedBy: P2.1a
 type OrRef[T any] struct {
@@ -28,13 +24,6 @@ type OrRef[T any] struct {
 // ErrNilOrRef is a stub.
 // FixedBy: P2.1a
 var ErrNilOrRef = errors.New("stub: P2.1a")
-
-// ExternalDocs is a stub type.
-// FixedBy: P2.1b
-type ExternalDocs struct {
-	Description string
-	URL         string
-}
 
 // ErrInvalidExtensionKey is a stub.
 // FixedBy: P2.3

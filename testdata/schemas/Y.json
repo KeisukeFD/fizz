@@ -10,9 +10,11 @@
             "format": "date"
         },
         "J": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
+            "type": [
+                "integer",
+                "null"
+            ],
+            "format": "int32"
         },
         "K": {
             "type": "object",

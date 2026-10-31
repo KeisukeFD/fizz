@@ -70,6 +70,13 @@ O3, O5–O15, O17–O30 and O32–O36 are adopted as proposed in ACCEPTANCE §5.
 - **Docs UI naming (O1 user decision).** The router-agnostic constructors are `docsui.SwaggerUI` and `docsui.ScalarUI`, and `embedded.SwaggerUI` and `embedded.ScalarUI`. PLAN-v2 P8.1's `docsui.Scalar` is superseded.
 - **UUID types (P1.2).** Go 1.27 ships a standard-library `uuid` package (#62026). `openapi` recognises `uuid.UUID`, gofrs (`/v5` included) and google UUIDs by `PkgPath()+Name()`, and imports no third-party uuid module. The placeholder operation ID is `""`.
 - **Path translation split (P1.3 / P4.3).** P1.3 moves gin→OpenAPI path translation into the root package (`path.go`) and translates only `:name` → `{name}`, which keeps output byte-identical. `*name` wildcards are translated in P4.3, together with their description note.
+- **Phase 2 intermediate states (P2.2–P2.5).** Every Phase 2 task is its own commit and must stay green: build, vet, `-race`, `FIZZ_STALE=fail`, both builds. The plan's file lists cover only the model, but changing a model type breaks the generator's literals. So each task also makes the **minimal mechanical** generator edits needed to compile, pulling P2.6's renames forward:
+  - Constructs that no longer exist are emitted in their nearest 3.2 form. Where the old generator set `nullable: true`, it now calls `MakeNullable()`, which emits `type: [T, "null"]` on inline schemas under the same conditions as before. P3.5 adds `$ref` nullability (`anyOf`) and the `PointersAreNullable` option. `example` → `examples:[v]`. A 3.0 boolean `exclusiveMinimum`/`exclusiveMaximum` becomes the numeric 3.1 form.
+  - Goldens (`testdata/spec.*` and the legacy golden) are regenerated in the same commit, and Opus reviews the diff (G-GOLD). The legacy golden stays as a change log until P2.6 deletes it.
+  - YAML may differ transiently until P2.5 (for example, `json.Number` quoted by yaml.v2). JSON is authoritative.
+  - A kitchen-sink or acceptance case that starts passing early has its FixedBy relabelled to the task that made it pass (precedent: O34).
+  - Until P2.3, the model is encoded with `encoding/json` v1 (`omitzero` is supported since Go 1.24).
+- **`ExternalDocs` ownership.** `Schema.ExternalDocs` (P2.2) needs the type, so `openapi.ExternalDocs` lands in **P2.2**, not P2.1b.
 - **Binary size of `fizz.Embedded*UI`.** These make the root package import `docsui/embedded`. P8.3 must show (a test or a documented measurement) that a binary that does not call them carries no assets, because the linker drops the unreferenced `embed.FS`. If that does not hold, the selectors move to `docsui/embedded` and O1 goes back to the user.
 
 ## 5. Stub strategy (ACCEPTANCE §2, rule 2)
@@ -133,7 +140,7 @@ Each row is a stub until its task lands. Signatures are binding. A task that nee
 | `type TypeSet []string` | P2.2 |
 | `type OrRef[T any] struct{ Ref *Reference; Value *T }` | P2.1a |
 | `var ErrNilOrRef` | P2.1a |
-| `type ExternalDocs struct{ Description, URL string }` | P2.1b |
+| `type ExternalDocs struct{ Description, URL string }` | P2.2 |
 | `var ErrInvalidExtensionKey`, `var ErrReservedExtension` | P2.3 |
 | `SetExtension(key string, value any) error` on `OpenAPI`, `Info`, `Contact`, `License`, `Server`, `ServerVariable`, `Components`, `PathItem`, `Operation`, `Parameter`, `RequestBody`, `MediaType`, `Encoding`, `Response`, `Header`, `Example`, `Tag`, `Schema`, `SecurityScheme`, `OAuthFlows`, `OAuthFlow`, `ExternalDocs` | P2.3 |
 | `MarshalJSON(doc *OpenAPI) ([]byte, error)` | P2.3 |

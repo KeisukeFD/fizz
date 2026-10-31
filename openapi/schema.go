@@ -7,7 +7,7 @@ import (
 
 // newSchemaFromType creates a new OpenAPI schema from
 // the given reflect type.
-func (g *Generator) newSchemaFromType(t reflect.Type) *SchemaOrRef {
+func (g *Generator) newSchemaFromType(t reflect.Type) *Schema {
 	if t == nil {
 		return nil
 	}
@@ -41,24 +41,23 @@ func (g *Generator) newSchemaFromType(t reflect.Type) *SchemaOrRef {
 		}
 	}
 	if dt == TypeAny {
-		return &SchemaOrRef{
-			Schema: &Schema{
-				Nullable:    true,
-				Description: "Value of any type, including null",
-			},
+		return &Schema{
+			Description: "Value of any type, including null",
 		}
 	}
 	schema := &Schema{
-		Type:     dt.Type(),
-		Format:   dt.Format(),
-		Nullable: nullable,
+		Type:   typeSetOf(dt.Type()),
+		Format: dt.Format(),
 	}
-	return &SchemaOrRef{Schema: schema}
+	if nullable {
+		schema.MakeNullable()
+	}
+	return schema
 }
 
 // buildSchemaRecursive recursively decomposes the complex
 // type t into subsequent schemas.
-func (g *Generator) buildSchemaRecursive(t reflect.Type) *SchemaOrRef {
+func (g *Generator) buildSchemaRecursive(t reflect.Type) *Schema {
 	schema := &Schema{}
 
 	switch t.Kind() {
@@ -70,7 +69,7 @@ func (g *Generator) buildSchemaRecursive(t reflect.Type) *SchemaOrRef {
 		// Map type is considered as a type "object"
 		// and should declare underlying items type
 		// in additional properties field.
-		schema.Type = "object"
+		schema.Type = Types("object")
 
 		// JSON Schema allow only strings as object key.
 		if t.Key().Kind() != reflect.String {
@@ -85,24 +84,24 @@ func (g *Generator) buildSchemaRecursive(t reflect.Type) *SchemaOrRef {
 		// Slice/Array types are considered as a type
 		// "array" and should declare underlying items
 		// type in items field.
-		schema.Type = "array"
+		schema.Type = Types("array")
 
 		// Go arrays have fixed size.
 		if t.Kind() == reflect.Array {
-			schema.MinItems = t.Len()
-			schema.MaxItems = t.Len()
+			schema.MinItems = u64(uint64(t.Len()))
+			schema.MaxItems = u64(uint64(t.Len()))
 		}
 		schema.Items = g.buildSchemaRecursive(t.Elem())
 	default:
 		dt := g.datatype(t)
-		schema.Type, schema.Format = dt.Type(), dt.Format()
+		schema.Type, schema.Format = typeSetOf(dt.Type()), dt.Format()
 	}
-	return &SchemaOrRef{Schema: schema}
+	return schema
 }
 
 // structSchema returns an OpenAPI schema that describe
 // the Go struct represented by the type t.
-func (g *Generator) newSchemaFromStruct(t reflect.Type) *SchemaOrRef {
+func (g *Generator) newSchemaFromStruct(t reflect.Type) *Schema {
 	if t.Kind() != reflect.Struct {
 		return nil
 	}
@@ -113,13 +112,11 @@ func (g *Generator) newSchemaFromStruct(t reflect.Type) *SchemaOrRef {
 	// We're not returning directly a reference from the components,
 	// because there is no guarantee the generation is complete yet.
 	if _, ok := g.schemaTypes[t]; ok {
-		return &SchemaOrRef{Reference: &Reference{
-			Ref: componentsSchemaPath + name,
-		}}
+		return &Schema{Ref: componentsSchemaPath + name}
 	}
 	schema := &Schema{
-		Type:       "object",
-		Properties: make(map[string]*SchemaOrRef),
+		Type:       Types("object"),
+		Properties: make(map[string]*Schema),
 	}
 	// Register the type once before diving into
 	// the recursive hole if it has a name. Anonymous
@@ -129,7 +126,7 @@ func (g *Generator) newSchemaFromStruct(t reflect.Type) *SchemaOrRef {
 	}
 	schema = g.flattenStructSchema(t, t, schema)
 
-	sor := &SchemaOrRef{Schema: schema}
+	sor := schema
 
 	// Register the schema within the speccomponents and return a
 	// relative reference. Unnamed types, like anonymous structs,
@@ -137,9 +134,7 @@ func (g *Generator) newSchemaFromStruct(t reflect.Type) *SchemaOrRef {
 	if name != "" {
 		g.api.Components.Schemas[name] = sor
 
-		return &SchemaOrRef{Reference: &Reference{
-			Ref: componentsSchemaPath + name,
-		}}
+		return &Schema{Ref: componentsSchemaPath + name}
 	}
 	// Return an inlined schema for types with no name.
 	return sor
@@ -147,12 +142,12 @@ func (g *Generator) newSchemaFromStruct(t reflect.Type) *SchemaOrRef {
 
 // resolveSchema returns either the inlined schema
 // in s or the one referenced in the API components.
-func (g *Generator) resolveSchema(s *SchemaOrRef) *Schema {
-	if s.Schema != nil && s.Reference == nil {
-		return s.Schema
+func (g *Generator) resolveSchema(s *Schema) *Schema {
+	if s.Ref == "" {
+		return s
 	}
-	if s.Reference != nil {
-		parts := strings.Split(s.Reference.Ref, "/")
+	{
+		parts := strings.Split(s.Ref, "/")
 		if len(parts) == 4 {
 			if parts[0] == "#" && // relative ref
 				parts[1] == "components" &&
@@ -160,11 +155,19 @@ func (g *Generator) resolveSchema(s *SchemaOrRef) *Schema {
 				parts[3] != "" {
 				ref, ok := g.api.Components.Schemas[parts[3]]
 				if ok && ref != nil {
-					return ref.Schema
+					return ref
 				}
 				return nil
 			}
 		}
 	}
 	return nil
+}
+
+// typeSetOf returns a TypeSet holding t, or nil if t is empty.
+func typeSetOf(t string) TypeSet {
+	if t == "" {
+		return nil
+	}
+	return Types(t)
 }

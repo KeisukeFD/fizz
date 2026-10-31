@@ -10,7 +10,7 @@ import (
 
 // newSchemaFromStructField returns a new Schema builded
 // from the field's type and its tags.
-func (g *Generator) newSchemaFromStructField(sf reflect.StructField, required bool, fname string, parent reflect.Type) *SchemaOrRef {
+func (g *Generator) newSchemaFromStructField(sf reflect.StructField, required bool, fname string, parent reflect.Type) *Schema {
 	sor := g.newSchemaFromType(sf.Type)
 	if sor == nil {
 		return nil
@@ -54,7 +54,7 @@ func (g *Generator) newSchemaFromStructField(sf reflect.StructField, required bo
 	// parameter is an array, instead of the parameter schema.
 	enum := g.enumFromStructField(sf, fname, parent)
 
-	if schema.Type == "array" && schema.Items != nil {
+	if len(schema.Type) == 1 && schema.Type[0] == "array" && schema.Items != nil {
 		itemsSchema := g.resolveSchema(schema.Items)
 		if itemsSchema != nil {
 			itemsSchema.Enum = enum
@@ -91,7 +91,7 @@ func (g *Generator) newSchemaFromStructField(sf reflect.StructField, required bo
 				Parent:   parent,
 			})
 		} else {
-			schema.Example = parsed
+			schema.Examples = []any{parsed}
 		}
 	}
 

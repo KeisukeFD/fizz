@@ -50,7 +50,7 @@ func NewGenerator(conf *SpecGenConfig) (*Generator, error) {
 		return nil, errors.New("missing config")
 	}
 	components := &Components{
-		Schemas:    make(map[string]*SchemaOrRef),
+		Schemas:    make(map[string]*Schema),
 		Responses:  make(map[string]*ResponseOrRef),
 		Parameters: make(map[string]*ParameterOrRef),
 		Headers:    make(map[string]*HeaderOrRef),

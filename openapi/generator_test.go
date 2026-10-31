@@ -138,12 +138,11 @@ func TestSchemaFromPrimitiveType(t *testing.T) {
 
 	// Ensure it is an inlined schema before
 	// accessing properties for assertions.
-	if schema.Schema == nil {
+	if schema.Ref != "" {
 		t.Error("expected an inlined schema, got a schema reference")
 	}
-	assert.Equal(t, "integer", schema.Type)
+	assert.Equal(t, Types("integer", "null"), schema.Type)
 	assert.Equal(t, "int64", schema.Format)
-	assert.True(t, schema.Nullable)
 }
 
 // TestSchemaFromInterface tests that a schema
@@ -156,7 +155,6 @@ func TestSchemaFromInterface(t *testing.T) {
 	assert.NotNil(t, schema)
 	assert.Empty(t, schema.Type)
 	assert.Empty(t, schema.Format)
-	assert.True(t, schema.Nullable)
 	assert.NotEmpty(t, schema.Description)
 }
 
@@ -257,52 +255,52 @@ func TestNewSchemaFromStructFieldExampleValues(t *testing.T) {
 	// Field A contains string example.
 	sor := g.newSchemaFromStructField(typ.Field(0), false, "A", typ)
 	assert.NotNil(t, sor)
-	assert.Equal(t, "value", sor.Example)
+	assert.Equal(t, []any{"value"}, sor.Examples)
 
 	// Field APtr contains pointer to string example.
 	sor = g.newSchemaFromStructField(typ.Field(1), false, "APtr", typ)
 	assert.NotNil(t, sor)
-	assert.Equal(t, "value", sor.Example)
+	assert.Equal(t, []any{"value"}, sor.Examples)
 
 	// Field B contains int example.
 	sor = g.newSchemaFromStructField(typ.Field(2), false, "B", typ)
 	assert.NotNil(t, sor)
-	assert.Equal(t, int64(1), sor.Example)
+	assert.Equal(t, []any{int64(1)}, sor.Examples)
 
 	// Field BPtr contains pointer to int example.
 	sor = g.newSchemaFromStructField(typ.Field(3), false, "BPtr", typ)
 	assert.NotNil(t, sor)
-	assert.Equal(t, int64(1), sor.Example)
+	assert.Equal(t, []any{int64(1)}, sor.Examples)
 
 	// Field C contains float example.
 	sor = g.newSchemaFromStructField(typ.Field(4), false, "C", typ)
 	assert.NotNil(t, sor)
-	assert.Equal(t, 0.1, sor.Example)
+	assert.Equal(t, []any{0.1}, sor.Examples)
 
 	// Field CPtr contains pointer to float example.
 	sor = g.newSchemaFromStructField(typ.Field(5), false, "CPtr", typ)
 	assert.NotNil(t, sor)
-	assert.Equal(t, 0.1, sor.Example)
+	assert.Equal(t, []any{0.1}, sor.Examples)
 
 	// Field D contains boolean example.
 	sor = g.newSchemaFromStructField(typ.Field(6), false, "D", typ)
 	assert.NotNil(t, sor)
-	assert.Equal(t, true, sor.Example)
+	assert.Equal(t, []any{true}, sor.Examples)
 
 	// Field DPtr contains pointer to boolean example.
 	sor = g.newSchemaFromStructField(typ.Field(7), false, "DPtr", typ)
 	assert.NotNil(t, sor)
-	assert.Equal(t, true, sor.Example)
+	assert.Equal(t, []any{true}, sor.Examples)
 
 	// Field EPtr contains a double-pointer to boolean example.
 	sor = g.newSchemaFromStructField(typ.Field(8), false, "EPtr", typ)
 	assert.NotNil(t, sor)
-	assert.Equal(t, false, sor.Example)
+	assert.Equal(t, []any{false}, sor.Examples)
 
 	// Field FPtr contains a triple-pointer to uint16 value example.
 	sor = g.newSchemaFromStructField(typ.Field(9), false, "FPtr", typ)
 	assert.NotNil(t, sor)
-	assert.Equal(t, uint16(128), sor.Example)
+	assert.Equal(t, []any{uint16(128)}, sor.Examples)
 }
 
 // TestNewSchemaFromStructFieldErrors tests the errors
@@ -367,7 +365,7 @@ func TestNewSchemaFromStructFieldFormat(t *testing.T) {
 	assert.Len(t, g.Errors(), 1)
 	assert.Implements(t, (*error)(nil), g.Errors()[0])
 	assert.NotEmpty(t, g.Errors()[0].Error())
-	assert.Equal(t, sor.Schema.Format, "email")
+	assert.Equal(t, sor.Format, "email")
 }
 
 func TestNewSchemaFromEnumField(t *testing.T) {
@@ -736,7 +734,7 @@ func TestOverrideSchema(t *testing.T) {
 	schema := g.resolveSchema(sor)
 	assert.NotNil(t, schema)
 
-	assert.Equal(t, "string", schema.Type)
+	assert.Equal(t, Types("string"), schema.Type)
 	assert.Equal(t, "wallet", schema.Format)
 }
 

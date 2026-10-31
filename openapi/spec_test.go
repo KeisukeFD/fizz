@@ -12,7 +12,6 @@ func TestYAMLMarshalingRefs(t *testing.T) {
 	// tests for references.
 	tests := []any{
 		&ParameterOrRef{Reference: &Reference{Ref: ""}},
-		&SchemaOrRef{Reference: &Reference{Ref: ""}},
 		&ResponseOrRef{Reference: &Reference{Ref: ""}},
 		&HeaderOrRef{Reference: &Reference{Ref: ""}},
 		&MediaTypeOrRef{Reference: &Reference{Ref: ""}},
@@ -42,7 +41,6 @@ func TestYAMLMarshalingTypes(t *testing.T) {
 	// tests for types.
 	tests := map[any]any{
 		&ParameterOrRef{Parameter: new(Parameter)}: &Parameter{},
-		&SchemaOrRef{Schema: new(Schema)}:          &Schema{},
 		&ResponseOrRef{Response: new(Response)}:    &Response{},
 		&HeaderOrRef{Header: new(Header)}:          &Header{},
 		&MediaTypeOrRef{MediaType: new(MediaType)}: &MediaType{},

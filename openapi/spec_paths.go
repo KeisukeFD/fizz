@@ -11,15 +11,15 @@ type Reference struct {
 
 // Parameter describes a single operation parameter.
 type Parameter struct {
-	Name            string       `json:"name" yaml:"name"`
-	In              string       `json:"in" yaml:"in"`
-	Description     string       `json:"description,omitempty" yaml:"description,omitempty"`
-	Required        bool         `json:"required,omitempty" yaml:"required,omitempty"`
-	Deprecated      bool         `json:"deprecated,omitempty" yaml:"deprecated,omitempty"`
-	AllowEmptyValue bool         `json:"allowEmptyValue,omitempty" yaml:"allowEmptyValue,omitempty"`
-	Schema          *SchemaOrRef `json:"schema,omitempty" yaml:"schema,omitempty"`
-	Style           string       `json:"style,omitempty" yaml:"style,omitempty"`
-	Explode         bool         `json:"explode,omitempty" yaml:"explode,omitempty"`
+	Name            string  `json:"name" yaml:"name"`
+	In              string  `json:"in" yaml:"in"`
+	Description     string  `json:"description,omitempty" yaml:"description,omitempty"`
+	Required        bool    `json:"required,omitempty" yaml:"required,omitempty"`
+	Deprecated      bool    `json:"deprecated,omitempty" yaml:"deprecated,omitempty"`
+	AllowEmptyValue bool    `json:"allowEmptyValue,omitempty" yaml:"allowEmptyValue,omitempty"`
+	Schema          *Schema `json:"schema,omitempty" yaml:"schema,omitempty"`
+	Style           string  `json:"style,omitempty" yaml:"style,omitempty"`
+	Explode         bool    `json:"explode,omitempty" yaml:"explode,omitempty"`
 }
 
 // ParameterOrRef represents a Parameter that can be inlined
@@ -153,11 +153,11 @@ func (hor *HeaderOrRef) MarshalYAML() (any, error) {
 
 // Header represents an HTTP header.
 type Header struct {
-	Description     string       `json:"description,omitempty" yaml:"description,omitempty"`
-	Required        bool         `json:"required,omitempty" yaml:"required,omitempty"`
-	Deprecated      bool         `json:"deprecated,omitempty" yaml:"deprecated,omitempty"`
-	AllowEmptyValue bool         `json:"allowEmptyValue,omitempty" yaml:"allowEmptyValue,omitempty"`
-	Schema          *SchemaOrRef `json:"schema,omitempty" yaml:"schema,omitempty"`
+	Description     string  `json:"description,omitempty" yaml:"description,omitempty"`
+	Required        bool    `json:"required,omitempty" yaml:"required,omitempty"`
+	Deprecated      bool    `json:"deprecated,omitempty" yaml:"deprecated,omitempty"`
+	AllowEmptyValue bool    `json:"allowEmptyValue,omitempty" yaml:"allowEmptyValue,omitempty"`
+	Schema          *Schema `json:"schema,omitempty" yaml:"schema,omitempty"`
 }
 
 // MediaTypeOrRef represents a MediaType that can be inlined
@@ -177,7 +177,7 @@ func (mtor *MediaTypeOrRef) MarshalYAML() (any, error) {
 
 // MediaType represents the type of a media.
 type MediaType struct {
-	Schema   *SchemaOrRef             `json:"schema" yaml:"schema"`
+	Schema   *Schema                  `json:"schema" yaml:"schema"`
 	Example  any                      `json:"example,omitempty" yaml:"example,omitempty"`
 	Examples map[string]*ExampleOrRef `json:"examples,omitempty" yaml:"examples,omitempty"`
 	Encoding map[string]*Encoding     `json:"encoding,omitempty" yaml:"encoding,omitempty"`

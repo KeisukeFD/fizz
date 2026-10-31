@@ -8,18 +8,18 @@ import (
 // schema field based on the given type.
 func setSchemaMax(schema *Schema, max int, t reflect.Type) {
 	if isNumber(t) {
-		schema.Maximum = max
+		schema.Maximum = Num(max)
 	} else if isString(t) {
 		if max >= 0 {
-			schema.MaxLength = max
+			schema.MaxLength = u64(uint64(max))
 		}
 	} else if isMap(t) {
 		if max >= 0 {
-			schema.MaxProperties = max
+			schema.MaxProperties = u64(uint64(max))
 		}
 	} else if t.Kind() == reflect.Slice {
 		if max >= 0 {
-			schema.MaxItems = max
+			schema.MaxItems = u64(uint64(max))
 		}
 	}
 }
@@ -28,18 +28,18 @@ func setSchemaMax(schema *Schema, max int, t reflect.Type) {
 // schema field based on the given type.
 func setSchemaMin(schema *Schema, min int, t reflect.Type) {
 	if isNumber(t) {
-		schema.Minimum = min
+		schema.Minimum = Num(min)
 	} else if isString(t) {
 		if min >= 0 {
-			schema.MinLength = min
+			schema.MinLength = u64(uint64(min))
 		}
 	} else if isMap(t) {
 		if min >= 0 {
-			schema.MinProperties = min
+			schema.MinProperties = u64(uint64(min))
 		}
 	} else if t.Kind() == reflect.Slice {
 		if min >= 0 {
-			schema.MinItems = min
+			schema.MinItems = u64(uint64(min))
 		}
 	}
 }

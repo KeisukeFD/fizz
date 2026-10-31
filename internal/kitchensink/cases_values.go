@@ -217,7 +217,7 @@ func init() {
 				{Pointer: vProp("VExample", "n") + "/examples", JSON: `[7]`},
 				{Pointer: vProp("VExample", "s") + "/example", Absent: true},
 			},
-			FixedBy: "P3.6",
+			FixedBy: "P2.2",
 		},
 		Case{
 			Name:     "validate/min-zero-and-decimal",

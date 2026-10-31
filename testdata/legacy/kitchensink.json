@@ -294,8 +294,10 @@
                         "minLength": 1
                     },
                     "nickname": {
-                        "type": "string",
-                        "nullable": true
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "owner": {
                         "$ref": "#/components/schemas/KitchensinkLegacyAddress"
@@ -308,7 +310,8 @@
                     },
                     "weight": {
                         "type": "number",
-                        "format": "double"
+                        "format": "double",
+                        "minimum": 0
                     }
                 },
                 "required": [

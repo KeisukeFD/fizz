@@ -21,17 +21,6 @@
                 }
             }
         }
-    ],    
-    "security": [
-        {
-            "api_key": []
-        },
-        {
-            "oauth2": [
-                "write:pets",
-                "read:pets"
-            ]
-        }
     ],
     "paths": {
         "/test/{a}": {
@@ -60,10 +49,10 @@
                                 }
                             }
                         },
-                        "content":{
-                            "application/json":{
-                                "schema":{
-                                    "$ref":"#/components/schemas/FizzT"
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FizzT"
                                 }
                             }
                         }
@@ -118,6 +107,7 @@
                     }
                 },
                 "deprecated": true,
+                "security": [],
                 "x-codeSamples": [
                     {
                         "lang": "Shell",
@@ -125,7 +115,6 @@
                         "source": "curl http://0.0.0.0:8080"
                     }
                 ],
-                "security": [],
                 "x-internal": true
             }
         },
@@ -206,25 +195,27 @@
     },
     "components": {
         "schemas": {
-            "FizzCustomTime":{
-                "type":"object",
-                "description":"This is Z",
-                "example": "2022-02-07T18:00:00"
+            "FizzCustomTime": {
+                "type": "object",
+                "description": "This is Z",
+                "examples": [
+                    "2022-02-07T18:00:00"
+                ]
             },
-            "FizzT":{
-                "type":"object",
-                "properties":{
-                    "x":{
-                        "type":"string",
-                        "description":"This is X"
+            "FizzT": {
+                "type": "object",
+                "properties": {
+                    "x": {
+                        "type": "string",
+                        "description": "This is X"
                     },
-                    "y":{
-                        "type":"integer",
-                        "description":"This is Y",
-                        "format":"int32"
+                    "y": {
+                        "type": "integer",
+                        "description": "This is Y",
+                        "format": "int32"
                     },
-                    "z":{
-                        "$ref":"#/components/schemas/FizzCustomTime"
+                    "z": {
+                        "$ref": "#/components/schemas/FizzCustomTime"
                     }
                 }
             },
@@ -236,8 +227,7 @@
                         "description": "A short message"
                     },
                     "value": {
-                        "description": "A nullable value of arbitrary type",
-                        "nullable": true
+                        "description": "A nullable value of arbitrary type"
                     }
                 }
             }
@@ -245,8 +235,8 @@
         "securitySchemes": {
             "api_key": {
                 "type": "apiKey",
-                "name": "api_key",
-                "in": "header"
+                "in": "header",
+                "name": "api_key"
             },
             "oauth2": {
                 "type": "oauth2",
@@ -254,12 +244,23 @@
                     "implicit": {
                         "authorizationUrl": "https://example.com/api/oauth/dialog",
                         "scopes": {
-                            "write:pets": "modify pets in your account",
-                            "read:pets": "read your pets"
+                            "read:pets": "read your pets",
+                            "write:pets": "modify pets in your account"
                         }
                     }
                 }
             }
         }
-    }
+    },
+    "security": [
+        {
+            "api_key": []
+        },
+        {
+            "oauth2": [
+                "write:pets",
+                "read:pets"
+            ]
+        }
+    ]
 }

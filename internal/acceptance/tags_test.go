@@ -397,7 +397,7 @@ func TestLegacyInterfacesKept(t *testing.T) {
 		t.Errorf("Nullable() not honored: %v", n)
 	}
 	// Exampler parses the example tag.
-	if !bytes.Contains(doc, []byte(`"example":"parsed:zz"`)) {
+	if !bytes.Contains(doc, []byte(`"examples":["parsed:zz"]`)) {
 		t.Errorf("Exampler result not in the document")
 	}
 }

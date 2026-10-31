@@ -81,10 +81,10 @@ func (g *Generator) setOperationResponse(op *Operation, t reflect.Type, code, mt
 	// Assign headers.
 	for _, h := range headers {
 		if h != nil {
-			var sor *SchemaOrRef
+			var sor *Schema
 			if h.Model == nil {
 				// default to string if no type is given.
-				sor = &SchemaOrRef{Schema: &Schema{Type: "string"}}
+				sor = &Schema{Type: Types("string")}
 			} else {
 				sor = g.newSchemaFromType(reflect.TypeOf(h.Model))
 			}
