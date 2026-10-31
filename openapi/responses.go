@@ -129,13 +129,36 @@ func (g *Generator) setOperationResponse(op *Operation, where string, t reflect.
 			} else {
 				sor = g.newSchemaFromModel(reflect.TypeOf(h.Model))
 			}
+			// Header examples that do not encode as JSON are reported
+			// and dropped, like those of the body.
+			hExample := h.Example
+			if hExample != nil {
+				if err := jsonEncodable(hExample); err != nil {
+					g.error(fmt.Errorf("%sresponse %s: header %q: example dropped, it is not JSON-encodable: %w", prefix, code, h.Name, err))
+					hExample = nil
+				}
+			}
+			hExamples := h.Examples
+			if len(hExamples) > 0 {
+				hExamples = make(map[string]*ExampleOrRef, len(h.Examples))
+				for name, e := range h.Examples {
+					if err := jsonEncodable(e); err != nil {
+						g.error(fmt.Errorf("%sresponse %s: header %q: example %q dropped, it is not JSON-encodable: %w", prefix, code, h.Name, name, err))
+						continue
+					}
+					hExamples[name] = e
+				}
+				if len(hExamples) == 0 {
+					hExamples = nil
+				}
+			}
 			r.Headers[h.Name] = &HeaderOrRef{Value: &Header{
 				Description: h.Description,
 				Required:    h.Required,
 				Deprecated:  h.Deprecated,
 				Schema:      sor,
-				Example:     h.Example,
-				Examples:    h.Examples,
+				Example:     hExample,
+				Examples:    hExamples,
 			}}
 		}
 	}

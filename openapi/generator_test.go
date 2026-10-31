@@ -1048,3 +1048,35 @@ func TestUnencodableTagExampleDropped(t *testing.T) {
 	assert.Empty(t, sc.Properties["v"].Examples)
 	assert.Equal(t, []any{1.5}, sc.Properties["w"].Examples)
 }
+
+// TestUnencodableHeaderExamplesDropped tests that response header
+// examples that cannot be encoded as JSON are recorded in Errors() and
+// dropped, like the examples of the body.
+func TestUnencodableHeaderExamplesDropped(t *testing.T) {
+	g := gen(t)
+	op := &Operation{Responses: make(Responses)}
+
+	headers := []*ResponseHeader{
+		{Name: "X-One", Example: math.NaN()},
+		{Name: "X-Two", Examples: map[string]*ExampleOrRef{
+			"bad": {Value: &Example{Value: math.NaN()}},
+			"ok":  {Value: &Example{Value: "fine"}},
+		}},
+	}
+	err := g.setOperationResponse(op, "GET /h", reflect.TypeFor[*string](), "200", "application/json", "", headers, nil, nil)
+	assert.NoError(t, err)
+	hs := op.Responses["200"].Value.Headers
+	assert.Nil(t, hs["X-One"].Value.Example)
+	assert.Len(t, hs["X-Two"].Value.Examples, 1)
+	assert.Contains(t, hs["X-Two"].Value.Examples, "ok")
+	assert.Len(t, g.Errors(), 2)
+	for _, e := range g.Errors() {
+		assert.Contains(t, e.Error(), "GET /h")
+		assert.Contains(t, e.Error(), "response 200")
+		assert.Contains(t, e.Error(), "not JSON-encodable")
+	}
+
+	// The document still encodes.
+	_, err = MarshalJSON(g.API())
+	assert.NoError(t, err)
+}
