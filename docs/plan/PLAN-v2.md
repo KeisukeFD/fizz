@@ -821,7 +821,7 @@ Rules for every task:
 - A small client reads a served spec. For each operation it serializes sample values (from example, default, enum, or else type) for every parameter, following the documented `style`/`explode`: form, simple, spaceDelimited, pipeDelimited, deepObject, cookie. It sends the request, and an echo handler asserts that the bound Go value equals the sent value.
 - Runs against the kitchen-sink fixture, `examples/market` and the P10.5 apps.
 - This catches doc/runtime drift (review findings 1, 4, 6).
-- Red first: `TestContractKitchenSink`, `TestContractMarket`, `TestContractRepro`.
+- Red first: `TestContractFixture` (the dedicated contract fixture), `TestContractMarket`, `TestContractRepro`.
 
 **P10.7 Fix the open review findings** (each one is red first in P10.2/P10.6 or as a kitchen-sink case, one commit per item):
 - **P10.7a** `mergeParameter`: an option's Content replaces the Schema (and vice versa). `applyParameters` rejects an invalid `In` with an op error.
@@ -832,6 +832,11 @@ Rules for every task:
 - **P10.7f** Reserved header param names (Accept, Content-Type, Authorization): op warning that points to security schemes / content.
 - **P10.7g** Carried over from earlier: duplicate path+method is silently overwritten (→ op error); `RegisterRequestBody` with nil Content emits `content: null` (→ error).
 - **P10.7h** Equivalent path templates. Routes that differ only in variable names (e.g. `GET /test/:a` + `POST /test/:c`, which gin accepts per method) produce two path keys that OAS forbids. P10.4 found it in the root fixture. Record an op error naming both routes. Red first: a kitchen-sink case.
+- **P10.7i** Optional header parameter that is absent. tonic's `extractHeader` returns one empty value instead of none, so an optional integer, number or boolean header fails with a 400 (`ParseInt: parsing ""`), an optional enum header fails the enum check, and a `default` tag on a header is never applied (the field stays zero). The document says all of these are optional. Red first: `TestContractFixture/headerscalars/required_only`, `headerenum/required_only`, `defaults/header_X-Lang_default` (FixedBy P10.7i).
+- **P10.7j** `spaceDelimited` / `pipeDelimited` query arrays are documented (`explode: false`), but tonic splits on `,` only, so `?space=a%20b` binds `["a b"]`. Fix in the bind hook (split on the delimiter) or reject the style at generation. Red first: `TestContractFixture/arrays/query_space`, `query_pipe`.
+- **P10.7k** `label` and `matrix` path parameters are documented, but tonic binds `c.Param` as is, so `/label/.s1` binds `".s1"` and `/matrix/;pm=s1` binds `";pm=s1"`. Fix in the bind hook (strip the delimiter and name) or reject the styles. Red first: `TestContractFixture/label`, `matrix`.
+- **P10.7l** A slice path parameter is documented as `simple` (comma-separated), but tonic does not split it (`/patharr/s1,s2` binds `["s1,s2"]`). Same remedy as P10.7e for headers: split in the bind hook, or make it a generation error. Red first: `TestContractFixture/patharr`.
+- **P10.7m** A `form` cookie (the default style) is documented as percent-encoded, but the bind hook keeps the raw value (`a%20b` stays `a%20b`; B24 chose this). Either document `style: cookie` (no encoding) or decode. Red first: `TestContractFixture/special/cookie_csp`.
 
 **P10.8 Second validator (below the line).** S · Haiku (check whether any Go or CLI validator supports 3.2 at that time) + Sonnet
 - Only if one exists: cross-check the corpus and all goldens in a test-only module (`tools/` or `internal/conformance/x/`), so the library go.mod stays unchanged.

@@ -75,6 +75,7 @@ var Done = map[string]bool{
 	"P10.5a": true,
 	"P10.5b": true,
 	"P10.5c": true,
+	"P10.6":  true,
 }
 
 // IsDone reports whether task is in the done ledger. A composite ID
