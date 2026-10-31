@@ -14,7 +14,8 @@
                         "in": "cookie",
                         "schema": {
                             "type": "string"
-                        }
+                        },
+                        "style": "cookie"
                     }
                 ],
                 "responses": {

@@ -460,6 +460,12 @@ func (g *Generator) newParameterFromField(idx int, t reflect.Type) (*Parameter, 
 			}
 		}
 	}
+	// A cookie is passed through unchanged, which is what the bind hook
+	// does (D27): style cookie, whose explode default is true and has no
+	// effect on a scalar. An explicit style tag overrides it.
+	if location == cookieLocation {
+		p.Style = "cookie"
+	}
 	g.applyStyleTags(p, field, location, fieldErr)
 	if g.parameterHook(t.Field(idx), p) {
 		return nil, nil

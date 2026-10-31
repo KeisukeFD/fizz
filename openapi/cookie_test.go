@@ -56,7 +56,7 @@ func TestCookieScalars(t *testing.T) {
 	}
 	for _, p := range op.Parameters {
 		v := p.Value
-		if v.In != "cookie" || v.Style != "" || v.Explode != nil {
+		if v.In != "cookie" || v.Style != "cookie" || v.Explode != nil {
 			t.Errorf("%s: in=%q style=%q explode=%v", v.Name, v.In, v.Style, v.Explode)
 		}
 	}
