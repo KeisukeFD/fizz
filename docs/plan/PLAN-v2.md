@@ -838,6 +838,21 @@ Rules for every task:
 - **P10.7l** A slice path parameter is documented as `simple` (comma-separated), but tonic does not split it (`/patharr/s1,s2` binds `["s1,s2"]`). Same remedy as P10.7e for headers: split in the bind hook, or make it a generation error. Red first: `TestContractFixture/patharr`.
 - **P10.7m** A `form` cookie (the default style) is documented as percent-encoded, but the bind hook keeps the raw value (`a%20b` stays `a%20b`; B24 chose this). Either document `style: cookie` (no encoding) or decode. Red first: `TestContractFixture/special/cookie_csp`.
 
+**Phase 10 decisions after the findings (user, 2026-10-31):**
+- **D26 Runtime follows the doc.** The fizz bind hook is extended so that every style fizz documents is parsed as documented:
+  - P10.7i: absent optional headers are skipped and header `default`s applied;
+  - P10.7j: spaceDelimited/pipeDelimited are split;
+  - P10.7k: label/matrix prefixes are stripped;
+  - P10.7l: slice path params are split;
+  - P10.7e: as D25.
+  Runtime changes → MIGRATION.
+- **D27 Cookies (P10.7m).** Cookie params are emitted with `style: cookie` (OAS 3.2, no percent-encoding), which matches the raw-value binder (B24). This is a spec output change only.
+- **D28 Cut line.**
+  - Above the line: P10.3a–g, P10.7a–m, P10.9c, P10.9d, P10.9n.
+  - Below the line (missing features, kept allowlisted and listed in README "Known limitations"): P10.9a, b, h, i, k, l, m, o, p.
+- **P10.3g** `PathItem.Parameters` and `Link.Parameters` still use `omitempty`, so empty containers are dropped (same class as P10.3b–e). Found during the P10.3 fixes.
+- **P10.5d** Harness hygiene: a `limitation` allowlist entry whose task is in `plan.Done` fails (stale). The reason must then be reclassified or the entry removed.
+
 **P10.8 Second validator (below the line).** S · Haiku (check whether any Go or CLI validator supports 3.2 at that time) + Sonnet
 - Only if one exists: cross-check the corpus and all goldens in a test-only module (`tools/` or `internal/conformance/x/`), so the library go.mod stays unchanged.
 
@@ -949,8 +964,8 @@ Rules for every task:
 **Critical path:** P0.1 → P0.2 → P0.4a → P1.0 → P1.1 → P1.2 → P1.3 → P2.2 → P2.1a–d → P2.3 → P2.5 → P2.6 → P3.1a → P3.1b → P3.3 → P3.5 → P3.4 → P3.6 → P6.1 → P4.2 → P4.2c → P4.6 → P4.9 → P4.8 → P4.7 → P4.3 → P5.1 → P6.5 → P6.4 → P6.6a → P6.6b → P6.6c → P7.1 → P7.2b → P7.2c → P9.1/P9.2 → v0.30.0.
 
 **Cut line for v0.30.0** (the "rc" of the overhaul):
-- **Above the line (blocking):** Phases 0–7, P8.1, P9.1, P9.2, P9.4, P10.0–P10.7.
-- **Below the line (may ship in v0.30.x):** P8.2, P8.3, P8.4, P9.3, P10.8.
+- **Above the line (blocking):** Phases 0–7, P8.1, P9.1, P9.2, P9.4, P10.0–P10.7 (incl. P10.2b, P10.3a–g, P10.5d, P10.7a–m), P10.9c, P10.9d, P10.9n.
+- **Below the line (may ship in v0.30.x):** P8.2, P8.3, P8.4, P9.3, P10.8, P10.9a, b, h, i, k, l, m, o, p (D28).
 
 ## 15. Release plan
 1. Branch `release-0.x` from tag v0.23.0. **Optional v0.23.1:** only a visited-set cycle fix in `buildSchemaRecursive`, `flattenStructSchema` and `buildParamsRecursive` (generator.go:523, :1032). The go directive and dependencies stay unchanged. Covered by the P0.4b/c cycle cases backported as plain tests.
