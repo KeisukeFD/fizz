@@ -77,7 +77,7 @@ func TestLintAllowsNullInValueSubtrees(t *testing.T) {
 func TestVersionPattern(t *testing.T) {
 	t.Skip("fixed by P2.6")
 
-	raw, err := os.ReadFile("schemas/3.2/schema-" + specvalidate.SchemaDate + ".json")
+	raw, err := os.ReadFile("schemas/3.2/schema-2026-08-30.json")
 	if err != nil {
 		t.Fatal(err)
 	}

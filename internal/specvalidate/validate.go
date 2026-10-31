@@ -1,5 +1,5 @@
 // Package specvalidate validates generated OpenAPI documents against the
-// official OAS 3.2 JSON Schemas, vendored under schemas/3.2 and loaded
+// official OAS 3.2 JSON Schemas (targeting 3.2.1), vendored under schemas/3.2 and loaded
 // offline. It is intended for use from tests.
 package specvalidate
 
@@ -20,14 +20,20 @@ import (
 var schemaFS embed.FS
 
 const (
-	// SchemaDate is the dated suffix of the vendored OAS 3.2 schema IDs.
-	SchemaDate = "2025-09-17"
-
 	idPrefix = "https://spec.openapis.org/oas/3.2/"
 	// BaseURL is the $id of the schema-base document, which validates
 	// Schema Objects against the OAS dialect.
-	BaseURL = idPrefix + "schema-base/" + SchemaDate
+	BaseURL = idPrefix + "schema-base/2026-08-30"
 )
+
+// schemaDates maps each vendored document kind to the dated suffix of its
+// $id. The kinds are revised independently, so the dates differ.
+var schemaDates = map[string]string{
+	"schema":      "2026-08-30",
+	"schema-base": "2026-08-30",
+	"dialect":     "2026-02-26",
+	"meta":        "2026-02-26",
+}
 
 // embedLoader maps spec.openapis.org OAS 3.2 URLs to embedded files and
 // refuses everything else, so no network access can happen.
@@ -39,7 +45,7 @@ func (embedLoader) Load(url string) (any, error) {
 		return nil, fmt.Errorf("specvalidate: refusing to load %q (offline)", url)
 	}
 	kind, date, ok := strings.Cut(rest, "/")
-	if !ok || date != SchemaDate {
+	if !ok || schemaDates[kind] != date {
 		return nil, fmt.Errorf("specvalidate: unknown schema %q", url)
 	}
 	f, err := schemaFS.Open("schemas/3.2/" + kind + "-" + date + ".json")
