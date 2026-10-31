@@ -10,19 +10,18 @@ import (
 	"time"
 
 	"github.com/Pallinder/go-randomdata"
-	"github.com/loopfz/gadgeto/tonic"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/wI2L/fizz/internal/golden"
 )
 
 var genConfig = &SpecGenConfig{
-	ValidatorTag:      tonic.ValidationTag,
-	PathLocationTag:   tonic.PathTag,
-	QueryLocationTag:  tonic.QueryTag,
-	HeaderLocationTag: tonic.HeaderTag,
-	EnumTag:           tonic.EnumTag,
-	DefaultTag:        tonic.DefaultTag,
+	ValidatorTag:      BinderTags.Validate,
+	PathLocationTag:   BinderTags.Path,
+	QueryLocationTag:  BinderTags.Query,
+	HeaderLocationTag: BinderTags.Header,
+	EnumTag:           BinderTags.Enum,
+	DefaultTag:        BinderTags.Default,
 }
 
 var rt = reflect.TypeOf
@@ -457,7 +456,7 @@ func TestAddOperation(t *testing.T) {
 	g.UseFullSchemaNames(false)
 	g.SetSortParams(true)
 
-	path := "/test/:a"
+	path := "/test/{a}"
 
 	infos := &OperationInfo{
 		ID:          "CreateTest",
@@ -506,7 +505,7 @@ func TestAddOperation(t *testing.T) {
 	}
 	assert.Len(t, g.API().Paths, 1)
 
-	item, ok := g.API().Paths[rewritePath(path)]
+	item, ok := g.API().Paths[path]
 	if !ok {
 		t.Errorf("expected to found item for path %s", path)
 	}

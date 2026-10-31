@@ -7,8 +7,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-
-	"github.com/loopfz/gadgeto/tonic"
 )
 
 // setOperationParams adds the fields of the struct type t
@@ -27,7 +25,7 @@ func (g *Generator) setOperationParams(op *Operation, t, parent reflect.Type, al
 	// Replace the RequestBody's schema with a reference
 	// to the named schema in components/schemas
 	if op.RequestBody != nil {
-		mt := tonic.MediaType()
+		mt := g.mediaType()
 		if mt == "" {
 			mt = anyMediaType
 		}
@@ -176,7 +174,7 @@ func (g *Generator) addStructFieldToOperation(op *Operation, t reflect.Type, idx
 		}
 		// Select the corresponding media type for the
 		// given field tag, or default to any type.
-		mt := tonic.MediaType()
+		mt := g.mediaType()
 		if mt == "" {
 			mt = anyMediaType
 		}
@@ -195,7 +193,7 @@ func (g *Generator) addStructFieldToOperation(op *Operation, t reflect.Type, idx
 		} else {
 			schema = op.RequestBody.Content[mt].Schema.Schema
 		}
-		fname := fieldNameFromTag(sf, mediaTags[tonic.MediaType()])
+		fname := fieldNameFromTag(sf, mediaTags[g.mediaType()])
 
 		// Check if a field with the same name already exists.
 		if _, ok := schema.Properties[fname]; ok {
@@ -240,7 +238,7 @@ func (g *Generator) newParameterFromField(idx int, t reflect.Type) (*Parameter, 
 	if location == "" {
 		return nil, nil
 	}
-	name, err := tonic.ParseTagKey(field.Tag.Get(location))
+	name, _, _, err := ParseParamTag(field.Tag.Get(location))
 	if err != nil {
 		return nil, err
 	}
@@ -269,7 +267,7 @@ func (g *Generator) newParameterFromField(idx int, t reflect.Type) (*Parameter, 
 		if field.Type.Kind() == reflect.Slice || field.Type.Kind() == reflect.Array {
 			p.Explode = true // default
 			p.Style = "form" // default in spec, but make it obvious
-			if t := field.Tag.Get(tonic.ExplodeTag); t != "" {
+			if t := field.Tag.Get(BinderTags.Explode); t != "" {
 				if explode, err := strconv.ParseBool(t); err == nil && !explode { // ignore invalid values
 					p.Explode = explode
 				}

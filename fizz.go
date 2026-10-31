@@ -66,6 +66,7 @@ func NewFromEngine(e *gin.Engine, opts ...Option) *Fizz {
 			HeaderLocationTag: tonic.HeaderTag,
 			EnumTag:           tonic.EnumTag,
 			DefaultTag:        tonic.DefaultTag,
+			DefaultMediaType:  tonic.MediaType(),
 		},
 	)
 	return &Fizz{

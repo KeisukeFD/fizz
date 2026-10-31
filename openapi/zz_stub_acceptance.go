@@ -188,22 +188,6 @@ func MarshalYAML(doc *OpenAPI) ([]byte, error) {
 	return nil, errors.New("stub: P2.5")
 }
 
-// ParseParamTag is a stub.
-// FixedBy: P1.3
-func ParseParamTag(tag string) (name string, required bool, defaultValue string, err error) {
-	return "", false, "", errors.New("stub: P1.3")
-}
-
-// BinderTagNames is a stub type.
-// FixedBy: P1.3
-type BinderTagNames struct {
-	Path, Query, Header, Enum, Default, Validate, Explode string
-}
-
-// BinderTags is a stub.
-// FixedBy: P1.3
-var BinderTags = BinderTagNames{}
-
 // Warning is a stub type.
 // FixedBy: P3.3
 type Warning struct {

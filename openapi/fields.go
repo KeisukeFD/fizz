@@ -6,8 +6,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-
-	"github.com/loopfz/gadgeto/tonic"
 )
 
 // newSchemaFromStructField returns a new Schema builded
@@ -140,7 +138,7 @@ func (g *Generator) flattenStructSchema(t, parent reflect.Type, schema *Schema) 
 			ft = ft.Elem()
 		}
 		isUnexported := f.PkgPath != ""
-		mediaTag := mediaTags[tonic.MediaType()]
+		mediaTag := mediaTags[g.mediaType()]
 		_, hasTag := f.Tag.Lookup(mediaTag)
 
 		if f.Anonymous && !hasTag {

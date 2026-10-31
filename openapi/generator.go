@@ -8,8 +8,6 @@ import (
 	"regexp"
 	"sort"
 	"strconv"
-
-	"github.com/loopfz/gadgeto/tonic"
 )
 
 const (
@@ -23,7 +21,6 @@ const (
 
 var (
 	paramsInPathRe = regexp.MustCompile(`\{(.*?)\}`)
-	ginPathParamRe = regexp.MustCompile(`\/:([^\/]*)`)
 )
 
 // mediaTags maps media types to well-known
@@ -88,6 +85,17 @@ type SpecGenConfig struct {
 	HeaderLocationTag string
 	EnumTag           string
 	DefaultTag        string
+	// DefaultMediaType is the media type of request and
+	// response bodies. Empty means "application/json".
+	DefaultMediaType string
+}
+
+// mediaType returns the media type of request and response bodies.
+func (g *Generator) mediaType() string {
+	if g.config.DefaultMediaType == "" {
+		return "application/json"
+	}
+	return g.config.DefaultMediaType
 }
 
 // SetInfo uses the given OpenAPI info for the
@@ -234,11 +242,10 @@ func (g *Generator) AddTag(name, desc string) {
 }
 
 // AddOperation add a new operation to the OpenAPI specification
-// using the method and path of the route and the tonic
-// handler informations.
+// using the method and OpenAPI-syntax path ("/a/{id}") of the
+// route and the handler informations.
 func (g *Generator) AddOperation(path, method, tag string, in, out reflect.Type, info *OperationInfo) (*Operation, error) {
 	op := &Operation{}
-	path = rewritePath(path)
 
 	if info != nil {
 		// Ensure that the provided operation ID is unique.
@@ -289,7 +296,7 @@ func (g *Generator) AddOperation(path, method, tag string, in, out reflect.Type,
 	// Generate the default response from the tonic
 	// handler return type. If the handler has no output
 	// type, the response won't have a schema.
-	if err := g.setOperationResponse(op, out, strconv.Itoa(info.StatusCode), tonic.MediaType(), info.StatusDescription, info.Headers, nil, info.DefaultResponseExamples); err != nil {
+	if err := g.setOperationResponse(op, out, strconv.Itoa(info.StatusCode), g.mediaType(), info.StatusDescription, info.Headers, nil, info.DefaultResponseExamples); err != nil {
 		return nil, err
 	}
 	// Generate additional responses from the operation
@@ -299,7 +306,7 @@ func (g *Generator) AddOperation(path, method, tag string, in, out reflect.Type,
 			if err := g.setOperationResponse(op,
 				reflect.TypeOf(resp.Model),
 				resp.Code,
-				tonic.MediaType(),
+				g.mediaType(),
 				resp.Description,
 				resp.Headers,
 				resp.Example,
@@ -312,13 +319,6 @@ func (g *Generator) AddOperation(path, method, tag string, in, out reflect.Type,
 	setOperationBymethod(item, op, method)
 
 	return op, nil
-}
-
-// rewritePath converts a Gin operation path that use
-// colons and asterisks to declare path parameters, to
-// an OpenAPI representation that use curly braces.
-func rewritePath(path string) string {
-	return ginPathParamRe.ReplaceAllString(path, "/{$1}")
 }
 
 // setOperationBymethod sets the operation op to the appropriate
