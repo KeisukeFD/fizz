@@ -1,9 +1,1 @@
-[
-  {
-    "pointer": "/paths",
-    "kind": "extra",
-    "category": "limitation",
-    "task": "P10.9n",
-    "reason": "A document with no route still emits \"paths\": {} (empty object, valid OAS 3.2); the official document has components only."
-  }
-]
+[]

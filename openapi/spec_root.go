@@ -43,6 +43,15 @@ type Components struct {
 	Extensions map[string]any `json:",embed"`
 }
 
+// isEmpty reports whether c has no component and no extension, so that it
+// encodes as {}.
+func (c *Components) isEmpty() bool {
+	return len(c.Schemas) == 0 && len(c.Responses) == 0 && len(c.Parameters) == 0 &&
+		len(c.Examples) == 0 && len(c.RequestBodies) == 0 && len(c.Headers) == 0 &&
+		len(c.SecuritySchemes) == 0 && len(c.Links) == 0 && len(c.Callbacks) == 0 &&
+		c.PathItems == nil && len(c.MediaTypes) == 0 && len(c.Extensions) == 0
+}
+
 // Info represents the metadata of an API.
 type Info struct {
 	Title          string   `json:"title"`

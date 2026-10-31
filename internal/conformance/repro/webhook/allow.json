@@ -1,12 +1,5 @@
 [
   {
-    "pointer": "/paths",
-    "kind": "extra",
-    "category": "limitation",
-    "task": "P10.9n",
-    "reason": "A document with no operation still has \"paths\": {}. It is valid OAS, but noise: the official document has only webhooks and no paths key."
-  },
-  {
     "pointer": "/webhooks/**",
     "kind": "missing",
     "category": "limitation",

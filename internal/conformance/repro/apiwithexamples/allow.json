@@ -1,9 +1,1 @@
-[
-  {
-    "pointer": "/components",
-    "kind": "extra",
-    "category": "limitation",
-    "task": "P10.9c",
-    "reason": "A document with no component still has \"components\": {}. It is valid OAS, but noise: the official document has no components key."
-  }
-]
+[]

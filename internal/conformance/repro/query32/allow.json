@@ -1,12 +1,5 @@
 [
   {
-    "pointer": "/components",
-    "kind": "extra",
-    "category": "limitation",
-    "task": "P10.9c",
-    "reason": "A document with no component still emits \"components\": {} (empty object, valid OAS); the official example has none."
-  },
-  {
     "pointer": "/paths/~1flights~1search/query/requestBody/content/application~1json/schema/properties/cabinClass/example",
     "kind": "missing",
     "category": "naming",

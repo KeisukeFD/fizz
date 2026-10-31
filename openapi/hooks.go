@@ -120,6 +120,11 @@ var ErrDocumentHook = errors.New("DocumentHook failed")
 // the hook is returned wrapping ErrDocumentHook, and not recorded in
 // Errors. A failure to copy the document is returned and recorded once
 // per generation, like Snapshot does.
+//
+// After the hook, an empty "components" and an empty "paths" are
+// omitted, unless that would leave the document without any of paths,
+// components and webhooks (OAS 3.2): then "paths" stays as an empty
+// object. API and Snapshot return the generator state unchanged.
 func (g *Generator) Document() (*OpenAPI, uint64, error) {
 	g.mu.Lock()
 	api, gen, err := g.cloneLocked()
@@ -133,7 +138,28 @@ func (g *Generator) Document() (*OpenAPI, uint64, error) {
 			return nil, gen, fmt.Errorf("%w: %w", ErrDocumentHook, err)
 		}
 	}
+	omitEmptyContainers(api)
 	return api, gen, nil
+}
+
+// omitEmptyContainers drops the empty "components" and the empty "paths"
+// of the document to be served, as long as it stays valid: OAS 3.2
+// requires at least one of paths, components and webhooks. A document with
+// nothing of the three keeps an empty "paths". A decoded document is not
+// changed (that is the spec model, which round-trips): only the document
+// of the generator is.
+func omitEmptyContainers(api *OpenAPI) {
+	if api.Components != nil && api.Components.isEmpty() {
+		api.Components = nil
+	}
+	if len(api.Paths) > 0 {
+		return
+	}
+	if api.Components != nil || api.Webhooks != nil {
+		api.Paths = nil
+	} else if api.Paths == nil {
+		api.Paths = Paths{}
+	}
 }
 
 // schemaHook runs the SchemaHook on the component s of type t.
