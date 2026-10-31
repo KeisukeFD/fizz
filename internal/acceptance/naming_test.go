@@ -278,3 +278,15 @@ func TestBEExplicitIDCollision(t *testing.T) {
 		}
 	})
 }
+
+// E03.
+func TestSchemaNamerOption(t *testing.T) {
+	at.Pending(t, "P4.5+P6.1", func(tb testing.TB) {
+		f := fizz.New(fizz.WithSchemaNamer(func(t reflect.Type) string { return "X_" + t.Name() }))
+		f.GET("/foo", []fizz.OperationOption{fizz.ID("foo")}, tonic.Handler(bEGetFoo, 200))
+		doc := at.Spec(tb, f)
+		if got := bERespRef(tb, doc, "/foo"); got != "X_bEFoo" {
+			tb.Errorf("component %q, want %q", got, "X_bEFoo")
+		}
+	})
+}

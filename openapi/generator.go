@@ -15,9 +15,6 @@ const Version = "3.2.1"
 
 const (
 	anyMediaType         = "*/*"
-	formatTag            = "format"
-	deprecatedTag        = "deprecated"
-	descriptionTag       = "description"
 	componentsSchemaPath = "#/components/schemas/"
 )
 
@@ -52,12 +49,17 @@ type Generator struct {
 
 	pointersNullable bool
 	annotationStyle  AnnotationStyle
+	tags             TagNames
+	schemaNamer      func(reflect.Type) string // not consumed yet
 }
 
 // NewGenerator returns a new OpenAPI generator.
 func NewGenerator(conf *SpecGenConfig) (*Generator, error) {
 	if conf == nil {
 		return nil, errors.New("missing config")
+	}
+	if err := conf.checkBinderTags(); err != nil {
+		return nil, err
 	}
 	components := &Components{
 		Schemas:    make(map[string]*Schema),
@@ -84,6 +86,7 @@ func NewGenerator(conf *SpecGenConfig) (*Generator, error) {
 		sortTags:      true,
 
 		pointersNullable: true,
+		tags:             defaultTagNames,
 	}, nil
 }
 
@@ -93,15 +96,40 @@ type SpecGenConfig struct {
 	// Name of the tag used by the validator.v8
 	// package. This is used by the spec generator
 	// to determine if a field is required.
-	ValidatorTag      string
-	PathLocationTag   string
-	QueryLocationTag  string
+	//
+	// Deprecated: binder tags are fixed to openapi.BinderTags (tonic's names); a non-empty different value is an error.
+	ValidatorTag string
+	// Deprecated: binder tags are fixed to openapi.BinderTags (tonic's names); a non-empty different value is an error.
+	PathLocationTag string
+	// Deprecated: binder tags are fixed to openapi.BinderTags (tonic's names); a non-empty different value is an error.
+	QueryLocationTag string
+	// Deprecated: binder tags are fixed to openapi.BinderTags (tonic's names); a non-empty different value is an error.
 	HeaderLocationTag string
-	EnumTag           string
-	DefaultTag        string
+	// Deprecated: binder tags are fixed to openapi.BinderTags (tonic's names); a non-empty different value is an error.
+	EnumTag string
+	// Deprecated: binder tags are fixed to openapi.BinderTags (tonic's names); a non-empty different value is an error.
+	DefaultTag string
 	// DefaultMediaType is the media type of request and
 	// response bodies. Empty means "application/json".
 	DefaultMediaType string
+}
+
+// checkBinderTags reports the first binder tag field, in declaration
+// order, that is neither empty nor equal to the fixed tonic name.
+func (c *SpecGenConfig) checkBinderTags() error {
+	for _, f := range []struct{ name, got, want string }{
+		{"ValidatorTag", c.ValidatorTag, BinderTags.Validate},
+		{"PathLocationTag", c.PathLocationTag, BinderTags.Path},
+		{"QueryLocationTag", c.QueryLocationTag, BinderTags.Query},
+		{"HeaderLocationTag", c.HeaderLocationTag, BinderTags.Header},
+		{"EnumTag", c.EnumTag, BinderTags.Enum},
+		{"DefaultTag", c.DefaultTag, BinderTags.Default},
+	} {
+		if f.got != "" && f.got != f.want {
+			return fmt.Errorf("openapi: SpecGenConfig.%s = %q: binder tags are fixed to %q", f.name, f.got, f.want)
+		}
+	}
+	return nil
 }
 
 // mediaType returns the media type of request and response bodies.

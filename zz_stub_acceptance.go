@@ -14,36 +14,6 @@ import (
 	"reflect"
 )
 
-// WithTagNames is a stub.
-// FixedBy: P6.1
-func WithTagNames(openapi.TagNames) Option {
-	return func(*config) {}
-}
-
-// WithSchemaNamer is a stub.
-// FixedBy: P6.1
-func WithSchemaNamer(func(reflect.Type) string) Option {
-	return func(*config) {}
-}
-
-// WithPointersAreNullable is a stub.
-// FixedBy: P6.1
-func WithPointersAreNullable(bool) Option {
-	return func(*config) {}
-}
-
-// WithAnnotationStyle is a stub.
-// FixedBy: P6.1
-func WithAnnotationStyle(openapi.AnnotationStyle) Option {
-	return func(*config) {}
-}
-
-// WithoutBindHook is a stub.
-// FixedBy: P6.1
-func WithoutBindHook() Option {
-	return func(*config) {}
-}
-
 // WithDefaultMediaType is a stub.
 // FixedBy: P4.4
 func WithDefaultMediaType(mediaType string) Option {

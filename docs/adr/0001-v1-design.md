@@ -165,6 +165,8 @@ Each row is a stub until its task lands. Signatures are binding. A task that nee
 | `type CollisionError struct{ Name string; Kept, Rejected reflect.Type }`, `Error()` | P4.5 |
 | `type OperationError struct{ Method, Path, ID string; Err error }`, `Error()`, `Unwrap()` | P4.8 |
 | `(*OpenAPI).Clone() (*OpenAPI, error)` | P5.1 |
+| `(*Generator).SetTagNames(TagNames)` | P6.1 |
+| `(*Generator).SetSchemaNamer(func(reflect.Type) string)` (consumed by P4.5) | P6.1 |
 | `type TagNames struct{ Description, Example, Format, Deprecated, Title, Pattern, ReadOnly, WriteOnly, Nullable, MultipleOf, AdditionalProperties, Inline, Style, AllowReserved, Cookie string }` (zero = default, `"-"` disables) | P6.1 |
 | `SchemaProvider{ OpenAPISchema() *Schema }`, `SchemaCustomizer{ CustomizeSchema(*Schema) error }`, `Enumer{ Enum() []any }` | P6.3 |
 | `SchemaContext{ Type reflect.Type; Name string }` | P6.4 |

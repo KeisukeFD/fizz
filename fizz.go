@@ -50,7 +50,7 @@ func New(opts ...Option) *Fizz {
 // NewFromEngine creates a new Fizz wrapper
 // from an existing Gin engine.
 func NewFromEngine(e *gin.Engine, opts ...Option) *Fizz {
-	var cfg config
+	cfg := config{pointersNullable: true}
 	for _, opt := range opts {
 		if opt != nil {
 			opt(&cfg)
@@ -69,6 +69,12 @@ func NewFromEngine(e *gin.Engine, opts ...Option) *Fizz {
 			DefaultMediaType:  tonic.MediaType(),
 		},
 	)
+	gen.SetTagNames(cfg.tagNames)
+	if cfg.schemaNamer != nil {
+		gen.SetSchemaNamer(cfg.schemaNamer)
+	}
+	gen.SetPointersAreNullable(cfg.pointersNullable)
+	gen.SetAnnotationStyle(cfg.annotationStyle)
 	return &Fizz{
 		engine: e,
 		gen:    gen,

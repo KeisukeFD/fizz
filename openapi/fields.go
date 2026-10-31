@@ -51,7 +51,7 @@ func (g *Generator) fieldSchema(sf reflect.StructField, required bool, fname str
 	// Default value.
 	// See section 'Common Mistakes' at
 	// https://swagger.io/docs/specification/describing-parameters/
-	if d := sf.Tag.Get(g.config.DefaultTag); d != "" {
+	if d := sf.Tag.Get(BinderTags.Default); d != "" {
 		switch {
 		case required && !vf.param:
 			// D15: tonic never applies defaults to body fields, so the
@@ -92,12 +92,13 @@ func (g *Generator) fieldSchema(sf reflect.StructField, required bool, fname str
 		}
 	}
 	// Field description.
-	if desc, ok := sf.Tag.Lookup(descriptionTag); ok {
+	if desc, ok := tagLookup(sf, g.tags.Description); ok {
 		schema.Description = desc
 	}
 	// Deprecated.
 	// Consider invalid values as false.
-	schema.Deprecated, _ = strconv.ParseBool(sf.Tag.Get(deprecatedTag))
+	dep, _ := tagLookup(sf, g.tags.Deprecated)
+	schema.Deprecated, _ = strconv.ParseBool(dep)
 
 	// Update schema fields related to the JSON Validation
 	// spec based on the content of the validator tag.
@@ -105,12 +106,13 @@ func (g *Generator) fieldSchema(sf reflect.StructField, required bool, fname str
 
 	// Allow overidding schema properties that were
 	// auto inferred manually via tags.
-	if t, ok := sf.Tag.Lookup(formatTag); ok {
+	if t, ok := tagLookup(sf, g.tags.Format); ok {
 		schema.Format = t
 	}
 
 	// Set example value from tag to schema
-	if e := strings.TrimSpace(sf.Tag.Get("example")); e != "" {
+	ex, _ := tagLookup(sf, g.tags.Example)
+	if e := strings.TrimSpace(ex); e != "" {
 		if parsed, err := parseExample(sf.Type, e, vf.param); err != nil {
 			g.error(&FieldError{
 				Message:  fmt.Sprintf("could not parse the example value %q of field %q: %s", e, fname, err),
@@ -212,7 +214,7 @@ func (g *Generator) annotatedItems(items *Schema, enum []any) *Schema {
 func (g *Generator) enumFromStructField(sf reflect.StructField, fname string, parent reflect.Type, vf valueForm) []any {
 	var enum []any
 
-	etag := sf.Tag.Get(g.config.EnumTag)
+	etag := sf.Tag.Get(BinderTags.Enum)
 	if etag != "" {
 		values := strings.Split(etag, ",")
 		sftype := sf.Type
@@ -281,7 +283,7 @@ func (g *Generator) newSchemaFromField(f field, required bool, parent reflect.Ty
 // is required. The information is read from the field
 // tag 'binding'.
 func (g *Generator) isStructFieldRequired(sf reflect.StructField) bool {
-	if t, ok := sf.Tag.Lookup(g.config.ValidatorTag); ok {
+	if t, ok := sf.Tag.Lookup(BinderTags.Validate); ok {
 		options := strings.SplitSeq(t, ",")
 		for o := range options {
 			// As soon as we see a 'dive' or 'keys'

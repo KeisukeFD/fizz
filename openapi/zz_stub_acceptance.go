@@ -49,12 +49,6 @@ func (o *OpenAPI) Clone() (*OpenAPI, error) {
 	return nil, errors.New("stub: P5.1")
 }
 
-// TagNames is a stub type.
-// FixedBy: P6.1
-type TagNames struct {
-	Description, Example, Format, Deprecated, Title, Pattern, ReadOnly, WriteOnly, Nullable, MultipleOf, AdditionalProperties, Inline, Style, AllowReserved, Cookie string
-}
-
 // SchemaProvider is a stub type.
 // FixedBy: P6.3
 type SchemaProvider interface {

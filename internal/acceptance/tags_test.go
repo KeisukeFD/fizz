@@ -327,6 +327,87 @@ func TestTagsUseSiteOnly(t *testing.T) {
 	})
 }
 
+// F11: a zero TagNames field keeps the default name; "-" disables.
+type bFTagNamesBody struct {
+	Doc  string `json:"doc" doc:"x" description:"y"`
+	Ex   string `json:"ex" example:"hello"`
+	Mail string `json:"mail" format:"email"`
+}
+
+type bFTagNamesQuery struct {
+	Q string `query:"q" doc:"pd"`
+}
+
+func TestTagNamesOverride(t *testing.T) {
+	at.Pending(t, "P6.1", func(tb testing.TB) {
+		f := fizz.New(fizz.WithTagNames(openapi.TagNames{Description: "doc"}))
+		bFPost[bFTagNamesBody](f, "/b", "b")
+		bFGet[bFTagNamesQuery](f, "/q", "q")
+		doc := at.Spec(tb, f)
+		s := bFBodyPtr(tb, doc, "/b")
+		at.Frag(tb, doc, s+"/properties/doc/description", `"x"`)
+		at.Frag(tb, doc, s+"/properties/ex/examples", `["hello"]`)
+		at.Frag(tb, doc, s+"/properties/mail/format", `"email"`)
+		at.Frag(tb, doc, bFParamPtr(tb, doc, "/q", "get", "q")+"/description", `"pd"`)
+
+		f = fizz.New(fizz.WithTagNames(openapi.TagNames{Format: "-"}))
+		bFPost[bFTagNamesBody](f, "/b", "b")
+		doc = at.Spec(tb, f)
+		at.Absent(tb, doc, bFBodyPtr(tb, doc, "/b")+"/properties/mail/format")
+	})
+}
+
+// F34.
+type bFPtrBody struct {
+	P *string `json:"p"`
+	A *bFAddr `json:"a"`
+}
+
+func TestPointersAreNullableOption(t *testing.T) {
+	at.Pending(t, "P6.1", func(tb testing.TB) {
+		f := fizz.New(fizz.WithPointersAreNullable(false))
+		bFPost[bFPtrBody](f, "/b", "b")
+		doc := at.Spec(tb, f)
+		s := bFBodyPtr(tb, doc, "/b")
+		at.Frag(tb, doc, s+"/properties/p", `{"type":"string"}`)
+		at.Frag(tb, doc, s+"/properties/a", `{"$ref":"`+bFAddrRef+`"}`)
+
+		f = fizz.New()
+		bFPost[bFPtrBody](f, "/b", "b")
+		doc = at.Spec(tb, f)
+		s = bFBodyPtr(tb, doc, "/b")
+		at.Frag(tb, doc, s+"/properties/p", `{"type":["string","null"]}`)
+		at.Frag(tb, doc, s+"/properties/a", `{"anyOf":[{"$ref":"`+bFAddrRef+`"},{"type":"null"}]}`)
+	})
+}
+
+// F35.
+type bFWrapBody struct {
+	A bFAddr  `json:"a" description:"d"`
+	N *bFAddr `json:"n" description:"d"`
+}
+
+func TestAnnotationStyleAllOfWrap(t *testing.T) {
+	at.Pending(t, "P6.1", func(tb testing.TB) {
+		nullable := `{"anyOf":[{"$ref":"` + bFAddrRef + `"},{"type":"null"}],"description":"d"}`
+		for _, c := range []struct {
+			name  string
+			style openapi.AnnotationStyle
+			want  string
+		}{
+			{"sibling", openapi.SiblingAnnotations, `{"$ref":"` + bFAddrRef + `","description":"d"}`},
+			{"allOf", openapi.AllOfWrap, `{"allOf":[{"$ref":"` + bFAddrRef + `"}],"description":"d"}`},
+		} {
+			f := fizz.New(fizz.WithAnnotationStyle(c.style))
+			bFPost[bFWrapBody](f, "/b", "b")
+			doc := at.Spec(tb, f)
+			s := bFBodyPtr(tb, doc, "/b")
+			at.Frag(tb, doc, s+"/properties/a", c.want)
+			at.Frag(tb, doc, s+"/properties/n", nullable)
+		}
+	})
+}
+
 // F14. The renamed-binder-tag rule is B1: only fizz-owned tags are
 // configurable.
 func TestRenamedBinderTagRejected(t *testing.T) {

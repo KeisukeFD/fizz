@@ -232,30 +232,32 @@ func (g *Generator) newParameterFromField(idx int, t reflect.Type) (*Parameter, 
 	required := g.isStructFieldRequired(field)
 
 	// Path parameters are always required.
-	isPath := location == g.config.PathLocationTag
+	isPath := location == BinderTags.Path
 	if isPath {
 		required = true
 	}
 	// D15: a default makes a query or header parameter optional.
 	// The warning is recorded with the field's schema.
-	hasDefault := field.Tag.Get(g.config.DefaultTag) != ""
+	hasDefault := field.Tag.Get(BinderTags.Default) != ""
 	schemaRequired := required && !isPath
 	if schemaRequired && hasDefault {
 		required = false
 	}
+	dep, _ := tagLookup(field, g.tags.Deprecated)
+	desc, _ := tagLookup(field, g.tags.Description)
 	// Consider invalid values as false.
-	deprecated, _ := strconv.ParseBool(field.Tag.Get(deprecatedTag))
+	deprecated, _ := strconv.ParseBool(dep)
 
 	p := &Parameter{
 		Name:        name,
 		In:          location,
-		Description: field.Tag.Get(descriptionTag),
+		Description: desc,
 		Required:    required,
 		Deprecated:  deprecated,
 		Schema:      g.fieldSchema(field, schemaRequired, name, t, valueForm{param: true}),
 	}
 	// Style.
-	if location == g.config.QueryLocationTag {
+	if location == BinderTags.Query {
 		if field.Type.Kind() == reflect.Slice || field.Type.Kind() == reflect.Array {
 			p.Explode = new(true) // default
 			p.Style = "form"      // default in spec, but make it obvious
@@ -286,9 +288,9 @@ func (g *Generator) paramLocation(f reflect.StructField, in reflect.Type) (strin
 	// a parameter location from the tag of the
 	// struct field.
 	parameterLocations := []string{
-		g.config.PathLocationTag,
-		g.config.QueryLocationTag,
-		g.config.HeaderLocationTag,
+		BinderTags.Path,
+		BinderTags.Query,
+		BinderTags.Header,
 	}
 	for i, n := range parameterLocations {
 		has(n, f.Tag, i)

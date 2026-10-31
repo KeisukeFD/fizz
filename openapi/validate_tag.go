@@ -11,7 +11,7 @@ import (
 // content of the validator tag.
 // see https://godoc.org/gopkg.in/go-playground/validator.v8
 func (g *Generator) updateSchemaValidation(schema *Schema, sf reflect.StructField) *Schema {
-	ts := sf.Tag.Get(g.config.ValidatorTag)
+	ts := sf.Tag.Get(BinderTags.Validate)
 	if ts == "" {
 		return schema
 	}
