@@ -218,6 +218,13 @@ f.GET("/pets", []fizz.OperationOption{fizz.ID("listPets")},
 f.ServeHTTP(httptest.NewRecorder(), httptest.NewRequest("GET", "/pets?filter[color]=red", nil))
 ```
 
+### Runtime binding changes (Phase 10)
+
+The runtime follows the styles that the document states. *tonic* binds after the hook, so the hook rewrites the request (`c.Request.URL` and `c.Params`) and the handler sees the rewritten values. These apply only to routes registered with fizz and to the fields described.
+
+- A query array tagged `style:"spaceDelimited"` or `style:"pipeDelimited"` (documented `explode: false`, unless you also tag `explode:"true"`) is split on the space or `|` after URL decoding: `?ids=1%202` binds `[1 2]`, not an error or `["1 2"]`. With `explode:"false"`, an element that contains a comma is a 400.
+- A scalar path parameter tagged `style:"label"` binds `v` from `.v`, and one tagged `style:"matrix"` binds `v` from `;name=v` (or from `;name` when empty). A value without that prefix is a 400, where it used to be bound as is. Arrays are not covered: *tonic* reads a path parameter as one value.
+
 ## Generated document: changes that break your snapshots and clients
 
 ### `openapi` and the version
