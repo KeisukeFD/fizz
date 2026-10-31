@@ -12,19 +12,19 @@ import (
 )
 
 var (
-	tofDataType = reflect.TypeOf((*DataType)(nil)).Elem()
-	tofNullable = reflect.TypeOf((*Nullable)(nil)).Elem()
+	tofDataType = reflect.TypeFor[DataType]()
+	tofNullable = reflect.TypeFor[Nullable]()
 
 	// Native.
-	tofTime           = reflect.TypeOf(time.Time{})
-	tofDuration       = reflect.TypeOf(time.Duration(0))
-	tofByteSlice      = reflect.TypeOf([]byte{})
-	tofNetIP          = reflect.TypeOf(net.IP{})
-	tofNetURL         = reflect.TypeOf(url.URL{})
-	tofEmptyInterface = reflect.TypeOf(new(interface{})).Elem()
+	tofTime           = reflect.TypeFor[time.Time]()
+	tofDuration       = reflect.TypeFor[time.Duration]()
+	tofByteSlice      = reflect.TypeFor[[]byte]()
+	tofNetIP          = reflect.TypeFor[net.IP]()
+	tofNetURL         = reflect.TypeFor[url.URL]()
+	tofEmptyInterface = reflect.TypeFor[any]()
 
 	// Imported.
-	tofUUID = reflect.TypeOf(uuid.UUID{})
+	tofUUID = reflect.TypeFor[uuid.UUID]()
 )
 
 var _ DataType = (*InternalDataType)(nil)
@@ -46,7 +46,7 @@ type DataType interface {
 // Exampler is the interface implemented by custom types
 // that can parse example values.
 type Exampler interface {
-	ParseExample(v string) (interface{}, error)
+	ParseExample(v string) (any, error)
 }
 
 // Nullable is the interface implemented by the types
@@ -128,13 +128,13 @@ func DataTypeFromType(t reflect.Type) DataType {
 	// If the type implement the DataType interface,
 	// return a new instance of the type.
 	if t.Implements(tofDataType) {
-		if t.Kind() == reflect.Ptr {
+		if t.Kind() == reflect.Pointer {
 			t = t.Elem()
 		}
 		return reflect.New(t).Interface().(DataType)
 	}
 	// Dereference any pointer.
-	if t.Kind() == reflect.Ptr {
+	if t.Kind() == reflect.Pointer {
 		return DataTypeFromType(t.Elem())
 	}
 	// Switch over Golang types.
@@ -190,7 +190,7 @@ func isImportedType(t reflect.Type) DataType {
 }
 
 // stringToType converts val to t's type and return the new value.
-func stringToType(val string, t reflect.Type) (interface{}, error) {
+func stringToType(val string, t reflect.Type) (any, error) {
 	// Compare type to know Golang types.
 	// IT MUST BE EXECUTED BEFORE swithing over
 	// primitives because a time.Duration is itself

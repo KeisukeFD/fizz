@@ -3,8 +3,8 @@ package openapi
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"math"
+	"os"
 	"reflect"
 	"strconv"
 	"testing"
@@ -91,7 +91,7 @@ func TestStructFieldName(t *testing.T) {
 		AB string `name:"-"`
 		B  struct{}
 	}
-	to := reflect.TypeOf(T{})
+	to := reflect.TypeFor[T]()
 
 	assert.Equal(t, "A", fieldNameFromTag(to.Field(0), "name"))
 	assert.Equal(t, "Ba", fieldNameFromTag(to.Field(1), "name"))
@@ -213,7 +213,7 @@ func TestSchemaFromComplex(t *testing.T) {
 		t.Error(err)
 	}
 	// see testdata/X.json.
-	expected, err := ioutil.ReadFile("../testdata/schemas/X.json")
+	expected, err := os.ReadFile("../testdata/schemas/X.json")
 	if err != nil {
 		t.Error(err)
 	}
@@ -234,7 +234,7 @@ func TestSchemaFromComplex(t *testing.T) {
 		t.Error(err)
 	}
 	// see testdata/Y.json.
-	expected, err = ioutil.ReadFile("../testdata/schemas/Y.json")
+	expected, err = os.ReadFile("../testdata/schemas/Y.json")
 	if err != nil {
 		t.Error(err)
 	}
@@ -253,7 +253,7 @@ func TestNewSchemaFromStructErrors(t *testing.T) {
 	g := gen(t)
 
 	// Invalid input.
-	sor := g.newSchemaFromStruct(reflect.TypeOf(new(string)))
+	sor := g.newSchemaFromStruct(reflect.TypeFor[*string]())
 	assert.Nil(t, sor)
 }
 
@@ -274,7 +274,7 @@ func TestNewSchemaFromStructFieldExampleValues(t *testing.T) {
 		EPtr **bool    `example:"false"`
 		FPtr ***uint16 `example:"128"`
 	}
-	typ := reflect.TypeOf(T{})
+	typ := reflect.TypeFor[T]()
 
 	// Field A contains string example.
 	sor := g.newSchemaFromStructField(typ.Field(0), false, "A", typ)
@@ -338,7 +338,7 @@ func TestNewSchemaFromStructFieldErrors(t *testing.T) {
 		C int    `enum:"a,1,c"`
 		D bool   `example:"not-a-bool-value"`
 	}
-	typ := reflect.TypeOf(T{})
+	typ := reflect.TypeFor[T]()
 
 	// Field A is required and has a default value.
 	sor := g.newSchemaFromStructField(typ.Field(0), true, "A", typ)
@@ -381,7 +381,7 @@ func TestNewSchemaFromStructFieldFormat(t *testing.T) {
 	type T struct {
 		A string `validate:"email" default:"foobar"`
 	}
-	typ := reflect.TypeOf(T{})
+	typ := reflect.TypeFor[T]()
 
 	// Field A is required and has a default value.
 	sor := g.newSchemaFromStructField(typ.Field(0), true, "A", typ)
@@ -409,27 +409,27 @@ func TestNewSchemaFromEnumField(t *testing.T) {
 
 	tests := []struct {
 		fname        string
-		expectedEnum []interface{}
+		expectedEnum []any
 		isSlice      bool
 	}{
-		{"A", []interface{}{"a", "b", "c"}, false},
-		{"B", []interface{}{int64(1), int64(2), int64(3)}, false},
-		{"C", []interface{}{"d", "e", "f"}, false},
-		{"D", []interface{}{int64(4), int64(5), int64(6)}, false},
-		{"E", []interface{}{"g", "h", "i"}, true},
-		{"F", []interface{}{"j", "k", "l"}, true},
-		{"G", []interface{}{"m", "n", "o"}, false},
-		{"H", []interface{}{"p", "q", "r"}, false},
-		{"I", []interface{}{7.0, 8.1, 9.2}, false},
+		{"A", []any{"a", "b", "c"}, false},
+		{"B", []any{int64(1), int64(2), int64(3)}, false},
+		{"C", []any{"d", "e", "f"}, false},
+		{"D", []any{int64(4), int64(5), int64(6)}, false},
+		{"E", []any{"g", "h", "i"}, true},
+		{"F", []any{"j", "k", "l"}, true},
+		{"G", []any{"m", "n", "o"}, false},
+		{"H", []any{"p", "q", "r"}, false},
+		{"I", []any{7.0, 8.1, 9.2}, false},
 	}
 
-	typ := reflect.TypeOf(T{})
+	typ := reflect.TypeFor[T]()
 
 	for i, tt := range tests {
 		t.Run(tt.fname, func(t *testing.T) {
 			sor := g.newSchemaFromStructField(typ.Field(i), true, tt.fname, typ)
 			assert.NotNil(t, sor)
-			var enum []interface{}
+			var enum []any
 			if tt.isSlice {
 				enum = sor.Items.Enum
 			} else {
@@ -442,7 +442,7 @@ func TestNewSchemaFromEnumField(t *testing.T) {
 }
 
 func diffJSON(a, b []byte) (bool, error) {
-	var j, j2 interface{}
+	var j, j2 any
 	if err := json.Unmarshal(a, &j); err != nil {
 		return false, err
 	}
@@ -520,7 +520,7 @@ func TestAddOperation(t *testing.T) {
 			},
 		},
 	}
-	_, err := g.AddOperation(path, "POST", "Test", reflect.TypeOf(&In{}), reflect.TypeOf(Z{}), infos)
+	_, err := g.AddOperation(path, "POST", "Test", reflect.TypeFor[*In](), reflect.TypeFor[Z](), infos)
 	if err != nil {
 		t.Error(err)
 	}
@@ -550,7 +550,7 @@ func TestAddOperation(t *testing.T) {
 		t.Error(err)
 	}
 	// see testdata/schemas/path-item.json.
-	expected, err := ioutil.ReadFile("../testdata/schemas/path-item.json")
+	expected, err := os.ReadFile("../testdata/schemas/path-item.json")
 	if err != nil {
 		t.Error(err)
 	}
@@ -563,11 +563,11 @@ func TestAddOperation(t *testing.T) {
 	}
 	// Try to add the operation again with the same
 	// identifier. Expected to fail.
-	_, err = g.AddOperation(path, "POST", "Test", reflect.TypeOf(&In{}), reflect.TypeOf(Z{}), infos)
+	_, err = g.AddOperation(path, "POST", "Test", reflect.TypeFor[*In](), reflect.TypeFor[Z](), infos)
 	assert.NotNil(t, err)
 
 	// Add an operation with a bad input type.
-	_, err = g.AddOperation("/", "GET", "", reflect.TypeOf(new(string)), nil, nil)
+	_, err = g.AddOperation("/", "GET", "", reflect.TypeFor[*string](), nil, nil)
 	assert.NotNil(t, err)
 }
 
@@ -649,29 +649,29 @@ func TestSetOperationResponseError(t *testing.T) {
 	op := &Operation{
 		Responses: make(Responses),
 	}
-	err := g.setOperationResponse(op, reflect.TypeOf(new(string)), "200", "application/json", "", nil, nil, nil)
+	err := g.setOperationResponse(op, reflect.TypeFor[*string](), "200", "application/json", "", nil, nil, nil)
 	assert.Nil(t, err)
 	assert.Equal(t, "OK", op.Responses["200"].Description)
 
-	err = g.setOperationResponse(op, reflect.TypeOf(new(string)), "429", "application/json", "testDesc", nil, nil, nil)
+	err = g.setOperationResponse(op, reflect.TypeFor[*string](), "429", "application/json", "testDesc", nil, nil, nil)
 	assert.Nil(t, err)
 	assert.Equal(t, "testDesc", op.Responses["429"].Description)
 
 	// Add another response with same code.
-	err = g.setOperationResponse(op, reflect.TypeOf(new(int)), "200", "application/xml", "", nil, nil, nil)
+	err = g.setOperationResponse(op, reflect.TypeFor[*int](), "200", "application/xml", "", nil, nil, nil)
 	assert.NotNil(t, err)
 
 	// Add invalid response code that cannot
 	// be converted to an integer.
-	err = g.setOperationResponse(op, reflect.TypeOf(new(bool)), "two-hundred", "", "", nil, nil, nil)
+	err = g.setOperationResponse(op, reflect.TypeFor[*bool](), "two-hundred", "", "", nil, nil, nil)
 	assert.NotNil(t, err)
 
 	// Add out of range response code.
-	err = g.setOperationResponse(op, reflect.TypeOf(new(bool)), "777", "", "", nil, nil, nil)
+	err = g.setOperationResponse(op, reflect.TypeFor[*bool](), "777", "", "", nil, nil, nil)
 	assert.NotNil(t, err)
 
 	// Cannot set both example and examples
-	err = g.setOperationResponse(op, reflect.TypeOf(new(bool)), "404", "", "", nil, "notFoundExample", map[string]interface{}{"badRequest": "message"})
+	err = g.setOperationResponse(op, reflect.TypeFor[*bool](), "404", "", "", nil, "notFoundExample", map[string]any{"badRequest": "message"})
 	assert.NotNil(t, err)
 }
 
@@ -683,9 +683,9 @@ func TestSetOperationResponseExample(t *testing.T) {
 		Responses: make(Responses),
 	}
 
-	error1 := map[string]interface{}{"error": "message1"}
+	error1 := map[string]any{"error": "message1"}
 
-	err := g.setOperationResponse(op, reflect.TypeOf(new(string)), "400", "application/json", "", nil, error1, nil)
+	err := g.setOperationResponse(op, reflect.TypeFor[*string](), "400", "application/json", "", nil, error1, nil)
 	assert.Nil(t, err)
 
 	// assert example set correctly
@@ -704,11 +704,11 @@ func TestSetOperationResponseExamples(t *testing.T) {
 		Responses: make(Responses),
 	}
 
-	error1 := map[string]interface{}{"error": "message1"}
-	error2 := map[string]interface{}{"error": "message2"}
+	error1 := map[string]any{"error": "message1"}
+	error2 := map[string]any{"error": "message2"}
 
-	err := g.setOperationResponse(op, reflect.TypeOf(new(string)), "400", "application/json", "", nil, nil,
-		map[string]interface{}{
+	err := g.setOperationResponse(op, reflect.TypeFor[*string](), "400", "application/json", "", nil, nil,
+		map[string]any{
 			"one": error1,
 			"two": error2,
 		},
@@ -732,7 +732,7 @@ func TestSetOperationParamsError(t *testing.T) {
 	op := &Operation{}
 
 	// Use invalid input type for parameters.
-	typ := reflect.TypeOf([]string{})
+	typ := reflect.TypeFor[[]string]()
 	err := g.setOperationParams(op, typ, typ, false, "/")
 	assert.NotNil(t, err)
 
@@ -740,7 +740,7 @@ func TestSetOperationParamsError(t *testing.T) {
 	type T struct {
 		B string `path:"B"`
 	}
-	typ = reflect.TypeOf(T{})
+	typ = reflect.TypeFor[T]()
 	err = g.setOperationParams(op, typ, typ, false, "/{a}/{B}")
 	assert.NotNil(t, err)
 }
@@ -753,7 +753,7 @@ func TestParamLocationConflict(t *testing.T) {
 	}
 	g := gen(t)
 
-	_, err := g.paramLocation(reflect.TypeOf(T{}).Field(0), reflect.TypeOf(T{}))
+	_, err := g.paramLocation(reflect.TypeFor[T]().Field(0), reflect.TypeFor[T]())
 	assert.NotNil(t, err)
 }
 
@@ -823,7 +823,7 @@ func TestSetServers(t *testing.T) {
 
 type customUnit float64
 
-func (c customUnit) ParseExample(v string) (interface{}, error) {
+func (c customUnit) ParseExample(v string) (any, error) {
 	s, err := strconv.ParseFloat(v, 64)
 	if err != nil {
 		return nil, err
@@ -833,7 +833,7 @@ func (c customUnit) ParseExample(v string) (interface{}, error) {
 
 type customTime time.Time
 
-func (c customTime) ParseExample(v string) (interface{}, error) {
+func (c customTime) ParseExample(v string) (any, error) {
 	t1, err := time.Parse(time.RFC3339, v)
 	if err != nil {
 		return nil, err
@@ -847,17 +847,17 @@ func TestGenerator_parseExampleValue(t *testing.T) {
 		testName    string
 		typ         reflect.Type
 		inputValue  string
-		outputValue interface{}
+		outputValue any
 	}{
 		{
 			"mapping to string",
-			reflect.TypeOf("value"),
+			reflect.TypeFor[string](),
 			"value",
 			"value",
 		},
 		{
 			"mapping pointer to string",
-			reflect.PtrTo(reflect.TypeOf("value")),
+			reflect.PointerTo(reflect.TypeFor[string]()),
 			"value",
 			"value",
 		},
@@ -869,7 +869,7 @@ func TestGenerator_parseExampleValue(t *testing.T) {
 		},
 		{
 			"mapping pointer to int8",
-			reflect.PtrTo(reflect.TypeOf(int8(math.MaxInt8))),
+			reflect.PointerTo(reflect.TypeOf(int8(math.MaxInt8))),
 			"127",
 			int8(math.MaxInt8),
 		},
@@ -881,7 +881,7 @@ func TestGenerator_parseExampleValue(t *testing.T) {
 		},
 		{
 			"mapping pointer to int16",
-			reflect.PtrTo(reflect.TypeOf(int16(math.MaxInt16))),
+			reflect.PointerTo(reflect.TypeOf(int16(math.MaxInt16))),
 			"32767",
 			int16(math.MaxInt16),
 		},
@@ -893,7 +893,7 @@ func TestGenerator_parseExampleValue(t *testing.T) {
 		},
 		{
 			"mapping pointer to int32",
-			reflect.PtrTo(reflect.TypeOf(int32(math.MaxInt32))),
+			reflect.PointerTo(reflect.TypeOf(int32(math.MaxInt32))),
 			"2147483647",
 			int32(math.MaxInt32),
 		},
@@ -905,7 +905,7 @@ func TestGenerator_parseExampleValue(t *testing.T) {
 		},
 		{
 			"mapping pointer to int64",
-			reflect.PtrTo(reflect.TypeOf(int64(math.MaxInt64))),
+			reflect.PointerTo(reflect.TypeOf(int64(math.MaxInt64))),
 			"9223372036854775807",
 			int64(math.MaxInt64),
 		},
@@ -917,7 +917,7 @@ func TestGenerator_parseExampleValue(t *testing.T) {
 		},
 		{
 			"mapping pointer to uint8",
-			reflect.PtrTo(reflect.TypeOf(uint8(math.MaxUint8))),
+			reflect.PointerTo(reflect.TypeOf(uint8(math.MaxUint8))),
 			"255",
 			uint8(math.MaxUint8),
 		},
@@ -929,7 +929,7 @@ func TestGenerator_parseExampleValue(t *testing.T) {
 		},
 		{
 			"mapping pointer to uint16",
-			reflect.PtrTo(reflect.TypeOf(uint16(math.MaxUint16))),
+			reflect.PointerTo(reflect.TypeOf(uint16(math.MaxUint16))),
 			"65535",
 			uint16(math.MaxUint16),
 		},
@@ -941,7 +941,7 @@ func TestGenerator_parseExampleValue(t *testing.T) {
 		},
 		{
 			"mapping pointer to uint32",
-			reflect.PtrTo(reflect.TypeOf(uint32(math.MaxUint32))),
+			reflect.PointerTo(reflect.TypeOf(uint32(math.MaxUint32))),
 			"4294967295",
 			uint32(math.MaxUint32),
 		},
@@ -953,19 +953,19 @@ func TestGenerator_parseExampleValue(t *testing.T) {
 		},
 		{
 			"mapping pointer to uint64",
-			reflect.PtrTo(reflect.TypeOf(uint64(math.MaxUint64))),
+			reflect.PointerTo(reflect.TypeOf(uint64(math.MaxUint64))),
 			"18446744073709551615",
 			uint64(math.MaxUint64),
 		},
 		{
 			"mapping to number",
-			reflect.TypeOf(1.23),
+			reflect.TypeFor[float64](),
 			"1.23",
 			1.23,
 		},
 		{
 			"mapping pointer to number",
-			reflect.PtrTo(reflect.TypeOf(1.23)),
+			reflect.PointerTo(reflect.TypeFor[float64]()),
 			"1.23",
 			1.23,
 		},
@@ -977,31 +977,31 @@ func TestGenerator_parseExampleValue(t *testing.T) {
 		},
 		{
 			"mapping pointer to boolean",
-			reflect.PtrTo(reflect.TypeOf(true)),
+			reflect.PointerTo(reflect.TypeOf(true)),
 			"true",
 			true,
 		},
 		{
 			"mapping to customUnit",
-			reflect.TypeOf(customUnit(1)),
+			reflect.TypeFor[customUnit](),
 			"15",
 			"15.00 USD",
 		},
 		{
 			"mapping pointer to customUnit",
-			reflect.PtrTo(reflect.TypeOf(customUnit(1))),
+			reflect.PointerTo(reflect.TypeFor[customUnit]()),
 			"20.00000",
 			"20.00 USD",
 		},
 		{
 			"mapping to customTime",
-			reflect.TypeOf(customTime{}),
+			reflect.TypeFor[customTime](),
 			"2022-02-07T18:00:00+09:00",
 			customTime(time.Date(2022, time.February, 7, 18, 0, 0, 0, time.FixedZone("", 9*3600))),
 		},
 		{
 			"mapping pointer to customTime",
-			reflect.PtrTo(reflect.TypeOf(customTime{})),
+			reflect.PointerTo(reflect.TypeFor[customTime]()),
 			"2022-02-07T18:00:00+09:00",
 			customTime(time.Date(2022, time.February, 7, 18, 0, 0, 0, time.FixedZone("", 9*3600))),
 		},
@@ -1019,7 +1019,7 @@ func TestGenerator_parseExampleValue(t *testing.T) {
 // TestGenerator_parseExampleValueError tests that
 // parseExampleValue raises error on unsupported type.
 func TestGenerator_parseExampleValueError(t *testing.T) {
-	_, err := parseExampleValue(reflect.TypeOf(map[string]string{}), "whatever")
+	_, err := parseExampleValue(reflect.TypeFor[map[string]string](), "whatever")
 	assert.Error(t, err, "parseExampleValue does not support type")
 }
 

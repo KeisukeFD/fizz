@@ -47,7 +47,7 @@ func routes(grp *fizz.RouterGroup) {
 	grp.POST("", []fizz.OperationOption{
 		fizz.Summary("Add a fruit to the market"),
 		fizz.Response("400", "Bad request", nil, nil,
-			map[string]interface{}{"error": "fruit already exists"},
+			map[string]any{"error": "fruit already exists"},
 		),
 	}, tonic.Handler(CreateFruit, 200))
 
@@ -55,9 +55,9 @@ func routes(grp *fizz.RouterGroup) {
 	// probably because it rotted.
 	grp.DELETE("/:name", []fizz.OperationOption{
 		fizz.Summary("Remove a fruit from the market"),
-		fizz.ResponseWithExamples("400", "Bad request", nil, nil, map[string]interface{}{
-			"fruitNotFound": map[string]interface{}{"error": "fruit not found"},
-			"invalidApiKey": map[string]interface{}{"error": "invalid api key"},
+		fizz.ResponseWithExamples("400", "Bad request", nil, nil, map[string]any{
+			"fruitNotFound": map[string]any{"error": "fruit not found"},
+			"invalidApiKey": map[string]any{"error": "invalid api key"},
 		}),
 	}, tonic.Handler(DeleteFruit, 204))
 

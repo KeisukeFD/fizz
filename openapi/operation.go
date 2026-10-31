@@ -10,12 +10,12 @@ type OperationInfo struct {
 	Summary                 string
 	Description             string
 	Deprecated              bool
-	InputModel              interface{}
+	InputModel              any
 	Responses               []*OperationResponse
 	Security                []*SecurityRequirement
 	XCodeSamples            []*XCodeSample
 	XInternal               bool
-	DefaultResponseExamples map[string]interface{}
+	DefaultResponseExamples map[string]any
 }
 
 // ResponseHeader represents a single header that
@@ -23,7 +23,7 @@ type OperationInfo struct {
 type ResponseHeader struct {
 	Name        string
 	Description string
-	Model       interface{}
+	Model       any
 }
 
 // OperationResponse represents a single response of an
@@ -33,8 +33,8 @@ type OperationResponse struct {
 	// according to OAS3 spec.
 	Code        string
 	Description string
-	Model       interface{}
+	Model       any
 	Headers     []*ResponseHeader
-	Example     interface{}
-	Examples    map[string]interface{}
+	Example     any
+	Examples    map[string]any
 }

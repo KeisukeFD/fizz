@@ -10,7 +10,7 @@ import (
 // marshaled to YAML.
 func TestYAMLMarshalingRefs(t *testing.T) {
 	// tests for references.
-	tests := []interface{}{
+	tests := []any{
 		&ParameterOrRef{Reference: &Reference{Ref: ""}},
 		&SchemaOrRef{Reference: &Reference{Ref: ""}},
 		&ResponseOrRef{Reference: &Reference{Ref: ""}},
@@ -40,7 +40,7 @@ func TestYAMLMarshalingRefs(t *testing.T) {
 // marshaled to YAML.
 func TestYAMLMarshalingTypes(t *testing.T) {
 	// tests for types.
-	tests := map[interface{}]interface{}{
+	tests := map[any]any{
 		&ParameterOrRef{Parameter: new(Parameter)}: &Parameter{},
 		&SchemaOrRef{Schema: new(Schema)}:          &Schema{},
 		&ResponseOrRef{Response: new(Response)}:    &Response{},

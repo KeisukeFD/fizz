@@ -51,7 +51,7 @@ func TestInternalDataType(t *testing.T) {
 // TestPrimitiveGoTypeToDataType tests that a Go
 // primitive type can be converted to a DataType..
 func TestPrimitiveGoTypeToDataType(t *testing.T) {
-	tests := map[interface{}]DataType{
+	tests := map[any]DataType{
 		int(0):       TypeInteger,
 		int8(1):      TypeInteger,
 		int16(2):     TypeInteger,
@@ -210,7 +210,7 @@ func TestStringToDurationType(t *testing.T) {
 func TestStringToType(t *testing.T) {
 	tests := map[string]struct {
 		t reflect.Type
-		v interface{}
+		v any
 	}{
 		"coucou":  {rt(""), "coucou"},
 		"0":       {rt(int8(0)), int64(0)},
@@ -238,7 +238,7 @@ func TestStringToType(t *testing.T) {
 	}
 	// Expect error for unknown unsuported types
 	// in conversion.
-	_, err := stringToType("", reflect.TypeOf([]string{}))
+	_, err := stringToType("", reflect.TypeFor[[]string]())
 	if err == nil {
 		t.Errorf("expected error to be non-nil for unsupported type")
 	}

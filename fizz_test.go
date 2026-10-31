@@ -3,7 +3,7 @@ package fizz
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -127,11 +127,11 @@ func (c customTime) MarshalJSON() ([]byte, error) {
 	return []byte(ts), nil
 }
 
-func (c customTime) MarshalYAML() (interface{}, error) {
+func (c customTime) MarshalYAML() (any, error) {
 	return c.String(), nil
 }
 
-func (c customTime) ParseExample(v string) (interface{}, error) {
+func (c customTime) ParseExample(v string) (any, error) {
 	t1, err := time.Parse(time.RFC3339, v)
 	if err != nil {
 		return nil, err
@@ -237,7 +237,7 @@ func TestTonicHandler(t *testing.T) {
 		}
 		defer resp.Body.Close()
 
-		body, err := ioutil.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
 		if err != nil {
 			t.Error(err)
 			break
@@ -263,9 +263,9 @@ type testInputModel1 struct {
 }
 
 type testInputModel2 struct {
-	C        string      `path:"c"`
-	Message  string      `json:"message" description:"A short message"`
-	AnyValue interface{} `json:"value" description:"A nullable value of arbitrary type"`
+	C        string `path:"c"`
+	Message  string `json:"message" description:"A short message"`
+	AnyValue any    `json:"value" description:"A nullable value of arbitrary type"`
 }
 
 // TestSpecHandler tests that the OpenAPI handler
@@ -296,7 +296,7 @@ func TestSpecHandler(t *testing.T) {
 				},
 			}, nil),
 			Response("404", "", String, nil, "not-found-example"),
-			ResponseWithExamples("400", "", String, nil, map[string]interface{}{
+			ResponseWithExamples("400", "", String, nil, map[string]any{
 				"one": "message1",
 				"two": "message2",
 			}),
@@ -401,12 +401,12 @@ func TestSpecHandler(t *testing.T) {
 
 	assert.Equal(t, 200, respJSON.StatusCode)
 
-	specJSON, err := ioutil.ReadAll(respJSON.Body)
+	specJSON, err := io.ReadAll(respJSON.Body)
 	if err != nil {
 		t.Error(err)
 	}
 	// see testdata/spec.json.
-	expectedJSON, err := ioutil.ReadFile("testdata/spec.json")
+	expectedJSON, err := os.ReadFile("testdata/spec.json")
 	if err != nil {
 		t.Error(err)
 	}
@@ -426,12 +426,12 @@ func TestSpecHandler(t *testing.T) {
 
 	assert.Equal(t, 200, respYAML.StatusCode)
 
-	specYAML, err := ioutil.ReadAll(respYAML.Body)
+	specYAML, err := io.ReadAll(respYAML.Body)
 	if err != nil {
 		t.Error(err)
 	}
 	// see testdata/spec.yaml.
-	expectedYAML, err := ioutil.ReadFile("testdata/spec.yaml")
+	expectedYAML, err := os.ReadFile("testdata/spec.yaml")
 	if err != nil {
 		t.Error(err)
 	}
@@ -561,7 +561,7 @@ func TestOperationContext(t *testing.T) {
 }
 
 func diffJSON(a, b []byte) (bool, error) {
-	var j1, j2 interface{}
+	var j1, j2 any
 	if err := json.Unmarshal(a, &j1); err != nil {
 		return false, err
 	}
@@ -572,7 +572,7 @@ func diffJSON(a, b []byte) (bool, error) {
 }
 
 func diffYAML(a, b []byte) (bool, error) {
-	var j1, j2 interface{}
+	var j1, j2 any
 	if err := yaml.Unmarshal(a, &j1); err != nil {
 		return false, err
 	}

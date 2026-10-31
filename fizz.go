@@ -285,7 +285,7 @@ func Summary(summary string) func(*openapi.OperationInfo) {
 
 // Summaryf adds a summary to an operation according
 // to a format specifier.
-func Summaryf(format string, a ...interface{}) func(*openapi.OperationInfo) {
+func Summaryf(format string, a ...any) func(*openapi.OperationInfo) {
 	return func(o *openapi.OperationInfo) {
 		o.Summary = fmt.Sprintf(format, a...)
 	}
@@ -300,7 +300,7 @@ func Description(desc string) func(*openapi.OperationInfo) {
 
 // Descriptionf adds a description to an operation
 // according to a format specifier.
-func Descriptionf(format string, a ...interface{}) func(*openapi.OperationInfo) {
+func Descriptionf(format string, a ...any) func(*openapi.OperationInfo) {
 	return func(o *openapi.OperationInfo) {
 		o.Description = fmt.Sprintf(format, a...)
 	}
@@ -321,7 +321,7 @@ func Deprecated(deprecated bool) func(*openapi.OperationInfo) {
 }
 
 // Response adds an additional response to the operation.
-func Response(statusCode, desc string, model interface{}, headers []*openapi.ResponseHeader, example interface{}) func(*openapi.OperationInfo) {
+func Response(statusCode, desc string, model any, headers []*openapi.ResponseHeader, example any) func(*openapi.OperationInfo) {
 	return func(o *openapi.OperationInfo) {
 		o.Responses = append(o.Responses, &openapi.OperationResponse{
 			Code:        statusCode,
@@ -334,7 +334,7 @@ func Response(statusCode, desc string, model interface{}, headers []*openapi.Res
 }
 
 // ResponseWithExamples is a variant of Response that accept many examples.
-func ResponseWithExamples(statusCode, desc string, model interface{}, headers []*openapi.ResponseHeader, examples map[string]interface{}) func(*openapi.OperationInfo) {
+func ResponseWithExamples(statusCode, desc string, model any, headers []*openapi.ResponseHeader, examples map[string]any) func(*openapi.OperationInfo) {
 	return func(o *openapi.OperationInfo) {
 		o.Responses = append(o.Responses, &openapi.OperationResponse{
 			Code:        statusCode,
@@ -347,14 +347,14 @@ func ResponseWithExamples(statusCode, desc string, model interface{}, headers []
 }
 
 // DefaultResponseExamples adds additional examples to the default response.
-func DefaultResponseExamples(examples map[string]interface{}) func(*openapi.OperationInfo) {
+func DefaultResponseExamples(examples map[string]any) func(*openapi.OperationInfo) {
 	return func(o *openapi.OperationInfo) {
 		o.DefaultResponseExamples = examples
 	}
 }
 
 // Header adds a header to the operation.
-func Header(name, desc string, model interface{}) func(*openapi.OperationInfo) {
+func Header(name, desc string, model any) func(*openapi.OperationInfo) {
 	return func(o *openapi.OperationInfo) {
 		o.Headers = append(o.Headers, &openapi.ResponseHeader{
 			Name:        name,
@@ -365,7 +365,7 @@ func Header(name, desc string, model interface{}) func(*openapi.OperationInfo) {
 }
 
 // InputModel overrides the binding model of the operation.
-func InputModel(model interface{}) func(*openapi.OperationInfo) {
+func InputModel(model any) func(*openapi.OperationInfo) {
 	return func(o *openapi.OperationInfo) {
 		o.InputModel = model
 	}
@@ -439,7 +439,7 @@ func lastChar(str string) uint8 {
 	return str[len(str)-1]
 }
 
-func funcEqual(f1, f2 interface{}) bool {
+func funcEqual(f1, f2 any) bool {
 	v1 := reflect.ValueOf(f1)
 	v2 := reflect.ValueOf(f2)
 

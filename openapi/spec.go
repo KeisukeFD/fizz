@@ -117,7 +117,7 @@ type ParameterOrRef struct {
 }
 
 // MarshalYAML implements yaml.Marshaler for ParameterOrRef.
-func (por *ParameterOrRef) MarshalYAML() (interface{}, error) {
+func (por *ParameterOrRef) MarshalYAML() (any, error) {
 	if por.Parameter != nil {
 		return por.Parameter, nil
 	}
@@ -139,7 +139,7 @@ type SchemaOrRef struct {
 }
 
 // MarshalYAML implements yaml.Marshaler for SchemaOrRef.
-func (sor *SchemaOrRef) MarshalYAML() (interface{}, error) {
+func (sor *SchemaOrRef) MarshalYAML() (any, error) {
 	if sor.Schema != nil {
 		return sor.Schema, nil
 	}
@@ -161,29 +161,29 @@ type Schema struct {
 	AdditionalProperties *SchemaOrRef            `json:"additionalProperties,omitempty" yaml:"additionalProperties,omitempty"`
 	Description          string                  `json:"description,omitempty" yaml:"description,omitempty"`
 	Format               string                  `json:"format,omitempty" yaml:"format,omitempty"`
-	Default              interface{}             `json:"default,omitempty" yaml:"default,omitempty"`
-	Example              interface{}             `json:"example,omitempty" yaml:"example,omitempty"`
+	Default              any                     `json:"default,omitempty" yaml:"default,omitempty"`
+	Example              any                     `json:"example,omitempty" yaml:"example,omitempty"`
 
 	// The following properties are taken directly from the
 	// JSON Schema definition and follow the same specifications
-	Title            string        `json:"title,omitempty" yaml:"title,omitempty"`
-	MultipleOf       int           `json:"multipleOf,omitempty" yaml:"multipleOf,omitempty"`
-	Maximum          int           `json:"maximum,omitempty" yaml:"maximum,omitempty"`
-	ExclusiveMaximum bool          `json:"exclusiveMaximum,omitempty" yaml:"exclusiveMaximum,omitempty"`
-	Minimum          int           `json:"minimum,omitempty" yaml:"minimum,omitempty"`
-	ExclusiveMinimum bool          `json:"exclusiveMinimum,omitempty" yaml:"exclusiveMinimum,omitempty"`
-	MaxLength        int           `json:"maxLength,omitempty" yaml:"maxLength,omitempty"`
-	MinLength        int           `json:"minLength,omitempty" yaml:"minLength,omitempty"`
-	Pattern          string        `json:"pattern,omitempty" yaml:"pattern,omitempty"`
-	MaxItems         int           `json:"maxItems,omitempty" yaml:"maxItems,omitempty"`
-	MinItems         int           `json:"minItems,omitempty" yaml:"minItems,omitempty"`
-	UniqueItems      bool          `json:"uniqueItems,omitempty" yaml:"uniqueItems,omitempty"`
-	MaxProperties    int           `json:"maxProperties,omitempty" yaml:"maxProperties,omitempty"`
-	MinProperties    int           `json:"minProperties,omitempty" yaml:"minProperties,omitempty"`
-	Required         []string      `json:"required,omitempty" yaml:"required,omitempty"`
-	Enum             []interface{} `json:"enum,omitempty" yaml:"enum,omitempty"`
-	Nullable         bool          `json:"nullable,omitempty" yaml:"nullable,omitempty"`
-	Deprecated       bool          `json:"deprecated,omitempty" yaml:"deprecated,omitempty"`
+	Title            string   `json:"title,omitempty" yaml:"title,omitempty"`
+	MultipleOf       int      `json:"multipleOf,omitempty" yaml:"multipleOf,omitempty"`
+	Maximum          int      `json:"maximum,omitempty" yaml:"maximum,omitempty"`
+	ExclusiveMaximum bool     `json:"exclusiveMaximum,omitempty" yaml:"exclusiveMaximum,omitempty"`
+	Minimum          int      `json:"minimum,omitempty" yaml:"minimum,omitempty"`
+	ExclusiveMinimum bool     `json:"exclusiveMinimum,omitempty" yaml:"exclusiveMinimum,omitempty"`
+	MaxLength        int      `json:"maxLength,omitempty" yaml:"maxLength,omitempty"`
+	MinLength        int      `json:"minLength,omitempty" yaml:"minLength,omitempty"`
+	Pattern          string   `json:"pattern,omitempty" yaml:"pattern,omitempty"`
+	MaxItems         int      `json:"maxItems,omitempty" yaml:"maxItems,omitempty"`
+	MinItems         int      `json:"minItems,omitempty" yaml:"minItems,omitempty"`
+	UniqueItems      bool     `json:"uniqueItems,omitempty" yaml:"uniqueItems,omitempty"`
+	MaxProperties    int      `json:"maxProperties,omitempty" yaml:"maxProperties,omitempty"`
+	MinProperties    int      `json:"minProperties,omitempty" yaml:"minProperties,omitempty"`
+	Required         []string `json:"required,omitempty" yaml:"required,omitempty"`
+	Enum             []any    `json:"enum,omitempty" yaml:"enum,omitempty"`
+	Nullable         bool     `json:"nullable,omitempty" yaml:"nullable,omitempty"`
+	Deprecated       bool     `json:"deprecated,omitempty" yaml:"deprecated,omitempty"`
 }
 
 // Operation describes an API operation on a path.
@@ -220,7 +220,7 @@ type operationNilOmitted struct {
 
 // MarshalYAML implements yaml.Marshaler for Operation.
 // Needed to marshall empty but non-null SecurityRequirements.
-func (o *Operation) MarshalYAML() (interface{}, error) {
+func (o *Operation) MarshalYAML() (any, error) {
 	if o.Security == nil {
 		return omitOperationNilFields(o), nil
 	}
@@ -264,7 +264,7 @@ type ResponseOrRef struct {
 }
 
 // MarshalYAML implements yaml.Marshaler for ResponseOrRef.
-func (ror *ResponseOrRef) MarshalYAML() (interface{}, error) {
+func (ror *ResponseOrRef) MarshalYAML() (any, error) {
 	if ror.Response != nil {
 		return ror.Response, nil
 	}
@@ -286,7 +286,7 @@ type HeaderOrRef struct {
 }
 
 // MarshalYAML implements yaml.Marshaler for HeaderOrRef.
-func (hor *HeaderOrRef) MarshalYAML() (interface{}, error) {
+func (hor *HeaderOrRef) MarshalYAML() (any, error) {
 	if hor.Header != nil {
 		return hor.Header, nil
 	}
@@ -310,7 +310,7 @@ type MediaTypeOrRef struct {
 }
 
 // MarshalYAML implements yaml.Marshaler for MediaTypeOrRef.
-func (mtor *MediaTypeOrRef) MarshalYAML() (interface{}, error) {
+func (mtor *MediaTypeOrRef) MarshalYAML() (any, error) {
 	if mtor.MediaType != nil {
 		return mtor.MediaType, nil
 	}
@@ -320,7 +320,7 @@ func (mtor *MediaTypeOrRef) MarshalYAML() (interface{}, error) {
 // MediaType represents the type of a media.
 type MediaType struct {
 	Schema   *SchemaOrRef             `json:"schema" yaml:"schema"`
-	Example  interface{}              `json:"example,omitempty" yaml:"example,omitempty"`
+	Example  any                      `json:"example,omitempty" yaml:"example,omitempty"`
 	Examples map[string]*ExampleOrRef `json:"examples,omitempty" yaml:"examples,omitempty"`
 	Encoding map[string]*Encoding     `json:"encoding,omitempty" yaml:"encoding,omitempty"`
 }
@@ -333,7 +333,7 @@ type ExampleOrRef struct {
 }
 
 // MarshalYAML implements yaml.Marshaler for ExampleOrRef.
-func (eor *ExampleOrRef) MarshalYAML() (interface{}, error) {
+func (eor *ExampleOrRef) MarshalYAML() (any, error) {
 	if eor.Example != nil {
 		return eor.Example, nil
 	}
@@ -342,10 +342,10 @@ func (eor *ExampleOrRef) MarshalYAML() (interface{}, error) {
 
 // Example represents the example of a media type.
 type Example struct {
-	Summary       string      `json:"summary,omitempty" yaml:"summary,omitempty"`
-	Description   string      `json:"description,omitempty" yaml:"description,omitempty"`
-	Value         interface{} `json:"value,omitempty" yaml:"value,omitempty"`
-	ExternalValue string      `json:"externalValue,omitempty" yaml:"externalValue,omitempty"`
+	Summary       string `json:"summary,omitempty" yaml:"summary,omitempty"`
+	Description   string `json:"description,omitempty" yaml:"description,omitempty"`
+	Value         any    `json:"value,omitempty" yaml:"value,omitempty"`
+	ExternalValue string `json:"externalValue,omitempty" yaml:"externalValue,omitempty"`
 }
 
 // Encoding represents a single encoding definition
@@ -372,7 +372,7 @@ type SecuritySchemeOrRef struct {
 }
 
 // MarshalYAML implements yaml.Marshaler for SecuritySchemeOrRef.
-func (sor *SecuritySchemeOrRef) MarshalYAML() (interface{}, error) {
+func (sor *SecuritySchemeOrRef) MarshalYAML() (any, error) {
 	if sor.SecurityScheme != nil {
 		return sor.SecurityScheme, nil
 	}

@@ -160,7 +160,7 @@ func (g *Generator) OverrideTypeName(t reflect.Type, name string) error {
 	if name == "" {
 		return errors.New("type name is empty")
 	}
-	if t.Kind() == reflect.Ptr {
+	if t.Kind() == reflect.Pointer {
 		t = t.Elem()
 	}
 	if _, ok := g.typeNames[t]; ok {
@@ -178,7 +178,7 @@ func (g *Generator) OverrideDataType(t reflect.Type, typ, format string) error {
 	if typ == "" {
 		return errors.New("type is mandatory")
 	}
-	if t.Kind() == reflect.Ptr {
+	if t.Kind() == reflect.Pointer {
 		t = t.Elem()
 	}
 	if _, ok := g.dataTypes[t]; ok {
@@ -276,7 +276,7 @@ func (g *Generator) AddOperation(path, method, tag string, in, out reflect.Type,
 		method != http.MethodDelete
 
 	if in != nil {
-		if in.Kind() == reflect.Ptr {
+		if in.Kind() == reflect.Pointer {
 			in = in.Elem()
 		}
 		if in.Kind() != reflect.Struct {
@@ -362,7 +362,7 @@ func isResponseCodeRange(code string) bool {
 
 // setOperationResponse adds a response to the operation that
 // return the type t with the given media type and status code.
-func (g *Generator) setOperationResponse(op *Operation, t reflect.Type, code, mt, desc string, headers []*ResponseHeader, example interface{}, examples map[string]interface{}) error {
+func (g *Generator) setOperationResponse(op *Operation, t reflect.Type, code, mt, desc string, headers []*ResponseHeader, example any, examples map[string]any) error {
 	if _, ok := op.Responses[code]; ok {
 		// A response already exists for this code.
 		return fmt.Errorf("response with code %s already exists", code)
@@ -502,7 +502,7 @@ func (g *Generator) buildParamsRecursive(op *Operation, t, parent reflect.Type, 
 		sft := sf.Type
 
 		// Dereference pointer.
-		if sft.Kind() == reflect.Ptr {
+		if sft.Kind() == reflect.Pointer {
 			sft = sft.Elem()
 		}
 		isUnexported := sf.PkgPath != ""
@@ -834,8 +834,8 @@ func (g *Generator) newSchemaFromStructField(sf reflect.StructField, required bo
 	return sor
 }
 
-func (g *Generator) enumFromStructField(sf reflect.StructField, fname string, parent reflect.Type) []interface{} {
-	var enum []interface{}
+func (g *Generator) enumFromStructField(sf reflect.StructField, fname string, parent reflect.Type) []any {
+	var enum []any
 
 	etag := sf.Tag.Get(g.config.EnumTag)
 	if etag != "" {
@@ -843,7 +843,7 @@ func (g *Generator) enumFromStructField(sf reflect.StructField, fname string, pa
 		sftype := sf.Type
 
 		// Use underlying element type if it's an array/slice/pointer
-		for sftype.Kind() == reflect.Ptr || sftype.Kind() == reflect.Slice || sftype.Kind() == reflect.Array {
+		for sftype.Kind() == reflect.Pointer || sftype.Kind() == reflect.Slice || sftype.Kind() == reflect.Array {
 			sftype = sftype.Elem()
 		}
 		for _, val := range values {
@@ -872,7 +872,7 @@ func (g *Generator) newSchemaFromType(t reflect.Type) *SchemaOrRef {
 	var nullable bool
 
 	// Dereference pointer.
-	if t.Kind() == reflect.Ptr {
+	if t.Kind() == reflect.Pointer {
 		t = t.Elem()
 		nullable = true
 	} else if t.Implements(tofNullable) {
@@ -920,7 +920,7 @@ func (g *Generator) buildSchemaRecursive(t reflect.Type) *SchemaOrRef {
 	schema := &Schema{}
 
 	switch t.Kind() {
-	case reflect.Ptr:
+	case reflect.Pointer:
 		return g.buildSchemaRecursive(t.Elem())
 	case reflect.Struct:
 		return g.newSchemaFromStruct(t)
@@ -1006,12 +1006,11 @@ func (g *Generator) newSchemaFromStruct(t reflect.Type) *SchemaOrRef {
 // flattenStructSchema recursively flatten the embedded
 // fields of the struct type t to the given schema.
 func (g *Generator) flattenStructSchema(t, parent reflect.Type, schema *Schema) *Schema {
-	for i := 0; i < t.NumField(); i++ {
-		f := t.Field(i)
+	for f := range t.Fields() {
 		ft := f.Type
 
 		// Dereference pointer.
-		if ft.Kind() == reflect.Ptr {
+		if ft.Kind() == reflect.Pointer {
 			ft = ft.Elem()
 		}
 		isUnexported := f.PkgPath != ""
@@ -1072,8 +1071,8 @@ func (g *Generator) flattenStructSchema(t, parent reflect.Type, schema *Schema) 
 // tag 'binding'.
 func (g *Generator) isStructFieldRequired(sf reflect.StructField) bool {
 	if t, ok := sf.Tag.Lookup(g.config.ValidatorTag); ok {
-		options := strings.Split(t, ",")
-		for _, o := range options {
+		options := strings.SplitSeq(t, ",")
+		for o := range options {
 			// As soon as we see a 'dive' or 'keys'
 			// options, the following options won't
 			// apply to the given field.
@@ -1127,7 +1126,7 @@ func (g *Generator) resolveParameter(p *ParameterOrRef) *Parameter {
 // of the given type, transformed to CamelCase without
 // a dot separator between the two parts.
 func (g *Generator) typeName(t reflect.Type) string {
-	if t.Kind() == reflect.Ptr {
+	if t.Kind() == reflect.Pointer {
 		t = t.Elem()
 	}
 	if t.PkgPath() == "" {
@@ -1176,12 +1175,12 @@ func (g *Generator) updateSchemaValidation(schema *Schema, sf reflect.StructFiel
 		return schema
 	}
 	ft := sf.Type
-	if sf.Type.Kind() == reflect.Ptr {
+	if sf.Type.Kind() == reflect.Pointer {
 		ft = sf.Type.Elem()
 	}
-	tags := strings.Split(ts, ",")
+	tags := strings.SplitSeq(ts, ",")
 
-	for _, t := range tags {
+	for t := range tags {
 		if t == "dive" || t == "keys" {
 			break
 		}
@@ -1190,17 +1189,17 @@ func (g *Generator) updateSchemaValidation(schema *Schema, sf reflect.StructFiel
 			break
 		}
 		// Tags can be joined together with an OR operator.
-		parts := strings.Split(t, "|")
+		parts := strings.SplitSeq(t, "|")
 
-		for _, p := range parts {
+		for p := range parts {
 			var k, v string
 			// Split k/v pair using separator.
-			sepIdx := strings.Index(p, "=")
-			if sepIdx == -1 {
+			before, after, ok := strings.Cut(p, "=")
+			if !ok {
 				k = p
 			} else {
-				k = p[:sepIdx]
-				v = p[sepIdx+1:]
+				k = before
+				v = after
 			}
 			// Handle validators with value.
 			switch k {
@@ -1256,7 +1255,7 @@ func fieldNameFromTag(sf reflect.StructField, tagName string) string {
 }
 
 // parseExampleValue is used to transform the string representation of the example value to the correct type.
-func parseExampleValue(t reflect.Type, value string) (interface{}, error) {
+func parseExampleValue(t reflect.Type, value string) (any, error) {
 	// If the type implements Exampler use the ParseExample method to create the example
 	i, ok := reflect.New(t).Interface().(Exampler)
 	if ok {
@@ -1300,7 +1299,7 @@ func parseExampleValue(t reflect.Type, value string) (interface{}, error) {
 		return u, nil
 	case reflect.Float32, reflect.Float64:
 		return strconv.ParseFloat(value, t.Bits())
-	case reflect.Ptr:
+	case reflect.Pointer:
 		return parseExampleValue(t.Elem(), value)
 	case reflect.Struct:
 		return nil, fmt.Errorf("type %s does not implement Exampler", t.String())

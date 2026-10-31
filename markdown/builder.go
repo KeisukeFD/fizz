@@ -184,7 +184,7 @@ func (b *Builder) Blockquote(text string) *Builder {
 
 // BulletedList adds the given list as a bulleted
 // list to the markdown.
-func (b *Builder) BulletedList(list ...interface{}) *Builder {
+func (b *Builder) BulletedList(list ...any) *Builder {
 	for _, el := range list {
 		lines := strings.Split(fmt.Sprintf("%s", el), "\n")
 		for i, l := range lines {
@@ -200,7 +200,7 @@ func (b *Builder) BulletedList(list ...interface{}) *Builder {
 
 // NumberedList adds the given list as a numbered
 // list to the markdown.
-func (b *Builder) NumberedList(list ...interface{}) *Builder {
+func (b *Builder) NumberedList(list ...any) *Builder {
 	for i, el := range list {
 		lines := strings.Split(fmt.Sprintf("%s", el), "\n")
 		for j, l := range lines {
@@ -249,11 +249,7 @@ func (b *Builder) Table(table [][]string, align []TableAlignment) *Builder {
 	for x, line := range table {
 		for y := range line {
 			cl := max(charLen(table[x][y]), colsLens[y])
-			if cl < minCellSize {
-				colsLens[y] = minCellSize
-			} else {
-				colsLens[y] = cl
-			}
+			colsLens[y] = max(cl, minCellSize)
 		}
 	}
 	sb := strings.Builder{}
@@ -312,17 +308,17 @@ func (b *Builder) writeln(s string) *Builder {
 }
 
 // writelnf writes s with a new line to the markdown.
-func (b *Builder) writelnf(format string, a ...interface{}) *Builder {
+func (b *Builder) writelnf(format string, a ...any) *Builder {
 	return b.write(fmt.Sprintf(format, a...)).nl()
 }
 
 // charLen returns the number of caracters present in
 // the string s. A caracter is defined as:
-// - a sequence of runes that starts with a starter.
-// - a rune that does not modify or combine backwards with
-//   any other rune.
-// - followed by possibly empty sequence of non-starters,
-//   that is, runes that do (typically accents).
+//   - a sequence of runes that starts with a starter.
+//   - a rune that does not modify or combine backwards with
+//     any other rune.
+//   - followed by possibly empty sequence of non-starters,
+//     that is, runes that do (typically accents).
 func charLen(s string) int {
 	var (
 		ia  norm.Iter
@@ -334,14 +330,6 @@ func charLen(s string) int {
 		ia.Next()
 	}
 	return len
-}
-
-// max returns the larger of x or y.
-func max(x, y int) int {
-	if x > y {
-		return x
-	}
-	return y
 }
 
 // joinCols join the columns of a table line with
