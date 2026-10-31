@@ -36,6 +36,8 @@ jobs:
           go-version: ${{ matrix.go }}
       - name: Run tests
         shell: bash
+        env:
+          FIZZ_STALE: fail
         run: ./ci/test.sh
       - name: Upload coverage
         uses: codecov/codecov-action@v7

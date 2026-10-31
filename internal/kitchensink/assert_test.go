@@ -11,7 +11,7 @@ const doc = `{"a":{"b/c":[1,{"d":"x"}],"n":null}}`
 
 func failures(frags ...Fragment) []string {
 	r := &recorder{}
-	checkFragments(r, []byte(doc), frags)
+	AssertFragments(r, []byte(doc), frags)
 	return r.msgs
 }
 

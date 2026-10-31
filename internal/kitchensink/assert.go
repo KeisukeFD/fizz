@@ -2,6 +2,7 @@ package kitchensink
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"maps"
 	"reflect"
@@ -44,8 +45,9 @@ func resolve(v any, ptr string) (any, bool) {
 	return v, true
 }
 
-// checkFragments reports every fragment that does not hold in doc.
-func checkFragments(tb testing.TB, doc []byte, frags []Fragment) {
+// AssertFragments reports, through tb.Errorf, every fragment that does not
+// hold in doc.
+func AssertFragments(tb testing.TB, doc []byte, frags []Fragment) {
 	tb.Helper()
 	var root any
 	if err := json.Unmarshal(doc, &root); err != nil {
@@ -73,6 +75,31 @@ func checkFragments(tb testing.TB, doc []byte, frags []Fragment) {
 		// first differing sub-pointer.
 		if d := diff(want, got); d != "" {
 			tb.Errorf("pointer %q: %s\nwant: %s\ngot:  %s", fr.Pointer, d, show(want), show(got))
+		}
+	}
+}
+
+// checkWarnings reports every substring that no warning in errs contains.
+// Only entries implementing IsWarning() bool and returning true count.
+func checkWarnings(tb testing.TB, errs []error, subs []string) {
+	tb.Helper()
+	var warnings []error
+	for _, e := range errs {
+		var w interface{ IsWarning() bool }
+		if errors.As(e, &w) && w.IsWarning() {
+			warnings = append(warnings, e)
+		}
+	}
+	for _, s := range subs {
+		found := false
+		for _, e := range warnings {
+			if strings.Contains(e.Error(), s) {
+				found = true
+				break
+			}
+		}
+		if !found {
+			tb.Errorf("Errors() has no warning containing %q (got %v)", s, errs)
 		}
 	}
 }
@@ -155,12 +182,12 @@ func firstDiff(a, b any, ptr string) (string, bool) {
 	return ptr, true
 }
 
-// buildSpec marshals the document of f. It reads the generator's API
+// BuildSpec marshals the document of f. It reads the generator's API
 // directly instead of serving OpenAPI() through httptest: the handler
 // only wraps the same value in gin's renderer, so going through it
 // would couple every case to gin and to the handler's future shape
 // (P6) for no extra coverage.
-func buildSpec(f *fizz.Fizz) ([]byte, error) {
+func BuildSpec(f *fizz.Fizz) ([]byte, error) {
 	f.Generator().SetInfo(&openapi.Info{Title: "kitchensink", Version: "0"})
 	return json.Marshal(f.Generator().API())
 }

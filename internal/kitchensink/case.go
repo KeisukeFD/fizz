@@ -15,6 +15,7 @@ import (
 	"testing"
 
 	"github.com/wI2L/fizz"
+	"github.com/wI2L/fizz/internal/plan"
 )
 
 // Fragment is a hand-written expectation on the generated document.
@@ -31,6 +32,9 @@ type Fragment struct {
 // Case is one kitchen-sink scenario.
 type Case struct {
 	Name string
+	// New, when set, builds the *fizz.Fizz the case registers on
+	// (to pass options). The default is fizz.New().
+	New func() *fizz.Fizz
 	// Register declares routes on a fresh *fizz.Fizz.
 	Register func(f *fizz.Fizz)
 	// Expect lists fragments of the OAS 3.2 target output.
@@ -38,6 +42,10 @@ type Case struct {
 	// Errors lists substrings that f.Errors() must contain (one error
 	// each may match). Use for bugs recorded rather than raised.
 	Errors []string
+	// Warnings lists substrings that must each be contained in an
+	// f.Errors() entry that implements interface{ IsWarning() bool }
+	// and reports true. Other entries never match.
+	Warnings []string
 	// Panics, when non-empty, requires Register to panic with a message
 	// containing it. By default a panic is a failure.
 	Panics string
@@ -58,7 +66,16 @@ func register(cs ...Case) {
 	cases = append(cases, cs...)
 }
 
-// Run executes cs, one subtest each, on a fresh fizz.New() per case.
+// newFizz returns the *fizz.Fizz a case registers on.
+func (c Case) newFizz() *fizz.Fizz {
+	if c.New != nil {
+		return c.New()
+	}
+	return fizz.New()
+}
+
+// Run executes cs, one subtest each, on a fresh fizz.New() per case
+// (or c.New()).
 //
 // A panic in Register is a failure unless the case sets Panics. Cases
 // with FixedBy still register and are checked, but are then skipped
@@ -76,6 +93,9 @@ func Run(t *testing.T, cs []Case) {
 				if c.FixedBy == "" {
 					t.Fatal("kitchensink: Crashes requires FixedBy")
 				}
+				if plan.IsDone(c.FixedBy) {
+					t.Fatal("task " + c.FixedBy + " is done, case still marked Crashes")
+				}
 				skipped++
 				byTask[c.FixedBy]++
 				t.Skip("fixed by " + c.FixedBy + " (crashes, not run)")
@@ -90,11 +110,25 @@ func Run(t *testing.T, cs []Case) {
 				}
 				return
 			}
+			if len(problems) > 0 && plan.IsDone(c.FixedBy) {
+				t.Error("task " + c.FixedBy + " is done, case red:\n" + strings.Join(problems, "\n"))
+				return
+			}
 			skipped++
 			byTask[c.FixedBy]++
 			reason := "fixed by " + c.FixedBy
 			if len(problems) == 0 {
+				if plan.IsDone(c.FixedBy) {
+					skipped--
+					byTask[c.FixedBy]--
+					passed++
+					return
+				}
 				stale++
+				if plan.StaleFail() {
+					t.Error("fixed by " + c.FixedBy + " (case passes now: drop FixedBy)")
+					return
+				}
 				reason += " (case passes now: drop FixedBy)"
 			} else {
 				reason += ": " + problems[0]
@@ -114,7 +148,7 @@ func Run(t *testing.T, cs []Case) {
 
 // runCase registers and checks one case, returning its problems.
 func runCase(c Case) (problems []string) {
-	f := fizz.New()
+	f := c.newFizz()
 	panicMsg, panicked := safeRegister(c, f)
 	switch {
 	case c.Panics != "":
@@ -130,11 +164,15 @@ func runCase(c Case) (problems []string) {
 	}
 	rec := &recorder{}
 	checkErrors(rec, f.Errors(), c.Errors)
-	doc, err := buildSpec(f)
+	checkWarnings(rec, f.Errors(), c.Warnings)
+	doc, err := BuildSpec(f)
 	if err != nil {
 		return append(rec.msgs, "build spec: "+err.Error())
 	}
-	checkFragments(rec, doc, c.Expect)
+	AssertFragments(rec, doc, c.Expect)
+	if plan.IsDone("P2.6") {
+		rec.msgs = append(rec.msgs, MetaProblems(doc)...)
+	}
 	return rec.msgs
 }
 

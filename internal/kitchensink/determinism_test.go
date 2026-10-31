@@ -79,7 +79,7 @@ func TestDeterminism(t *testing.T) {
 
 			var wantJSON, wantYAML []byte
 			for i := range runs {
-				gotJSON, err := buildSpec(newLegacyFizz(t))
+				gotJSON, err := BuildSpec(newLegacyFizz(t))
 				if err != nil {
 					t.Fatal(err)
 				}

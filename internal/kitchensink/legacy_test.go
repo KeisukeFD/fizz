@@ -102,7 +102,7 @@ func TestLegacyGolden(t *testing.T) {
 	if errs := f.Errors(); len(errs) != 0 {
 		t.Fatalf("registration errors: %v", errs)
 	}
-	doc, err := buildSpec(f)
+	doc, err := BuildSpec(f)
 	if err != nil {
 		t.Fatal(err)
 	}
