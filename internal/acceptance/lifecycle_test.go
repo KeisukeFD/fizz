@@ -89,7 +89,7 @@ func bGRows() []bGRow {
 	get := http.MethodGet
 	return []bGRow{
 		{
-			name: "r01-omitempty", fixedBy: "P4.2", method: get, path: "/r01",
+			name: "r01-omitempty", fixedBy: "P4.2+P4.8", method: get, path: "/r01",
 			register: func(f *fizz.Fizz) {
 				f.GET("/r01", bGOpts(fizz.ID("r01")), tonic.Handler(bGHandler[bGOmitIn], 200))
 			},
@@ -109,7 +109,7 @@ func bGRows() []bGRow {
 			},
 		},
 		{
-			name: "r04-duplicate-explicit-id", fixedBy: "P4.7", method: get, path: "/r04b",
+			name: "r04-duplicate-explicit-id", fixedBy: "P4.7+P4.8", method: get, path: "/r04b",
 			register: func(f *fizz.Fizz) {
 				f.GET("/r04a", bGOpts(fizz.ID("r04")), tonic.Handler(bGHandler[bGEmpty], 200))
 				f.GET("/r04b", bGOpts(fizz.ID("r04")), tonic.Handler(bGHandler[bGEmpty], 200))
@@ -123,13 +123,13 @@ func bGRows() []bGRow {
 			},
 		},
 		{
-			name: "r06-chan-body-field", fixedBy: "P3.3", method: http.MethodPost, path: "/r06",
+			name: "r06-chan-body-field", fixedBy: "P3.3+P4.8", method: http.MethodPost, path: "/r06",
 			register: func(f *fizz.Fizz) {
 				f.POST("/r06", bGOpts(fizz.ID("r06")), tonic.Handler(bGHandler[bGChanBody], 200))
 			},
 		},
 		{
-			name: "r07-nan-example", fixedBy: "P2.5", method: get, path: "/r07",
+			name: "r07-nan-example", fixedBy: "P2.5+P4.8", method: get, path: "/r07",
 			register: func(f *fizz.Fizz) {
 				f.GET("/r07", bGOpts(fizz.ID("r07"),
 					fizz.ResponseWithExamples("400", "bad", new(bGOut), nil, map[string]any{"bad": math.NaN()})),
@@ -143,19 +143,19 @@ func bGRows() []bGRow {
 			},
 		},
 		{
-			name: "r08-bool-default", fixedBy: "P3.6", method: get, path: "/r08",
+			name: "r08-bool-default", fixedBy: "P3.6+P4.8", method: get, path: "/r08",
 			register: func(f *fizz.Fizz) {
 				f.GET("/r08", bGOpts(fizz.ID("r08")), tonic.Handler(bGHandler[bGBadBoolIn], 200))
 			},
 		},
 		{
-			name: "r09-duration-default", fixedBy: "P3.6", method: get, path: "/r09",
+			name: "r09-duration-default", fixedBy: "P3.6+P4.8", method: get, path: "/r09",
 			register: func(f *fizz.Fizz) {
 				f.GET("/r09", bGOpts(fizz.ID("r09")), tonic.Handler(bGHandler[bGDurationIn], 200))
 			},
 		},
 		{
-			name: "r10-cookie-on-struct", fixedBy: "P4.2c", method: get, path: "/r10",
+			name: "r10-cookie-on-struct", fixedBy: "P4.2c+P4.8", method: get, path: "/r10",
 			register: func(f *fizz.Fizz) {
 				f.GET("/r10", bGOpts(fizz.ID("r10")), tonic.Handler(bGHandler[bGCookieIn], 200))
 			},

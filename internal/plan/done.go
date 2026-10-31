@@ -5,15 +5,26 @@
 // FixedBy names that task must pass, instead of being skipped as red.
 package plan
 
-import "os"
+import (
+	"os"
+	"strings"
+)
 
 // Done lists the plan tasks that are merged ("P2.6", "P4.1b", ...).
 // A task PR adds its own ID here and nothing else; the harness then
 // fails every skipped test that names the task in FixedBy.
 var Done = map[string]bool{}
 
-// IsDone reports whether task is in the done ledger.
-func IsDone(task string) bool { return Done[task] }
+// IsDone reports whether task is in the done ledger. A composite ID
+// such as "P3.3+P4.8" is done only when every "+"-joined part is.
+func IsDone(task string) bool {
+	for part := range strings.SplitSeq(task, "+") {
+		if !Done[part] {
+			return false
+		}
+	}
+	return true
+}
 
 // StaleFail reports whether stale skips (a test with FixedBy that
 // already passes) are failures. CI sets FIZZ_STALE=fail.

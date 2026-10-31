@@ -523,6 +523,7 @@ P4.1a's task-owned parse table must contain at least these rows: `required`; `om
 | G-DET | Byte-identical output | `TestDeterminism` (switch to the full kitchen-sink fizz at P2.6), G20; CI `-count=1 -shuffle=on`, kitchen sink and acceptance `-count=3` |
 | G-RACE | `go test -race ./...` clean | All packages; specific: `TestConcurrentServeAndRegister`, B15, B31, G09 |
 | G-STALE | 0 skipped-but-passing | `FIZZ_STALE=fail` in CI → `kitchensink.Run` and `at.Pending` fail stale skips. Raw `t.Skip("fixed by")` is forbidden (Batch 0 converts the 3 existing ones) |
+| G-COMPOSITE | Composite FixedBy IDs: `"A+B"` (e.g. `"P3.3+P4.8"`) stays red until both tasks are in `Done` | `plan.IsDone` splits on `+` and requires every part |
 | G-DONE | When task X merges, 0 skips with FixedBy X | The PR adds X to `internal/plan/done.go`; `at.Pending` and `kitchensink.Run` fail any red test whose FixedBy is Done |
 | G-STUB | Stubs only for unfinished tasks | Tagged `TestStubsBelongToOpenTasks` parses `// FixedBy:` on every stub decl → none in Done. Redeclaration breaks `go vet -tags acceptance` if a stub is left. At P9.4: no `zz_stub_acceptance.go`, no `//go:build acceptance` (grep step) |
 | G-IMP | Router-agnostic rule | A01 (blocking from P1.3) |
