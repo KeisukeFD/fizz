@@ -1,0 +1,353 @@
+{
+    "openapi": "3.0.1",
+    "info": {
+        "title": "kitchensink",
+        "version": "0"
+    },
+    "servers": [
+        {
+            "url": "https://api.example.com/v1",
+            "description": "production"
+        }
+    ],
+    "paths": {
+        "/items": {
+            "get": {
+                "operationId": "getItem",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ModelsItem"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/pets": {
+            "get": {
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "List pets",
+                "operationId": "listPets",
+                "parameters": [
+                    {
+                        "name": "kind",
+                        "in": "query",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "style": "form"
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Page size",
+                        "schema": {
+                            "type": "integer",
+                            "description": "Page size",
+                            "format": "int32",
+                            "default": 20,
+                            "maximum": 100,
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-Token",
+                        "in": "header",
+                        "description": "Auth token",
+                        "schema": {
+                            "type": "string",
+                            "description": "Auth token"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "headers": {
+                            "X-Rate-Limit": {
+                                "description": "Requests left",
+                                "schema": {
+                                    "type": "integer",
+                                    "format": "int32"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GenericPage[Github.Com/WI2L/Fizz/Internal/Kitchensink.LegacyPet]"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": null,
+                                "examples": {
+                                    "empty": {
+                                        "value": {
+                                            "items": null,
+                                            "total": 0
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Pets"
+                ],
+                "operationId": "createPet",
+                "parameters": [
+                    {
+                        "name": "dry_run",
+                        "in": "query",
+                        "allowEmptyValue": true,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreatePetInput"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/KitchensinkLegacyPet"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "api_key": []
+                    }
+                ]
+            }
+        },
+        "/pets/{id}": {
+            "get": {
+                "tags": [
+                    "Pets"
+                ],
+                "description": "Fetch one pet.",
+                "operationId": "getPet",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Pet ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "description": "Pet ID",
+                            "format": "int32"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/KitchensinkLegacyPet"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not found"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Pets"
+                ],
+                "operationId": "deletePet",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Pet ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "description": "Pet ID",
+                            "format": "int32"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                },
+                "deprecated": true
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "CreatePetInput": {
+                "type": "object",
+                "properties": {
+                    "pet": {
+                        "$ref": "#/components/schemas/KitchensinkLegacyPet"
+                    }
+                }
+            },
+            "GenericPage[Github.Com/WI2L/Fizz/Internal/Kitchensink.LegacyPet]": {
+                "type": "object",
+                "properties": {
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/KitchensinkLegacyPet"
+                        }
+                    },
+                    "total": {
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                }
+            },
+            "KitchensinkLegacyAddress": {
+                "type": "object",
+                "properties": {
+                    "city": {
+                        "type": "string"
+                    },
+                    "street": {
+                        "type": "string",
+                        "description": "Street line"
+                    }
+                },
+                "required": [
+                    "city"
+                ]
+            },
+            "KitchensinkLegacyPet": {
+                "type": "object",
+                "properties": {
+                    "created": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "id": {
+                        "type": "integer",
+                        "description": "Unique ID",
+                        "format": "int32"
+                    },
+                    "kind": {
+                        "type": "string",
+                        "default": "dog",
+                        "enum": [
+                            "cat",
+                            "dog",
+                            "fish"
+                        ]
+                    },
+                    "labels": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string"
+                        }
+                    },
+                    "name": {
+                        "type": "string",
+                        "maxLength": 64,
+                        "minLength": 1
+                    },
+                    "nickname": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "owner": {
+                        "$ref": "#/components/schemas/KitchensinkLegacyAddress"
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "weight": {
+                        "type": "number",
+                        "format": "double"
+                    }
+                },
+                "required": [
+                    "name"
+                ]
+            },
+            "ModelsItem": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "name": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "name"
+                ]
+            }
+        },
+        "securitySchemes": {
+            "api_key": {
+                "type": "apiKey",
+                "in": "header",
+                "name": "api_key"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Pets",
+            "description": "Pet operations"
+        }
+    ],
+    "security": [
+        {
+            "api_key": []
+        }
+    ]
+}
