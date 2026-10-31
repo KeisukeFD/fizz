@@ -249,3 +249,25 @@ func (c *Callback) UnmarshalJSON(b []byte) error { return unmarshalJSON(b, c) }
 func (c *Callback) SetExtension(key string, value any) error {
 	return setExtension(&c.Extensions, key, value)
 }
+
+// hasMember reports whether the JSON object v has a member named name.
+// v must be a valid JSON value; anything but an object has no members.
+func hasMember(v jsontext.Value, name string) bool {
+	dec := jsontext.NewDecoder(bytes.NewReader(v))
+	if tok, err := dec.ReadToken(); err != nil || tok.Kind() != '{' {
+		return false
+	}
+	for dec.PeekKind() == '"' {
+		tok, err := dec.ReadToken()
+		if err != nil {
+			return false
+		}
+		if tok.String() == name {
+			return true
+		}
+		if dec.SkipValue() != nil {
+			return false
+		}
+	}
+	return false
+}

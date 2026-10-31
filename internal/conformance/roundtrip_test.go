@@ -21,11 +21,6 @@ import (
 // task is a spec-model bug listed in docs/plan/PLAN-v2.md (P10.3a...), and
 // once the task is in plan.Done its documents must pass.
 var roundTripFixedBy = map[string]string{
-	// Parameter "required": false dropped.
-	"learn/examples/v3.0/petstore-expanded": "P10.3a",
-	"learn/examples/v3.0/petstore":          "P10.3a",
-	"learn/examples/v3.1/tictactoe":         "P10.3a",
-	"spectext/parameter-object-examples-5":  "P10.3a",
 	// "webhooks": {} dropped (the output no longer validates).
 	"oas/tests/schema/pass/minimal_hooks": "P10.3b",
 	// components "pathItems": {} dropped.

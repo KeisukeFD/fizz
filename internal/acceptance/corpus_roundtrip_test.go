@@ -34,9 +34,7 @@ func exactRoundTrip[T any](tb testing.TB, in string) {
 
 // Parameter "required": false is an explicit value and is dropped.
 func TestCorpusParameterRequiredFalse(t *testing.T) {
-	at.Pending(t, "P10.3a", func(tb testing.TB) {
-		exactRoundTrip[openapi.Parameter](tb, `{"name":"q","in":"query","required":false,"schema":{"type":"string"}}`)
-	})
+	exactRoundTrip[openapi.Parameter](t, `{"name":"q","in":"query","required":false,"schema":{"type":"string"}}`)
 }
 
 // "webhooks": {} is dropped; a document whose only top-level field is an

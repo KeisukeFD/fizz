@@ -4,7 +4,7 @@
     "kind": "missing",
     "category": "limitation",
     "task": "P10.3a",
-    "reason": "fizz omits required:false because Parameter.Required is omitzero, which drops an explicit false (spec-model bug found by the P10.3 round-trip); the official example writes it out. Semantically identical."
+    "reason": "fizz omits required:false for generated parameters by design (false is the default, and the generator output is kept stable); the official example writes it out. The model itself round-trips an explicit false (P10.3a). Semantically identical."
   },
   {
     "pointer": "/paths/~1pets/get/parameters/0/schema/description",

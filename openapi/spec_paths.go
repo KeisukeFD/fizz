@@ -29,6 +29,10 @@ type Parameter struct {
 	// emitted sorted after the typed members. Use SetExtension to
 	// validate keys.
 	Extensions map[string]any `json:",embed"`
+
+	// requiredSet records that a decoded document spelled out
+	// "required", so that an explicit false survives a round trip.
+	requiredSet bool
 }
 
 // ParameterOrRef represents a Parameter that can be inlined
@@ -148,6 +152,10 @@ type Header struct {
 	// emitted sorted after the typed members. Use SetExtension to
 	// validate keys.
 	Extensions map[string]any `json:",embed"`
+
+	// requiredSet records that a decoded document spelled out
+	// "required", so that an explicit false survives a round trip.
+	requiredSet bool
 }
 
 // MediaTypeOrRef represents a MediaType that can be inlined

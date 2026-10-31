@@ -194,12 +194,26 @@ type parameterJSON Parameter
 
 // MarshalJSONTo implements jsonv2.MarshalerTo for Parameter.
 func (x Parameter) MarshalJSONTo(enc *jsontext.Encoder) error {
+	if x.requiredSet && !x.Required {
+		return encodeValue(enc, struct {
+			parameterJSON
+			Required *bool `json:"required"`
+		}{parameterJSON(x), new(false)})
+	}
 	return encodeValue(enc, parameterJSON(x))
 }
 
 // UnmarshalJSONFrom implements jsonv2.UnmarshalerFrom for Parameter.
 func (x *Parameter) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
-	return decodeValue(dec, (*parameterJSON)(x))
+	v, err := dec.ReadValue()
+	if err != nil {
+		return err
+	}
+	if err := unmarshalJSON(v, (*parameterJSON)(x)); err != nil {
+		return err
+	}
+	x.requiredSet = hasMember(v, "required")
+	return nil
 }
 
 // MarshalJSON implements json.Marshaler for Parameter.
@@ -284,12 +298,26 @@ type headerJSON Header
 
 // MarshalJSONTo implements jsonv2.MarshalerTo for Header.
 func (x Header) MarshalJSONTo(enc *jsontext.Encoder) error {
+	if x.requiredSet && !x.Required {
+		return encodeValue(enc, struct {
+			headerJSON
+			Required *bool `json:"required"`
+		}{headerJSON(x), new(false)})
+	}
 	return encodeValue(enc, headerJSON(x))
 }
 
 // UnmarshalJSONFrom implements jsonv2.UnmarshalerFrom for Header.
 func (x *Header) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
-	return decodeValue(dec, (*headerJSON)(x))
+	v, err := dec.ReadValue()
+	if err != nil {
+		return err
+	}
+	if err := unmarshalJSON(v, (*headerJSON)(x)); err != nil {
+		return err
+	}
+	x.requiredSet = hasMember(v, "required")
+	return nil
 }
 
 // MarshalJSON implements json.Marshaler for Header.
