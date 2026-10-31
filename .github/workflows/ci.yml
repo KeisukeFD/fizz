@@ -142,6 +142,19 @@ jobs:
           name: coverage
           path: coverage.txt
 
+  xcheck:
+    name: Second validator cross-check (non-blocking)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version: stable
+      - name: go test (libopenapi-validator over the corpus and goldens)
+        working-directory: internal/conformance/xcheck
+        run: go test -count=1 ./...
+
   workflows:
     name: actionlint
     runs-on: ubuntu-latest

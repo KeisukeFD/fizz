@@ -859,6 +859,7 @@ Rules for every task:
 
 **P10.8 Second validator (below the line).** S · Haiku (check whether any Go or CLI validator supports 3.2 at that time) + Sonnet
 - Only if one exists: cross-check the corpus and all goldens in a test-only module (`tools/` or `internal/conformance/x/`), so the library go.mod stays unchanged.
+- Result: done in `internal/conformance/xcheck/` (own go.mod, `replace` to the root, non-blocking CI job `xcheck`) with `pb33f/libopenapi-validator` v0.16.2 (OAS 3.2.1 document validation); 0 disagreements: it accepts all 147 valid corpus documents and all 164 goldens (160 documents, 4 schema goldens), and rejects the 5 fail fixtures for the official reasons. No fizz bug found.
 
 **P10.9x Limitations found by reproduction** (referenced by the `limitation` entries of `internal/conformance/repro/*/allow.json`; each one is a task that removes its allowlist entries)
 - **P10.9a** The default (tonic) response has no singular `example`, only `examples` (`DefaultResponseExamples`); `Response`/`ResponseWith` with the same code is a duplicate error. Affects uspto. Missing feature.
