@@ -138,6 +138,7 @@ func (g *Generator) walkParams(op *Operation, t reflect.Type, active map[reflect
 			g.error(&FieldError{
 				Message:           "duplicate parameter",
 				Name:              param.Name,
+				Field:             sf.Name,
 				TypeName:          g.typeName(t),
 				Type:              t,
 				ParameterLocation: param.In,
@@ -225,16 +226,40 @@ func (g *Generator) newParameterFromField(idx int, t reflect.Type) (*Parameter, 
 	if location == "" {
 		return nil, nil
 	}
-	name, _, _, err := ParseParamTag(field.Tag.Get(location))
-	if err != nil {
-		return nil, err
+	fieldErr := func(msg, name string, typ reflect.Type, cause error) *FieldError {
+		return &FieldError{
+			Message:           msg,
+			Name:              name,
+			Field:             field.Name,
+			TypeName:          g.typeName(t),
+			Type:              typ,
+			ParameterLocation: location,
+			Parent:            t,
+			Err:               cause,
+		}
 	}
-	required := g.isStructFieldRequired(field)
+	name, tagRequired, tagDefault, err := ParseParamTag(field.Tag.Get(location))
+	if err != nil {
+		// A malformed tag is recorded and the field is skipped: it
+		// must not fail the operation.
+		g.error(fieldErr("invalid parameter tag", field.Tag.Get(location), field.Type, err))
+		return nil, nil
+	}
+	// A name of "-" or no name is not a parameter.
+	if name == "" || name == "-" {
+		return nil, nil
+	}
+	required := tagRequired || g.isStructFieldRequired(field)
 
 	// Path parameters are always required.
 	isPath := location == BinderTags.Path
 	if isPath {
 		required = true
+	}
+	// The default option is the deprecated spelling of the default
+	// tag. As in tonic's extractors, it wins over the tag.
+	if tagDefault != "" {
+		field.Tag = reflect.StructTag(BinderTags.Default + ":" + strconv.Quote(tagDefault) + " " + string(field.Tag))
 	}
 	// D15: a default makes a query or header parameter optional.
 	// The warning is recorded with the field's schema.
@@ -256,14 +281,21 @@ func (g *Generator) newParameterFromField(idx int, t reflect.Type) (*Parameter, 
 		Deprecated:  deprecated,
 		Schema:      g.fieldSchema(field, schemaRequired, name, t, valueForm{param: true}),
 	}
+	if p.Schema == nil {
+		g.error(fieldErr("unsupported parameter type", name, field.Type, nil))
+		return nil, nil
+	}
 	// Style.
 	if location == BinderTags.Query {
 		if field.Type.Kind() == reflect.Slice || field.Type.Kind() == reflect.Array {
 			p.Explode = new(true) // default
 			p.Style = "form"      // default in spec, but make it obvious
-			if t := field.Tag.Get(BinderTags.Explode); t != "" {
-				if explode, err := strconv.ParseBool(t); err == nil && !explode { // ignore invalid values
-					p.Explode = nil // explode=false is not emitted (kept until P2.6)
+			if v, ok := field.Tag.Lookup(BinderTags.Explode); ok {
+				if explode, err := strconv.ParseBool(v); err != nil {
+					// tonic ignores an invalid value: the default stays.
+					g.error(fieldErr("invalid explode value", name, field.Type, err))
+				} else if !explode {
+					p.Explode = new(false)
 				}
 			}
 		}
@@ -304,6 +336,7 @@ func (g *Generator) paramLocation(f reflect.StructField, in reflect.Type) (strin
 		return "", &FieldError{
 			Message:  "conflicting parameter location",
 			Name:     f.Name,
+			Field:    f.Name,
 			TypeName: g.typeName(in),
 			Type:     in,
 		}

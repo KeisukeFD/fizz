@@ -30,6 +30,7 @@ paths:
             items:
               type: string
           style: form
+          explode: false
         - name: limit
           in: query
           description: Page size

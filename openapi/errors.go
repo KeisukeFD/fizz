@@ -14,12 +14,23 @@ type FieldError struct {
 	Message           string
 	ParameterLocation string
 	Parent            reflect.Type
+	// Field is the Go name of the struct field.
+	Field string
+	// Err is the underlying cause, if any.
+	Err error
 }
 
 // Error implements the builtin error interface for FieldError.
 func (fe *FieldError) Error() string {
-	return fmt.Sprintf("%s: field=%s, type=%s", fe.Message, fe.Name, fe.TypeName)
+	msg := fmt.Sprintf("%s: field=%s, type=%s", fe.Message, fe.Name, fe.TypeName)
+	if fe.Err != nil {
+		msg += ": " + fe.Err.Error()
+	}
+	return msg
 }
+
+// Unwrap returns the underlying cause of the error, if any.
+func (fe *FieldError) Unwrap() error { return fe.Err }
 
 // TypeError is the error returned when the generator
 // encounters an unknow or unsupported type.

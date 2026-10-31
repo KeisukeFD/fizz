@@ -45,7 +45,8 @@
                                 "type": "string"
                             }
                         },
-                        "style": "form"
+                        "style": "form",
+                        "explode": false
                     },
                     {
                         "name": "limit",
