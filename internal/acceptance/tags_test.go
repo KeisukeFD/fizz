@@ -357,6 +357,25 @@ func TestTagNamesOverride(t *testing.T) {
 	})
 }
 
+type bFCookieIn struct {
+	S string `ck:"sid"`
+	X string `cookie:"x"`
+}
+
+// F12.
+func TestTagNamesCookie(t *testing.T) {
+	at.Pending(t, "P4.2c", func(tb testing.TB) {
+		f := fizz.New(fizz.WithTagNames(openapi.TagNames{Cookie: "ck"}))
+		bFGet[bFCookieIn](f, "/c", "c")
+		doc := at.Spec(tb, f)
+		p := bFParamPtr(tb, doc, "/c", "get", "sid")
+		at.Frag(tb, doc, p+"/in", `"cookie"`)
+		at.Frag(tb, doc, p+"/name", `"sid"`)
+		// The cookie:"x" field is not a parameter on this instance.
+		at.Absent(tb, doc, "/paths/~1c/get/parameters/1")
+	})
+}
+
 // F34.
 type bFPtrBody struct {
 	P *string `json:"p"`

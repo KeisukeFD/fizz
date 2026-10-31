@@ -238,15 +238,21 @@ func (g *Generator) newParameterFromField(idx int, t reflect.Type) (*Parameter, 
 			Err:               cause,
 		}
 	}
-	name, tagRequired, tagDefault, err := ParseParamTag(field.Tag.Get(location))
+	rawTag, _ := g.locationTag(field, location)
+	name, tagRequired, tagDefault, err := ParseParamTag(rawTag)
 	if err != nil {
 		// A malformed tag is recorded and the field is skipped: it
 		// must not fail the operation.
-		g.error(fieldErr("invalid parameter tag", field.Tag.Get(location), field.Type, err))
+		g.error(fieldErr("invalid parameter tag", rawTag, field.Type, err))
 		return nil, nil
 	}
 	// A name of "-" or no name is not a parameter.
 	if name == "" || name == "-" {
+		return nil, nil
+	}
+	// Cookies are scalar-only: no style or explode is emitted.
+	if location == cookieLocation && !g.isScalar(field.Type) {
+		g.error(fieldErr("cookie parameter must be a scalar type", name, field.Type, nil))
 		return nil, nil
 	}
 	required := tagRequired || g.isStructFieldRequired(field)
@@ -308,14 +314,6 @@ func (g *Generator) newParameterFromField(idx int, t reflect.Type) (*Parameter, 
 func (g *Generator) paramLocation(f reflect.StructField, in reflect.Type) (string, error) {
 	var c, p int
 
-	has := func(name string, tag reflect.StructTag, i int) {
-		if _, ok := tag.Lookup(name); ok {
-			c++
-			// save name position to extract
-			// the value of the unique key.
-			p = i
-		}
-	}
 	// Count the number of keys that represents
 	// a parameter location from the tag of the
 	// struct field.
@@ -323,9 +321,15 @@ func (g *Generator) paramLocation(f reflect.StructField, in reflect.Type) (strin
 		BinderTags.Path,
 		BinderTags.Query,
 		BinderTags.Header,
+		cookieLocation,
 	}
 	for i, n := range parameterLocations {
-		has(n, f.Tag, i)
+		if _, ok := g.locationTag(f, n); ok {
+			c++
+			// save name position to extract
+			// the value of the unique key.
+			p = i
+		}
 	}
 	if c == 0 {
 		// This will be considered to be part
@@ -352,4 +356,40 @@ func (g *Generator) resolveParameter(p *ParameterOrRef) *Parameter {
 		return p.Value
 	}
 	return nil
+}
+
+// cookieLocation is the "in" value of cookie parameters. The name of
+// the struct tag that selects it is configurable: TagNames.Cookie.
+const cookieLocation = "cookie"
+
+// locationTag returns the value of the tag that selects the parameter
+// location. The cookie tag is looked up under its configured name, and
+// is absent when that name is disabled.
+func (g *Generator) locationTag(sf reflect.StructField, location string) (string, bool) {
+	if location == cookieLocation {
+		return tagLookup(sf, g.tags.Cookie)
+	}
+	return sf.Tag.Lookup(location)
+}
+
+// isScalar reports whether t, dereferenced, is described by a schema
+// of type string, number, integer or boolean. Byte slices, though
+// described as strings, are not scalars.
+func (g *Generator) isScalar(t reflect.Type) bool {
+	for t.Kind() == reflect.Pointer {
+		t = t.Elem()
+	}
+	switch t.Kind() {
+	case reflect.Slice, reflect.Array, reflect.Map:
+		return false
+	}
+	dt := g.datatype(t)
+	if dt == TypeComplex {
+		return false
+	}
+	switch dt.Type() {
+	case "string", "number", "integer", "boolean":
+		return true
+	}
+	return false
 }
