@@ -834,6 +834,12 @@ Rules for every task:
 **P10.8 Second validator (below the line).** S · Haiku (check whether any Go or CLI validator supports 3.2 at that time) + Sonnet
 - Only if one exists: cross-check the corpus and all goldens in a test-only module (`tools/` or `internal/conformance/x/`), so the library go.mod stays unchanged.
 
+**P10.9x Limitations found by reproduction** (referenced by the `limitation` entries of `internal/conformance/repro/*/allow.json`; each one is a task that removes its allowlist entries)
+- **P10.9a** The default (tonic) response has no singular `example`, only `examples` (`DefaultResponseExamples`); `Response`/`ResponseWith` with the same code is a duplicate error. Affects uspto. Missing feature.
+- **P10.9b** A required body field loses its `default` tag (warning), but a required property with a default is valid OAS. Affects uspto (`criteria`). Missing feature.
+- **P10.9c** A document with no component still emits `"components": {}`. Affects api-with-examples. Cosmetic, valid OAS. Missing feature (omit the empty object).
+- **P10.9d** The `description` tag on a parameter is duplicated into its schema (`schema.description`), besides `parameter.description`. Affects petstore, petstore-expanded, uspto. Bug (red case `params/description-tag-not-in-schema`).
+
 ---
 
 ## 13. DAG (explicit, with file sets)
@@ -902,6 +908,7 @@ Rules for every task:
 | P10.6 | P10.5a | internal/conformance/contract | P10.7x |
 | P10.7a–g | their red case (P10.2/P10.6) | params_option.go / params.go / fields.go / generator.go / bindhook.go | serialized on chain H when they touch generator.go/params.go |
 | P10.8 | P10.4 | tools/ or internal/conformance/x | anything |
+| P10.9a–d | P10.5a | responses.go / operation_options.go (a), params.go / fields.go (b, d), generator.go / spec_root.go (c) | serialized on chain H when they touch generator.go/params.go |
 | P9.5 | cut line | tags, notes | — |
 
 ## 14. Estimates and critical path (rough; agent-days plus review)

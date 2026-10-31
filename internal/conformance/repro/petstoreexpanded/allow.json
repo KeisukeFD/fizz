@@ -1,0 +1,50 @@
+[
+  {
+    "pointer": "/paths/~1pets/get/parameters/0/explode",
+    "kind": "extra",
+    "category": "naming",
+    "reason": "fizz always emits explode explicitly for form-style array params; semantically equal to the OAS default (true for form). Deliberate: openapi/params.go sets p.Style = \"form\" and p.Explode = true with the comment \"default in spec, but make it obvious\"; the ADR does not discuss it."
+  },
+  {
+    "pointer": "/paths/~1pets/get/parameters/0/required",
+    "kind": "missing",
+    "category": "limitation",
+    "task": "P10.3a",
+    "reason": "fizz omits required:false because Parameter.Required is omitzero, which drops an explicit false (spec-model bug found by the P10.3 round-trip); the official example writes it out. Semantically identical."
+  },
+  {
+    "pointer": "/paths/~1pets/get/parameters/1/required",
+    "kind": "missing",
+    "category": "limitation",
+    "task": "P10.3a",
+    "reason": "fizz omits required:false because Parameter.Required is omitzero, which drops an explicit false (spec-model bug found by the P10.3 round-trip); the official example writes it out. Semantically identical."
+  },
+  {
+    "pointer": "/paths/~1pets/get/parameters/0/schema/description",
+    "kind": "extra",
+    "category": "limitation",
+    "task": "P10.9d",
+    "reason": "The description tag of a parameter is duplicated into its schema (description tag on a parameter is copied into schema.description); the official example has it on the parameter only."
+  },
+  {
+    "pointer": "/paths/~1pets/get/parameters/1/schema/description",
+    "kind": "extra",
+    "category": "limitation",
+    "task": "P10.9d",
+    "reason": "The description tag of a parameter is duplicated into its schema (description tag on a parameter is copied into schema.description); the official example has it on the parameter only."
+  },
+  {
+    "pointer": "/paths/~1pets~1{id}/delete/parameters/0/schema/description",
+    "kind": "extra",
+    "category": "limitation",
+    "task": "P10.9d",
+    "reason": "The description tag of a parameter is duplicated into its schema (description tag on a parameter is copied into schema.description); the official example has it on the parameter only."
+  },
+  {
+    "pointer": "/paths/~1pets~1{id}/get/parameters/0/schema/description",
+    "kind": "extra",
+    "category": "limitation",
+    "task": "P10.9d",
+    "reason": "The description tag of a parameter is duplicated into its schema (description tag on a parameter is copied into schema.description); the official example has it on the parameter only."
+  }
+]
