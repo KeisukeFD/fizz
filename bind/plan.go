@@ -4,6 +4,7 @@ import (
 	"encoding"
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 	"sync"
 )
@@ -12,7 +13,9 @@ import (
 // (for example "query"), not a tag value. It is owned by this package so
 // that bind does not depend on any router or on the openapi package.
 type Tags struct {
-	Query, Cookie, Style, Default string
+	// Explode is the tonic tag of the explode option. Empty reads every
+	// explode as unset.
+	Query, Cookie, Style, Explode, Default string
 }
 
 // Plan is the precomputed decoding recipe for one struct type. It is
@@ -22,6 +25,19 @@ type Plan struct {
 	fields []planField  // deepObject query fields, in declaration order
 	// cookies are the cookie fields, in declaration order.
 	cookies []cookieField
+	// lists are the spaceDelimited and pipeDelimited query arrays.
+	lists []listField
+}
+
+// listField is a query array documented as spaceDelimited or
+// pipeDelimited with explode=false.
+type listField struct {
+	name  string // query parameter name
+	delim string // " " or "|"
+	// tonicExploded reports whether tonic reads the field as one value per
+	// occurrence (its explode tag is not false). Otherwise tonic splits
+	// one value on commas.
+	tonicExploded bool
 }
 
 type planKind int
@@ -96,7 +112,9 @@ func PlanFor(t reflect.Type, tags Tags) (*Plan, error) {
 
 // Empty reports whether p plans no parameter, so that Query and Cookies
 // would leave every field alone. A nil Plan is empty.
-func (p *Plan) Empty() bool { return p == nil || len(p.fields) == 0 && len(p.cookies) == 0 }
+func (p *Plan) Empty() bool {
+	return p == nil || len(p.fields) == 0 && len(p.cookies) == 0 && len(p.lists) == 0
+}
 
 func buildPlan(t reflect.Type, tags Tags) (*Plan, error) {
 	st := t
@@ -152,7 +170,12 @@ func (p *Plan) collect(st reflect.Type, prefix []int, tags Tags, active map[refl
 				continue
 			}
 		}
-		if f.Tag.Get(tags.Style) != "deepObject" {
+		style := f.Tag.Get(tags.Style)
+		if style == "spaceDelimited" || style == "pipeDelimited" {
+			p.addList(f, style, tags)
+			continue
+		}
+		if style != "deepObject" {
 			continue
 		}
 		name, _, _ := strings.Cut(f.Tag.Get(tags.Query), ",")
@@ -214,6 +237,38 @@ func (p *Plan) addCookie(f reflect.StructField, tag string, index []int, tags Ta
 		}
 	}
 	p.cookies = append(p.cookies, cf)
+}
+
+// addList plans a spaceDelimited or pipeDelimited query array. It mirrors
+// the generator (openapi/params.go): the style needs a slice or array, and
+// the array is documented unexploded unless an explode tag says otherwise
+// (any value that is not a false boolean).
+func (p *Plan) addList(f reflect.StructField, style string, tags Tags) {
+	name, _, _ := strings.Cut(f.Tag.Get(tags.Query), ",")
+	if name == "" || name == "-" {
+		return
+	}
+	t := f.Type
+	for t.Kind() == reflect.Pointer {
+		t = t.Elem()
+	}
+	if (t.Kind() != reflect.Slice && t.Kind() != reflect.Array) || t.Elem().Kind() == reflect.Uint8 {
+		return
+	}
+	explode, set := "", false
+	if tags.Explode != "" {
+		explode, set = f.Tag.Lookup(tags.Explode)
+	}
+	b, err := strconv.ParseBool(explode)
+	tonicExploded := !(set && err == nil && !b)
+	if set && tonicExploded {
+		return // documented exploded: the repeated form that tonic reads
+	}
+	delim := " "
+	if style == "pipeDelimited" {
+		delim = "|"
+	}
+	p.lists = append(p.lists, listField{name: name, delim: delim, tonicExploded: tonicExploded})
 }
 
 func planDeepObject(f reflect.StructField, name string) (planField, error) {

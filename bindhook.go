@@ -26,8 +26,11 @@ type bindState struct {
 }
 
 // BindHook returns a tonic bind hook that calls next, then binds what tonic
-// does not understand: the deepObject query parameters of the route (those
-// tagged style:"deepObject") and its cookie parameters (scalar fields with
+// does not understand, or rewrites the request for what tonic reads in
+// another form than the document states (tonic binds after the hook, so
+// the request is what changes): spaceDelimited and pipeDelimited query
+// arrays (split on the delimiter, as one value per element). It binds the deepObject query parameters of the route
+// (those tagged style:"deepObject") and its cookie parameters (scalar fields with
 // a cookie tag). A cookie that is absent takes the field's default (the
 // ",default=" option of the cookie tag, else the default tag); one that is
 // present, even empty, keeps its raw value, which is not URL-decoded. An
@@ -69,11 +72,36 @@ func BindHook(next tonic.BindHook) tonic.BindHook {
 			return nil
 		}
 		st.ran = true
+		if err := rewriteRequest(c, st.plan); err != nil {
+			return err
+		}
 		if err := bind.Query(c.Request, i, st.plan); err != nil {
 			return err
 		}
 		return bind.Cookies(c.Request, i, st.plan)
 	}
+}
+
+// rewriteRequest puts the values that tonic reads itself in the form it
+// understands, when the document states another one: spaceDelimited and
+// pipeDelimited query arrays. Tonic binds after the hook and overwrites
+// what the hook would set, so the request is what changes. c.Request is
+// replaced by a copy whose URL has the rewritten query.
+func rewriteRequest(c *gin.Context, p *bind.Plan) error {
+	if c.Request.URL != nil {
+		q, changed, err := bind.RewriteQuery(c.Request.URL.RawQuery, p)
+		if err != nil {
+			return err
+		}
+		if changed {
+			r := c.Request.WithContext(c.Request.Context())
+			u := *r.URL
+			u.RawQuery = q
+			r.URL = &u
+			c.Request = r
+		}
+	}
+	return nil
 }
 
 var (
@@ -162,6 +190,7 @@ func bindTagsOf(n openapi.TagNames) bind.Tags {
 		Query:   tonic.QueryTag,
 		Cookie:  pick(n.Cookie, "cookie"),
 		Style:   pick(n.Style, "style"),
+		Explode: tonic.ExplodeTag,
 		Default: tonic.DefaultTag,
 	}
 }
