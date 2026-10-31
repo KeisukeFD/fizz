@@ -109,7 +109,7 @@ type LinkOrRef = OrRef[Link]
 type Link struct {
 	OperationRef string         `json:"operationRef,omitempty"`
 	OperationID  string         `json:"operationId,omitempty"`
-	Parameters   map[string]any `json:"parameters,omitempty"`
+	Parameters   map[string]any `json:"parameters,omitzero"`
 	RequestBody  any            `json:"requestBody,omitzero"`
 	Description  string         `json:"description,omitempty"`
 	Server       *Server        `json:"server,omitzero"`

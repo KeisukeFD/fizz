@@ -131,7 +131,7 @@ type PathItem struct {
 	PATCH       *Operation        `json:"patch,omitzero"`
 	TRACE       *Operation        `json:"trace,omitzero"`
 	Servers     []*Server         `json:"servers,omitempty"`
-	Parameters  []*ParameterOrRef `json:"parameters,omitempty"`
+	Parameters  []*ParameterOrRef `json:"parameters,omitzero"`
 	Query       *Operation        `json:"query,omitzero"`
 
 	// AdditionalOperations holds operations for HTTP methods

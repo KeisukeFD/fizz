@@ -60,3 +60,40 @@ func TestRequiredFalsePresence(t *testing.T) {
 		t.Errorf("built: got %s", got)
 	}
 }
+
+// Empty "parameters" containers on a path item and a link survive a
+// decode and encode; nil stays omitted.
+func TestEmptyParametersContainerPresence(t *testing.T) {
+	tests := []struct {
+		name string
+		in   string
+		v    any
+	}{
+		{"path item", `{"parameters":[],"x-a":1}`, new(PathItem)},
+		{"link", `{"operationId":"o","parameters":{},"x-a":1}`, new(Link)},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := json.Unmarshal([]byte(tt.in), tt.v); err != nil {
+				t.Fatal(err)
+			}
+			b, err := json.Marshal(tt.v)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got := string(b); got != tt.in {
+				t.Errorf("got %s, want %s", got, tt.in)
+			}
+		})
+	}
+
+	for name, v := range map[string]any{"path item": &PathItem{}, "link": &Link{}} {
+		b, err := json.Marshal(v)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got := string(b); got != `{}` {
+			t.Errorf("%s nil: got %s, want {}", name, got)
+		}
+	}
+}
