@@ -582,6 +582,39 @@ func TestSetOperationByMethod(t *testing.T) {
 	}
 }
 
+// TestAddOperationMethods tests that AddOperation documents every HTTP
+// method, whatever its case, instead of dropping the operation.
+func TestAddOperationMethods(t *testing.T) {
+	tests := []struct {
+		method string
+		get    func(*PathItem) *Operation
+		key    string // JSON key holding the operation
+	}{
+		{"QUERY", func(p *PathItem) *Operation { return p.Query }, `"query":{`},
+		{"get", func(p *PathItem) *Operation { return p.GET }, `"get":{`},
+		{"PURGE", func(p *PathItem) *Operation { return p.AdditionalOperations["PURGE"] }, `"additionalOperations":{"PURGE":{`},
+		{"purge", func(p *PathItem) *Operation { return p.AdditionalOperations["PURGE"] }, `"additionalOperations":{"PURGE":{`},
+	}
+	for _, tt := range tests {
+		t.Run(tt.method, func(t *testing.T) {
+			g := gen(t)
+			op, err := g.AddOperation("/a/{id}", tt.method, "Test", nil, nil, &OperationInfo{ID: "op", StatusCode: 200})
+			assert.NoError(t, err)
+			assert.NotNil(t, op)
+
+			item := g.API().Paths["/a/{id}"]
+			if got := tt.get(item); assert.NotNil(t, got) {
+				assert.Equal(t, "op", got.ID)
+			}
+
+			b, err := json.Marshal(g.API())
+			assert.NoError(t, err)
+			assert.Contains(t, string(b), tt.key)
+			assert.NotContains(t, string(b), `"/a/{id}":{}`)
+		})
+	}
+}
+
 // TestSetOperationResponseError tests the various error
 // cases that can occur while adding a response to an op.
 func TestSetOperationResponseError(t *testing.T) {

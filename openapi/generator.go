@@ -10,6 +10,7 @@ import (
 	"slices"
 	"sort"
 	"strconv"
+	"strings"
 	"sync"
 	"sync/atomic"
 )
@@ -471,6 +472,7 @@ func (g *Generator) AddOperation(path, method, tag string, in, out reflect.Type,
 	if info == nil {
 		info = &OperationInfo{}
 	}
+	method = strings.ToUpper(method)
 	defer g.mutate()()
 	g.cur = &opContext{method: method, path: path, id: info.ID}
 	defer func() { g.cur = nil }()
@@ -618,7 +620,10 @@ func (s snapshot) restore(g *Generator) {
 
 // setOperationBymethod sets the operation op to the appropriate
 // field of item according to the given method.
+// The method is matched case-insensitively. A method without a field of
+// its own is stored in AdditionalOperations, so no operation is dropped.
 func setOperationBymethod(item *PathItem, op *Operation, method string) {
+	method = strings.ToUpper(method)
 	switch method {
 	case "GET":
 		item.GET = op
@@ -636,6 +641,13 @@ func setOperationBymethod(item *PathItem, op *Operation, method string) {
 		item.TRACE = op
 	case "DELETE":
 		item.DELETE = op
+	case "QUERY":
+		item.Query = op
+	default:
+		if item.AdditionalOperations == nil {
+			item.AdditionalOperations = make(map[string]*Operation)
+		}
+		item.AdditionalOperations[method] = op
 	}
 }
 
