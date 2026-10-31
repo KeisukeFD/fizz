@@ -45,9 +45,7 @@ func TestCorpusEmptyWebhooks(t *testing.T) {
 
 // Components "pathItems": {} is dropped.
 func TestCorpusEmptyComponentsPathItems(t *testing.T) {
-	at.Pending(t, "P10.3c", func(tb testing.TB) {
-		exactRoundTrip[openapi.Components](tb, `{"pathItems":{}}`)
-	})
+	exactRoundTrip[openapi.Components](t, `{"pathItems":{}}`)
 }
 
 // Operation "parameters": [] is dropped.

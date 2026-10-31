@@ -34,7 +34,7 @@ type Components struct {
 	SecuritySchemes map[string]*SecuritySchemeOrRef `json:"securitySchemes,omitempty"`
 	Links           map[string]*LinkOrRef           `json:"links,omitempty"`
 	Callbacks       map[string]*CallbackOrRef       `json:"callbacks,omitempty"`
-	PathItems       map[string]*PathItem            `json:"pathItems,omitempty"`
+	PathItems       map[string]*PathItem            `json:"pathItems,omitzero"`
 	MediaTypes      map[string]*MediaTypeOrRef      `json:"mediaTypes,omitempty"`
 
 	// Extensions holds the "x-" specification extensions. Keys are
