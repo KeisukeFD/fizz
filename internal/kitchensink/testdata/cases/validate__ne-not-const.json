@@ -1,0 +1,41 @@
+{
+    "openapi": "3.2.1",
+    "info": {
+        "title": "kitchensink",
+        "version": "0"
+    },
+    "paths": {
+        "/x": {
+            "get": {
+                "operationId": "func1",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/KitchensinkKNe"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "KitchensinkKNe": {
+                "type": "object",
+                "properties": {
+                    "s": {
+                        "type": "string",
+                        "not": {
+                            "const": "a"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

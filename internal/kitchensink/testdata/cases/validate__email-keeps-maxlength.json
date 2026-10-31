@@ -1,0 +1,43 @@
+{
+    "openapi": "3.2.1",
+    "info": {
+        "title": "kitchensink",
+        "version": "0"
+    },
+    "paths": {
+        "/x": {
+            "get": {
+                "operationId": "1",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/KitchensinkVEmail"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "KitchensinkVEmail": {
+                "type": "object",
+                "properties": {
+                    "e": {
+                        "type": "string",
+                        "format": "email",
+                        "maxLength": 20
+                    }
+                },
+                "required": [
+                    "e"
+                ]
+            }
+        }
+    }
+}

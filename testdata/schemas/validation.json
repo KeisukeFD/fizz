@@ -29,7 +29,8 @@
             "minProperties": 5
         },
         "E": {
-            "type": "string"
+            "type": "string",
+            "const": "15"
         },
         "F": {
             "type": "string",
@@ -46,7 +47,9 @@
         "I": {
             "type": "array",
             "items": {
-                "type": "string"
+                "type": "string",
+                "maxLength": 6,
+                "minLength": 6
             }
         },
         "J": {

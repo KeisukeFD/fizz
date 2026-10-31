@@ -1,0 +1,45 @@
+{
+    "openapi": "3.2.1",
+    "info": {
+        "title": "kitchensink",
+        "version": "0"
+    },
+    "paths": {
+        "/x": {
+            "get": {
+                "operationId": "1",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/KitchensinkVGating"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "KitchensinkVGating": {
+                "type": "object",
+                "properties": {
+                    "b": {
+                        "type": "string",
+                        "contentEncoding": "base64"
+                    },
+                    "d": {
+                        "type": "integer",
+                        "format": "int64",
+                        "maximum": 60000000000,
+                        "minimum": 1000000000
+                    }
+                }
+            }
+        }
+    }
+}

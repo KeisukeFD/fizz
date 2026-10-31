@@ -1,0 +1,51 @@
+{
+    "openapi": "3.2.1",
+    "info": {
+        "title": "kitchensink",
+        "version": "0"
+    },
+    "paths": {
+        "/x": {
+            "get": {
+                "operationId": "func1",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/KitchensinkKAlpha"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "KitchensinkKAlpha": {
+                "type": "object",
+                "properties": {
+                    "a": {
+                        "type": "string",
+                        "pattern": "^[a-zA-Z]+$"
+                    },
+                    "b": {
+                        "type": "string",
+                        "pattern": "^[a-zA-Z0-9]+$"
+                    },
+                    "c": {
+                        "type": "string",
+                        "pattern": "^[-+]?[0-9]+(?:\\.[0-9]+)?$"
+                    },
+                    "d": {
+                        "type": "string",
+                        "pattern": "^[0-9a-fA-F]+$"
+                    }
+                }
+            }
+        }
+    }
+}

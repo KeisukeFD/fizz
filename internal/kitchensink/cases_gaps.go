@@ -201,7 +201,7 @@ func init() {
 				{Pointer: kProp("KAlpha", "a") + "/pattern", JSON: `"^[a-zA-Z]+$"`},
 				{Pointer: kProp("KAlpha", "b") + "/pattern", JSON: `"^[a-zA-Z0-9]+$"`},
 				{Pointer: kProp("KAlpha", "c") + "/pattern", JSON: `"^[-+]?[0-9]+(?:\\.[0-9]+)?$"`},
-				{Pointer: kProp("KAlpha", "d") + "/pattern", JSON: `"^(0[xX])?[0-9a-fA-F]+$"`},
+				{Pointer: kProp("KAlpha", "d") + "/pattern", JSON: `"^[0-9a-fA-F]+$"`},
 			},
 			FixedBy: "P4.1b",
 		},

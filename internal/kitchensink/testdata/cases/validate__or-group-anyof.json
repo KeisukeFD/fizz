@@ -1,0 +1,47 @@
+{
+    "openapi": "3.2.1",
+    "info": {
+        "title": "kitchensink",
+        "version": "0"
+    },
+    "paths": {
+        "/x": {
+            "get": {
+                "operationId": "1",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/KitchensinkVOrGroup"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "KitchensinkVOrGroup": {
+                "type": "object",
+                "properties": {
+                    "i": {
+                        "type": "integer",
+                        "anyOf": [
+                            {
+                                "minimum": 1
+                            },
+                            {
+                                "maximum": 5
+                            }
+                        ],
+                        "format": "int64"
+                    }
+                }
+            }
+        }
+    }
+}
