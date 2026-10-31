@@ -7,6 +7,7 @@ import (
 	"path"
 	"reflect"
 	"runtime"
+	"slices"
 
 	"github.com/gin-gonic/gin"
 	"github.com/loopfz/gadgeto/tonic"
@@ -80,6 +81,10 @@ func (g *RouterGroup) TRACE(path string, infos []OperationOption, handlers ...gi
 // Handle registers a new request handler that is wrapped
 // with Tonic and documented in the OpenAPI specification.
 func (g *RouterGroup) Handle(path, method string, infos []OperationOption, handlers ...gin.HandlerFunc) *RouterGroup {
+	// Work on a copy: the variadic slice may be the caller's own
+	// (hs...), and wrapping below must not write into it.
+	handlers = slices.Clone(handlers)
+
 	oi := &openapi.OperationInfo{}
 	for _, info := range infos {
 		info(oi)
