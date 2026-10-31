@@ -159,16 +159,24 @@ func TestRouterAgnosticSelfCheck(t *testing.T) {
 	}
 }
 
-// A03: openapi does not depend on a uuid library.
-func TestNoUUIDDep(t *testing.T) {
-	at.Pending(t, "P1.2", func(tb testing.TB) {
-		deps := strings.Fields(bAGo(tb, "list", "-deps", "./openapi"))
-		for _, d := range deps {
-			if d == "github.com/gofrs/uuid" || d == "github.com/google/uuid" ||
-				strings.HasPrefix(d, "github.com/gofrs/uuid/") || strings.HasPrefix(d, "github.com/google/uuid/") {
-				tb.Errorf("./openapi depends on %s", d)
-			}
+// bANoDep fails tb for every package under prefix that ./openapi reaches.
+func bANoDep(tb testing.TB, prefix string) {
+	tb.Helper()
+	for d := range strings.FieldsSeq(bAGo(tb, "list", "-deps", "./openapi")) {
+		if d == prefix || strings.HasPrefix(d, prefix+"/") {
+			tb.Errorf("./openapi depends on %s", d)
 		}
+	}
+}
+
+// A03: openapi does not depend on a third-party uuid library. gofrs goes
+// with P1.2; google is reached through gadgeto/tonic until P1.3.
+func TestNoUUIDDep(t *testing.T) {
+	t.Run("gofrs", func(t *testing.T) {
+		bANoDep(t, "github.com/gofrs/uuid")
+	})
+	t.Run("google", func(t *testing.T) {
+		at.Pending(t, "P1.3", func(tb testing.TB) { bANoDep(tb, "github.com/google/uuid") })
 	})
 }
 

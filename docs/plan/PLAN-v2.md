@@ -210,7 +210,7 @@ Line refs are HEAD 87b41d4 (pre-split), tonic = `gadgeto@v0.9.0/tonic`. I re-che
 - Files: openapi/generator.go (:238-240), openapi/types.go (:11, :27, :185-188), go.mod.
 - Change:
   - The placeholder op ID becomes `""`. It is never observable: fizz always passes a non-nil `OperationInfo` (fizz.go:175), and real default IDs come in **P4.7**.
-  - UUID detection matches by `PkgPath()+Name()` for `github.com/gofrs/uuid.UUID` and `github.com/google/uuid.UUID`.
+  - UUID detection matches by `PkgPath()+Name()` for the Go 1.27 standard-library `uuid.UUID` (#62026), `github.com/gofrs/uuid.UUID` (and `/v5`) and `github.com/google/uuid.UUID`.
 - Red first: `TestNoUUIDDep` (`go list -deps ./openapi` has no gofrs), plus the google-uuid case from P0.4b.
 - Deps: P1.1.
 
@@ -370,7 +370,7 @@ Line refs are HEAD 87b41d4 (pre-split), tonic = `gadgeto@v0.9.0/tonic`. I re-che
     - uint* → integer/uint* with `minimum: 0`;
     - `time.Duration` → integer/int64 (ns); `time.Time` → date-time;
     - json.RawMessage → `{}` (checked before `[]byte`);
-    - uuid → string/uuid;
+    - uuid (stdlib `uuid`, gofrs, google) → string/uuid;
     - net.IP, netip.Addr, netip.Prefix → string;
     - url.URL → object component;
     - big.Int → integer; big.Float, big.Rat → string.

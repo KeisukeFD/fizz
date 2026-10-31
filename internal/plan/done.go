@@ -16,6 +16,7 @@ import (
 var Done = map[string]bool{
 	"P1.0": true,
 	"P1.1": true,
+	"P1.2": true,
 }
 
 // IsDone reports whether task is in the done ledger. A composite ID

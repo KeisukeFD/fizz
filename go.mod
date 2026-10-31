@@ -7,6 +7,7 @@ require (
 	github.com/gin-contrib/cors v1.3.0
 	github.com/gin-gonic/gin v1.7.7
 	github.com/gofrs/uuid v4.4.0+incompatible
+	github.com/gofrs/uuid/v5 v5.5.1
 	github.com/google/uuid v1.6.0
 	github.com/juju/errors v1.0.0
 	github.com/loopfz/gadgeto v0.9.0

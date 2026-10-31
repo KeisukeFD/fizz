@@ -7,8 +7,11 @@ import (
 	"testing"
 	"time"
 	"unsafe"
+	stduuid "uuid"
 
-	"github.com/gofrs/uuid"
+	gofrs "github.com/gofrs/uuid"
+	gofrsv5 "github.com/gofrs/uuid/v5"
+	google "github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -247,9 +250,20 @@ func TestStringToType(t *testing.T) {
 // TypeDateTime tests that imported types
 // are properly handled.
 func TestImportedTypes(t *testing.T) {
-	// github.com/gofrs/uuid
-	uuid := uuid.Must(uuid.NewV4())
-	dt := DataTypeFromType(rt(uuid))
-	assert.Equal(t, "string", dt.Type())
-	assert.Equal(t, "uuid", dt.Format())
+	tests := []struct {
+		name string
+		typ  reflect.Type
+	}{
+		{"stdlib", reflect.TypeFor[stduuid.UUID]()},
+		{"google", reflect.TypeFor[google.UUID]()},
+		{"gofrs", reflect.TypeFor[gofrs.UUID]()},
+		{"gofrs/v5", reflect.TypeFor[gofrsv5.UUID]()},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			dt := DataTypeFromType(tt.typ)
+			assert.Equal(t, "string", dt.Type())
+			assert.Equal(t, "uuid", dt.Format())
+		})
+	}
 }

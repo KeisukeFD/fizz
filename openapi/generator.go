@@ -9,7 +9,6 @@ import (
 	"sort"
 	"strconv"
 
-	"github.com/gofrs/uuid"
 	"github.com/loopfz/gadgeto/tonic"
 )
 
@@ -238,9 +237,7 @@ func (g *Generator) AddTag(name, desc string) {
 // using the method and path of the route and the tonic
 // handler informations.
 func (g *Generator) AddOperation(path, method, tag string, in, out reflect.Type, info *OperationInfo) (*Operation, error) {
-	op := &Operation{
-		ID: uuid.Must(uuid.NewV4()).String(),
-	}
+	op := &Operation{}
 	path = rewritePath(path)
 
 	if info != nil {

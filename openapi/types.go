@@ -7,8 +7,6 @@ import (
 	"reflect"
 	"strconv"
 	"time"
-
-	"github.com/gofrs/uuid"
 )
 
 var (
@@ -22,10 +20,17 @@ var (
 	tofNetIP          = reflect.TypeFor[net.IP]()
 	tofNetURL         = reflect.TypeFor[url.URL]()
 	tofEmptyInterface = reflect.TypeFor[any]()
-
-	// Imported.
-	tofUUID = reflect.TypeFor[uuid.UUID]()
 )
+
+// importedUUIDs holds the "PkgPath.Name" of the known UUID types.
+// They are matched by name so that the openapi package imports none
+// of the third-party UUID modules.
+var importedUUIDs = map[string]struct{}{
+	"uuid.UUID":                     {}, // standard library
+	"github.com/gofrs/uuid.UUID":    {},
+	"github.com/gofrs/uuid/v5.UUID": {},
+	"github.com/google/uuid.UUID":   {},
+}
 
 var _ DataType = (*InternalDataType)(nil)
 var _ DataType = (*OverridedDataType)(nil)
@@ -182,8 +187,8 @@ func DataTypeFromType(t reflect.Type) DataType {
 }
 
 func isImportedType(t reflect.Type) DataType {
-	// github.com/gofrs/uuid
-	if t == tofUUID {
+	// uuid, github.com/gofrs/uuid, github.com/google/uuid
+	if _, ok := importedUUIDs[t.PkgPath()+"."+t.Name()]; ok {
 		return TypeUUID
 	}
 	return nil

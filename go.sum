@@ -32,6 +32,8 @@ github.com/go-playground/validator/v10 v10.30.5 h1:YyCXvVShZbs2Sm3Mb53eNOlhRXctS
 github.com/go-playground/validator/v10 v10.30.5/go.mod h1:wEqiaov48pXX1kjhc3Da8y0M0Dtg/BK7gurFBLgwFrQ=
 github.com/gofrs/uuid v4.4.0+incompatible h1:3qXRTX8/NbyulANqlc0lchS1gqAVxRgsuW1YrTJupqA=
 github.com/gofrs/uuid v4.4.0+incompatible/go.mod h1:b2aQJv3Z4Fp6yNu3cdSllBxTCLRxnplIgP/c0N/04lM=
+github.com/gofrs/uuid/v5 v5.5.1 h1:z1Ce19/JwNidXpy3tOQc3241lnJLKdKyq/xlNvlD4Ng=
+github.com/gofrs/uuid/v5 v5.5.1/go.mod h1:bbAA98EoIlxyRHIVg6ektCSsZ5n8mSbwgEhvhMYlZgg=
 github.com/golang/protobuf v1.2.0/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
 github.com/golang/protobuf v1.3.1/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
 github.com/golang/protobuf v1.3.3/go.mod h1:vzj43D7+SQXF/4pzW/hwtAqwc6iTitCiVSaWz5lYuqw=

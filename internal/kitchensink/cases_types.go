@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"reflect"
 	"time"
+	"uuid"
 
 	"github.com/gin-gonic/gin"
 	gofrs "github.com/gofrs/uuid"
@@ -143,8 +144,16 @@ type TElemOvs struct {
 	Map  map[string]TElemOv `json:"map"`
 }
 
+// TUUIDs holds uuid values as direct (non-slice) fields.
+type TUUIDs struct {
+	Std    uuid.UUID   `json:"std"`
+	Google google.UUID `json:"google"`
+	Gofrs  gofrs.UUID  `json:"gofrs"`
+}
+
 type TElems struct {
 	Times  []time.Time        `json:"times"`
+	Std    []uuid.UUID        `json:"std"`
 	Google []google.UUID      `json:"google"`
 	Gofrs  []gofrs.UUID       `json:"gofrs"`
 	Blobs  [][]byte           `json:"blobs"`
@@ -269,6 +278,14 @@ func init() {
 		),
 		tcase("elem/time", tget[TElems], "P3.3",
 			Fragment{Pointer: tprop("TElems", "times"), JSON: `{"type":"array","items":{"type":"string","format":"date-time"}}`},
+		),
+		tcase("uuid/direct", tget[TUUIDs], "P1.2",
+			Fragment{Pointer: tprop("TUUIDs", "std"), JSON: `{"type":"string","format":"uuid"}`},
+			Fragment{Pointer: tprop("TUUIDs", "google"), JSON: `{"type":"string","format":"uuid"}`},
+			Fragment{Pointer: tprop("TUUIDs", "gofrs"), JSON: `{"type":"string","format":"uuid"}`},
+		),
+		tcase("elem/uuid-stdlib", tget[TElems], "P3.3",
+			Fragment{Pointer: tprop("TElems", "std"), JSON: `{"type":"array","items":{"type":"string","format":"uuid"}}`},
 		),
 		tcase("elem/uuid-google", tget[TElems], "P3.3",
 			Fragment{Pointer: tprop("TElems", "google"), JSON: `{"type":"array","items":{"type":"string","format":"uuid"}}`},
