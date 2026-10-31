@@ -113,7 +113,72 @@ type Wrapped struct {
 // under, and wraps it into a minimal OpenAPI 3.2.1 document. A block that
 // already has an "openapi" key is returned as is (Kind "document"). When the
 // block cannot be classified, Wrap returns a non-empty reason instead.
+//
+// A fragment often refers to components its prose leaves out (a Pet schema,
+// an example named frog-example). Wrap adds an empty stub for each such
+// dangling #/components/schemas/ or #/components/examples/ reference, so the
+// wrapped document is self-contained and its references resolve. The
+// fragment content itself is not changed.
 func Wrap(heading, title string, v any) (Wrapped, string) {
+	w, reason := wrap(heading, title, v)
+	if reason == "" && w.Kind != "document" {
+		StubDanglingRefs(w.Doc)
+	}
+	return w, reason
+}
+
+// StubDanglingRefs adds `{}` under components.schemas / components.examples
+// for every simple local reference into them that does not resolve.
+func StubDanglingRefs(doc map[string]any) {
+	var walk func(v any, f func(string))
+	walk = func(v any, f func(string)) {
+		switch t := v.(type) {
+		case map[string]any:
+			for k, c := range t {
+				if s, ok := c.(string); ok && k == "$ref" {
+					f(s)
+				} else if k != "example" && k != "enum" && k != "const" {
+					walk(c, f)
+				}
+			}
+		case []any:
+			for _, c := range t {
+				walk(c, f)
+			}
+		}
+	}
+	var missing [][2]string // kind, name
+	walk(doc, func(ref string) {
+		for _, kind := range []string{"schemas", "examples"} {
+			name, ok := strings.CutPrefix(ref, "#/components/"+kind+"/")
+			if !ok || name == "" || strings.ContainsAny(name, "/~%#") {
+				continue
+			}
+			comps, _ := doc["components"].(map[string]any)
+			group, _ := comps[kind].(map[string]any)
+			if _, found := group[name]; !found {
+				missing = append(missing, [2]string{kind, name})
+			}
+		}
+	})
+	for _, m := range missing {
+		comps, _ := doc["components"].(map[string]any)
+		if comps == nil {
+			comps = map[string]any{}
+			doc["components"] = comps
+		}
+		group, _ := comps[m[0]].(map[string]any)
+		if group == nil {
+			group = map[string]any{}
+			comps[m[0]] = group
+		}
+		if _, found := group[m[1]]; !found {
+			group[m[1]] = map[string]any{}
+		}
+	}
+}
+
+func wrap(heading, title string, v any) (Wrapped, string) {
 	m, ok := v.(map[string]any)
 	if !ok {
 		return Wrapped{}, "fragment of an enclosing object (not a mapping)"

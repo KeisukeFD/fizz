@@ -3,7 +3,8 @@
     "schemas": {
       "Example": {
         "$ref": "#/components/schemas/Pet"
-      }
+      },
+      "Pet": {}
     }
   },
   "info": {

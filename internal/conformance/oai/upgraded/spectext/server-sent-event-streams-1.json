@@ -57,6 +57,9 @@
         "description": "A request body to add a stream of typed data.",
         "required": true
       }
+    },
+    "schemas": {
+      "Event": {}
     }
   },
   "info": {

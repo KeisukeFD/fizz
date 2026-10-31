@@ -1,6 +1,9 @@
 {
   "components": {
     "schemas": {
+      "Cat": {},
+      "Dog": {},
+      "Lizard": {},
       "MyResponseType": {
         "discriminator": {
           "defaultMapping": "OtherPet",

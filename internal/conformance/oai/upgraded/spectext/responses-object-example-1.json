@@ -1,4 +1,10 @@
 {
+  "components": {
+    "schemas": {
+      "ErrorModel": {},
+      "Pet": {}
+    }
+  },
   "info": {
     "title": "spec text responses-object-example-1",
     "version": "1.0.0"

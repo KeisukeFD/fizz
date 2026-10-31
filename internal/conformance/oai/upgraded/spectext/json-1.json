@@ -1,5 +1,8 @@
 {
   "components": {
+    "examples": {
+      "frog-example": {}
+    },
     "requestBodies": {
       "Example": {
         "content": {
@@ -35,6 +38,9 @@
           }
         }
       }
+    },
+    "schemas": {
+      "Pet": {}
     }
   },
   "info": {

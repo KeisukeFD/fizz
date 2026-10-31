@@ -1,6 +1,7 @@
 {
   "components": {
     "schemas": {
+      "Address": {},
       "Example": {
         "properties": {
           "address": {

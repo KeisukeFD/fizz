@@ -103,11 +103,15 @@ func TestAllGoldensValid(t *testing.T) {
 		case strings.Contains(rel, "testdata/schemas/"):
 			schemas++
 			name := strings.TrimSuffix(filepath.Base(rel), ext)
-			doc, err = json.Marshal(map[string]any{
+			// A schema golden refers to schemas of its own test; the wrapper
+			// stubs them so the references resolve.
+			wrapped := map[string]any{
 				"openapi":    upgrade.TargetVersion,
 				"info":       map[string]any{"title": "schema golden", "version": "1.0.0"},
 				"components": map[string]any{"schemas": map[string]any{name: v}},
-			})
+			}
+			upgrade.StubDanglingRefs(wrapped)
+			doc, err = json.Marshal(wrapped)
 		default:
 			if _, ok := nonDocumentGoldens[rel]; !ok {
 				t.Errorf("%s: neither an OAS document, a schema golden, nor listed in nonDocumentGoldens", rel)

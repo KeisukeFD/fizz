@@ -1,4 +1,9 @@
 {
+  "components": {
+    "schemas": {
+      "Address": {}
+    }
+  },
   "info": {
     "title": "spec text example-basic-multipart-form-1",
     "version": "1.0.0"

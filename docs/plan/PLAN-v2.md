@@ -781,6 +781,8 @@ Rules for every task:
 - The lint must accept the whole official corpus. That tests the lint as much as fizz. Wire it into `MetaProblems`.
 - Red first: `TestOfficialPassFixtures`, `TestOfficialFailFixtures`, `TestLintSemanticsOnCorpus`.
 
+**P10.2b Lint unresolved local `$ref`s.** S · Sonnet. `LintSemantics` rule (i): every `$ref` (and plain-pointer `$dynamicRef`) starting with `#/` must resolve as an RFC 6901 pointer in the same document; anchors, external and relative refs are skipped. The spec-text and schema-golden wrappers stub the components their fragment leaves out. The link repro app is red until P10.9k.
+
 **P10.3 Model round-trip on the corpus.** M · Sonnet
 - Files: `internal/conformance/roundtrip_test.go`.
 - For every corpus doc: decode into `openapi.OpenAPI`, encode as JSON and YAML, then check the result is JSON-semantically equal to the input and still valid.
@@ -911,6 +913,7 @@ Rules for every task:
 | P10.0 | — | internal/conformance/oai, internal/conformance/internal/fetchoai | anything |
 | P10.1 | P10.0 | internal/conformance/upgrade, oai/upgraded | anything outside conformance |
 | P10.2 | P10.1 | internal/specvalidate/*, internal/kitchensink/meta.go | P10.3, P10.4, P10.5x |
+| P10.2b | P10.2, P10.5b | internal/specvalidate/lint_semantic*.go, internal/conformance/upgrade/spectext.go, oai/upgraded/spectext | P10.3, P10.4, P10.5x |
 | P10.3 | P10.1 | internal/conformance/roundtrip_test.go | P10.2, P10.4, P10.5x |
 | P10.3a–f | P10.3 | openapi/spec_paths.go / spec_root.go / spec_schema.go | each other when they share a file, P10.2, P10.4, P10.5x |
 | P10.4 | P10.2 | internal/conformance/goldens_test.go | P10.3, P10.5x |

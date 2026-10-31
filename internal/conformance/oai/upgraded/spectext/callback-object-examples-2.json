@@ -22,6 +22,9 @@
           }
         }
       }
+    },
+    "schemas": {
+      "SomePayload": {}
     }
   },
   "info": {

@@ -44,6 +44,9 @@
         },
         "description": "user to add to the system"
       }
+    },
+    "schemas": {
+      "User": {}
     }
   },
   "info": {

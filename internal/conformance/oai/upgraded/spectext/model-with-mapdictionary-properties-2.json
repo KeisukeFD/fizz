@@ -1,6 +1,7 @@
 {
   "components": {
     "schemas": {
+      "ComplexModel": {},
       "Example": {
         "additionalProperties": {
           "$ref": "#/components/schemas/ComplexModel"

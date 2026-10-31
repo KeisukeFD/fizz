@@ -1,4 +1,9 @@
 {
+  "components": {
+    "schemas": {
+      "pet": {}
+    }
+  },
   "info": {
     "title": "spec text paths-object-example-1",
     "version": "1.0.0"

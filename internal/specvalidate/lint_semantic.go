@@ -3,6 +3,7 @@ package specvalidate
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"regexp"
 	"slices"
 	"strings"
@@ -37,9 +38,11 @@ var (
 //   - Operation Object: operationId unique across the document, including
 //     callbacks and webhooks.
 //   - Paths Object: templated paths that differ only in variable names.
+//   - Reference Object: every local $ref (and plain-pointer $dynamicRef)
+//     resolves within the document.
 //
-// References to #/components/parameters/ are resolved locally; any other
-// reference is skipped. Problems are ordered by traversal (sorted keys).
+// References to #/components/parameters/ are resolved locally for the
+// parameter rules; any other reference is skipped by them. Problems are ordered by traversal (sorted keys).
 // An unparsable document yields a single problem with pointer "".
 func LintSemantics(doc []byte) []Problem {
 	var root map[string]any
@@ -82,6 +85,7 @@ func sortedKeys(m map[string]any) []string {
 }
 
 func (l *semLinter) run() {
+	l.refs(l.root, "", false)
 	if paths := obj(l.root["paths"]); paths != nil {
 		l.paths(paths)
 	}
@@ -461,4 +465,109 @@ func (l *semLinter) qs(ps []param, skipItemOnly bool) {
 			l.add(p.ptr, "query parameter %q cannot be combined with the in: querystring parameter %q", p.name, firstQS.name)
 		}
 	}
+}
+
+// dataKeys are the keywords whose value is example data, not OAS structure;
+// a "$ref" key inside is not a reference.
+var dataKeys = map[string]bool{
+	"example": true, "default": true, "const": true, "enum": true,
+	"value": true, "dataValue": true, "serializedValue": true,
+}
+
+// nameMaps are the keywords whose value maps user-chosen names to objects,
+// so a child named like a dataKeys entry is a name, not data.
+var nameMaps = map[string]bool{
+	"properties": true, "patternProperties": true, "$defs": true, "definitions": true,
+	"dependentSchemas": true, "schemas": true, "parameters": true, "responses": true,
+	"examples": true, "requestBodies": true, "headers": true, "securitySchemes": true,
+	"links": true, "callbacks": true, "pathItems": true, "mediaTypes": true,
+	"content": true, "paths": true, "webhooks": true, "variables": true,
+	"encoding": true, "scopes": true,
+}
+
+// refs walks the whole document and checks every local reference.
+//
+// Reference Object, $ref: "The reference identifier. This MUST be in the
+// form of a URI." Schema Object $ref (JSON Schema 2020-12, 8.2.3.1): "The
+// value of the "$ref" keyword MUST be a string which is a URI-reference",
+// resolved against the base URI; a fragment that starts with "/" is a JSON
+// Pointer (RFC 6901, via 8.2.3.1 and RFC 3986 section 3.5), so a reference
+// "#/components/links/x" to a missing value is unresolvable. Fragments
+// without "/" (plain-name anchors), external and relative URIs are skipped.
+func (l *semLinter) refs(v any, ptr string, inNames bool) {
+	switch t := v.(type) {
+	case map[string]any:
+		for _, k := range sortedKeys(t) {
+			c := t[k]
+			p := ptr + "/" + escape(k)
+			if !inNames {
+				if strings.HasPrefix(k, "x-") || dataKeys[k] {
+					continue
+				}
+				if s, ok := c.(string); ok && (k == "$ref" || k == "$dynamicRef") {
+					l.checkRef(p, k, s)
+					continue
+				}
+			}
+			l.refs(c, p, !inNames && nameMaps[k])
+		}
+	case []any:
+		for i, c := range t {
+			l.refs(c, fmt.Sprintf("%s/%d", ptr, i), false)
+		}
+	}
+}
+
+func (l *semLinter) checkRef(ptr, kw, ref string) {
+	frag, ok := strings.CutPrefix(ref, "#")
+	if !ok {
+		return
+	}
+	if dec, err := url.PathUnescape(frag); err == nil {
+		frag = dec
+	} else {
+		l.add(ptr, "%s %q has an invalid percent-encoding", kw, ref)
+		return
+	}
+	if frag == "" || frag[0] != '/' {
+		return // whole document, or a plain-name anchor
+	}
+	var cur any = l.root
+	for seg := range strings.SplitSeq(frag[1:], "/") {
+		seg = strings.NewReplacer("~1", "/", "~0", "~").Replace(seg)
+		switch t := cur.(type) {
+		case map[string]any:
+			next, found := t[seg]
+			if !found {
+				l.add(ptr, "%s %q does not resolve: no %q", kw, ref, seg)
+				return
+			}
+			cur = next
+		case []any:
+			i, ok := arrayIndex(seg)
+			if !ok || i >= len(t) {
+				l.add(ptr, "%s %q does not resolve: no index %q", kw, ref, seg)
+				return
+			}
+			cur = t[i]
+		default:
+			l.add(ptr, "%s %q does not resolve: %q is under a scalar", kw, ref, seg)
+			return
+		}
+	}
+}
+
+// arrayIndex parses an RFC 6901 array index: digits without a leading zero.
+func arrayIndex(s string) (int, bool) {
+	if s == "" || (len(s) > 1 && s[0] == '0') {
+		return 0, false
+	}
+	n := 0
+	for _, c := range s {
+		if c < '0' || c > '9' || n > 1<<24 {
+			return 0, false
+		}
+		n = n*10 + int(c-'0')
+	}
+	return n, true
 }

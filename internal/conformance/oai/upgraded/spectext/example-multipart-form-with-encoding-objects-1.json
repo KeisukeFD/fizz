@@ -1,4 +1,9 @@
 {
+  "components": {
+    "schemas": {
+      "Address": {}
+    }
+  },
   "info": {
     "title": "spec text example-multipart-form-with-encoding-objects-1",
     "version": "1.0.0"
