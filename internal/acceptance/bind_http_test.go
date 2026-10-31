@@ -69,6 +69,16 @@ type bBCookieReq struct {
 	Token string `cookie:"token" validate:"required"`
 }
 
+// bBCookieOpts uses the options of the cookie tag; Both also has the
+// default tag, which the option must win over.
+type bBCookieOpts struct {
+	Lang string `cookie:"lang,default=es"`
+	Both string `cookie:"both,default=opt" default:"tag"`
+}
+type bBCookieOptReq struct {
+	T string `cookie:"t,required"`
+}
+
 // bBHandle registers h on f. Callers pass a function literal per call
 // site on purpose: tonic keys routes by handler name, which generic
 // instantiations would share.
@@ -91,6 +101,8 @@ func bBNewApp() *fizz.Fizz {
 	bBHandle(f, "GET", "/i/:id", tonic.Handler(func(c *gin.Context, in *bBPathBodyIn) (*bBPathBodyIn, error) { return in, nil }, 200))
 	bBHandle(f, "GET", "/cookie", tonic.Handler(func(c *gin.Context, in *bBCookieIn) (*bBCookieIn, error) { return in, nil }, 200))
 	bBHandle(f, "GET", "/cookiereq", tonic.Handler(func(c *gin.Context, in *bBCookieReq) (*bBCookieReq, error) { return in, nil }, 200))
+	bBHandle(f, "GET", "/cookieopts", tonic.Handler(func(c *gin.Context, in *bBCookieOpts) (*bBCookieOpts, error) { return in, nil }, 200))
+	bBHandle(f, "GET", "/cookieoptreq", tonic.Handler(func(c *gin.Context, in *bBCookieOptReq) (*bBCookieOptReq, error) { return in, nil }, 200))
 	return f
 }
 
@@ -355,6 +367,26 @@ func TestBBCookieRequired400(t *testing.T) {
 		h := bBNewApp()
 		bB400(tb, at.Do(h, "GET", "/cookiereq"))
 		bBOK(tb, at.Do(h, "GET", "/cookiereq", at.WithCookie("token", "t")), `{"Token":"t"}`)
+	})
+}
+
+// The ,default= and ,required options of the cookie tag are bound as the
+// spec documents them, like tonic's query and header options.
+func TestBBCookieTagOptions(t *testing.T) {
+	at.Pending(t, "P7.2c", func(tb testing.TB) {
+		h := bBNewApp()
+		bBOK(tb, at.Do(h, "GET", "/cookieopts"), `{"Lang":"es","Both":"opt"}`)
+		bBOK(tb, at.Do(h, "GET", "/cookieopts", at.WithCookie("lang", "fr"), at.WithCookie("both", "x")), `{"Lang":"fr","Both":"x"}`)
+		// Present but empty: the default is not applied.
+		bBOK(tb, at.Do(h, "GET", "/cookieopts", at.WithCookie("lang", ""), at.WithCookie("both", "x")), `{"Lang":"","Both":"x"}`)
+		w := at.Do(h, "GET", "/cookieoptreq")
+		bB400(tb, w)
+		if !strings.Contains(w.Body.String(), `cookie \"t\"`) {
+			tb.Errorf("error does not mention cookie t: %s", w.Body.String())
+		}
+		bBOK(tb, at.Do(h, "GET", "/cookieoptreq", at.WithCookie("t", "v")), `{"T":"v"}`)
+		// tonic treats an empty value like an absent one for required.
+		bB400(tb, at.Do(h, "GET", "/cookieoptreq", at.WithCookie("t", "")))
 	})
 }
 

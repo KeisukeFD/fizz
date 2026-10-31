@@ -147,6 +147,19 @@ func TestBBCookiesDecodeTable(t *testing.T) {
 	type badDefault struct {
 		N int `cookie:"n" default:"x"`
 	}
+	type optsIn struct {
+		Lang string `cookie:"lang,default=es"`
+		Both string `cookie:"both,default=opt" default:"tag"`
+	}
+	type optReq struct {
+		T string `cookie:"t,required"`
+	}
+	type optBadDefault struct {
+		N int `cookie:"n,default=x"`
+	}
+	type optReqDefault struct {
+		T string `cookie:"t,required,default=d"`
+	}
 	rows := []struct {
 		name    string
 		cookies []http.Cookie
@@ -166,6 +179,14 @@ func TestBBCookiesDecodeTable(t *testing.T) {
 		{"pointers", []http.Cookie{{Name: "n", Value: "7"}}, &ptrIn{}, &ptrIn{N: new(7), S: new("d")}, ""},
 		{"pointer absent stays nil", nil, &ptrIn{}, &ptrIn{S: new("d")}, ""},
 		{"bad default", nil, &badDefault{}, nil, `cookie "n"`},
+		{"option default when absent, wins over tag", nil, &optsIn{}, &optsIn{Lang: "es", Both: "opt"}, ""},
+		{"option default not applied when present", []http.Cookie{{Name: "lang", Value: "fr"}, {Name: "both", Value: "x"}}, &optsIn{}, &optsIn{Lang: "fr", Both: "x"}, ""},
+		{"option default not applied when empty", []http.Cookie{{Name: "lang", Value: ""}, {Name: "both", Value: ""}}, &optsIn{}, &optsIn{}, ""},
+		{"bad option default", nil, &optBadDefault{}, nil, `cookie "n"`},
+		{"required absent", nil, &optReq{}, nil, `cookie "t"`},
+		{"required empty is missing, as in tonic", []http.Cookie{{Name: "t", Value: ""}}, &optReq{}, nil, `cookie "t"`},
+		{"required present", []http.Cookie{{Name: "t", Value: "v"}}, &optReq{}, &optReq{T: "v"}, ""},
+		{"required with default absent", nil, &optReqDefault{}, &optReqDefault{T: "d"}, ""},
 	}
 	for _, r := range rows {
 		t.Run(r.name, func(t *testing.T) {

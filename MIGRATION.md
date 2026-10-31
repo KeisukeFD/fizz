@@ -194,6 +194,8 @@ fmt.Println(strings.Contains(body, "from json"), strings.Contains(body, "from ya
 
 *tonic* does not know the `deepObject` style or cookies, so fizz binds them through a *tonic* bind hook. `fizz.New` and `fizz.NewFromEngine` now call `fizz.InstallBindHook()`, which wraps the current process-global hook; this is new global state, and it acts only on routes registered with fizz.
 
+For cookies, the hook honors the `,default=` and `,required` options of the `cookie` tag, as *tonic* does for `query` and `header`: an absent cookie takes the default (the option wins over the `default` tag), and an absent `,required` cookie without a default is a 400. An empty cookie does not take the default (see [Cookies](README.md#cookies)).
+
 - If your program sets its own hook with `tonic.SetBindHook` **before** `fizz.New`, nothing to do: the hook is kept and composed.
 - If it sets one **after**, the hook of fizz is replaced. Wrap yours with `tonic.SetBindHook(fizz.BindHook(yours))`, or call `fizz.InstallBindHook()` again. Routes that have `deepObject` or cookie parameters log a warning in gin debug mode when the hook did not run.
 - To opt out, pass `fizz.WithoutBindHook()`. Those parameters are then documented but not bound, unless you compose `fizz.BindHook` yourself, as below. It does not remove a hook that an earlier `New` installed.

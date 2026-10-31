@@ -711,11 +711,12 @@ f.ServeHTTP(httptest.NewRecorder(), req)
 A field with a `cookie` tag is documented as an `in: cookie` parameter and bound from the request cookies. Only scalar fields (or pointers to scalars) are cookies; a struct, a slice or a map is a recorded error and the field is skipped. The tag is read by the same bind hook as deepObject, so it follows the same installation rules.
 
 - **Present**: the value is converted to the type of the field, from the raw value of the cookie. It is **not** URL-decoded.
-- **Absent**, with a `default` tag: the field takes the default.
+- **Absent**, with a default (the `,default=` option of the `cookie` tag, or the `default` tag): the field takes the default. When both are set, the option wins, as in *tonic*. A default that does not convert to the type of the field is a binding error.
 - **Present but empty**: the field gets the empty value (`""` for a string). The default is **not** applied.
-- **Absent**, without a default: the field is left alone.
+- **Absent**, with the `,required` option and no default: a binding error that names the cookie (400 by default).
+- **Absent**, without a default and not required: the field is left alone.
 
-Whether a cookie is required is left to `validate:"required"`, which *tonic* checks after the binding. Use the `default` tag, as below, to give a cookie a default that is bound: the `,default=` option of a `cookie` tag is documented in the spec but not applied at runtime.
+The `cookie:"lang,default=en"` and `cookie:"t,required"` options are documented in the spec and bound at runtime, as *tonic* does for the options of `query` and `header`. A default makes the cookie optional in the spec, so `required` is dropped with a warning when both are set. Like *tonic*, which treats an empty query or header value as missing, `,required` is not satisfied by an empty cookie (unless a default is set). `validate:"required"` still works, and is checked by *tonic* after the binding.
 
 <!-- example: Example_cookie -->
 ```go

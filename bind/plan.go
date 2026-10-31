@@ -50,6 +50,9 @@ type cookieField struct {
 	typ    reflect.Type // the scalar type (pointer stripped)
 	def    string       // the default tag value, when hasDef
 	hasDef bool
+	// required is the ",required" option of the cookie tag. A default
+	// makes the cookie optional, as the generator documents (D15).
+	required bool
 }
 
 type member struct {
@@ -149,7 +152,7 @@ func (p *Plan) collect(st reflect.Type, prefix []int, tags Tags) error {
 // addCookie plans a cookie field. The generator rejects a cookie parameter
 // that is not a scalar, so such a field is left alone here.
 func (p *Plan) addCookie(f reflect.StructField, tag string, index []int, tags Tags) {
-	name, _, _ := strings.Cut(tag, ",")
+	name, options, _ := strings.Cut(tag, ",")
 	if name == "" || name == "-" {
 		return
 	}
@@ -163,6 +166,17 @@ func (p *Plan) addCookie(f reflect.StructField, tag string, index []int, tags Ta
 	}
 	if tags.Default != "" {
 		cf.def, cf.hasDef = f.Tag.Lookup(tags.Default)
+	}
+	// As in tonic's extractors, the ",default=" option wins over the
+	// default tag, and an empty option is not a default. The generator
+	// reports an unknown option, so it is ignored here.
+	for o := range strings.SplitSeq(options, ",") {
+		o = strings.TrimSpace(o)
+		if o == "required" {
+			cf.required = true
+		} else if v, ok := strings.CutPrefix(o, "default="); ok && v != "" {
+			cf.def, cf.hasDef = v, true
+		}
 	}
 	p.cookies = append(p.cookies, cf)
 }

@@ -13,11 +13,16 @@ import (
 //   - a cookie that is present is converted to the field type, from its
 //     raw value (net/http does not URL-decode it); an empty value is a
 //     value, and converts like any other (to "" for a string);
-//   - a cookie that is absent takes the field's default tag value, if it
-//     has one, and leaves the field alone otherwise.
+//   - a cookie that is absent takes the default of the field, if it has
+//     one: the ",default=" option of the cookie tag, which wins as it does
+//     in tonic, or else the default tag value. Without a default, an
+//     absent ",required" cookie is an error and any other leaves the
+//     field alone.
 //
-// Whether a cookie is required is left to the router's validation. An
-// error names the cookie.
+// An empty cookie does not take the default, but without a default it
+// does not satisfy ",required" either: tonic treats an empty query or
+// header value as missing. Otherwise, required-ness is left to the
+// router's validation. An error names the cookie.
 func Cookies(r *http.Request, dst any, p *Plan) error {
 	if p == nil {
 		return errors.New("bind: Cookies: nil plan")
@@ -32,8 +37,13 @@ func Cookies(r *http.Request, dst any, p *Plan) error {
 		var raw string
 		if c, err := r.Cookie(cf.name); err == nil {
 			raw = c.Value
+			if raw == "" && cf.required && !cf.hasDef {
+				return fmt.Errorf("bind: cookie %q: missing cookie parameter", cf.name)
+			}
 		} else if cf.hasDef {
 			raw = cf.def
+		} else if cf.required {
+			return fmt.Errorf("bind: cookie %q: missing cookie parameter", cf.name)
 		} else {
 			continue
 		}
