@@ -7,21 +7,8 @@ package fizz
 
 import (
 	"github.com/loopfz/gadgeto/tonic"
-	"github.com/wI2L/fizz/docsui"
 	"github.com/wI2L/fizz/openapi"
 )
-
-// EmbeddedSwaggerUI is a stub.
-// FixedBy: P8.3
-func EmbeddedSwaggerUI(opts ...docsui.Option) DocsUI {
-	return DocsUI{}
-}
-
-// EmbeddedScalarUI is a stub.
-// FixedBy: P8.3
-func EmbeddedScalarUI(opts ...docsui.Option) DocsUI {
-	return DocsUI{}
-}
 
 // BindHook is a stub.
 // FixedBy: P7.2b
