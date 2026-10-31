@@ -56,6 +56,7 @@ type Operation struct {
 	Tags         []string                  `json:"tags,omitempty"`
 	Summary      string                    `json:"summary,omitempty"`
 	Description  string                    `json:"description,omitempty"`
+	ExternalDocs *ExternalDocs             `json:"externalDocs,omitempty"`
 	ID           string                    `json:"operationId,omitempty"`
 	Parameters   []*ParameterOrRef         `json:"parameters,omitempty"`
 	RequestBody  *RequestBody              `json:"requestBody,omitzero"`

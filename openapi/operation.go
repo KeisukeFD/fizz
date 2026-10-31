@@ -23,6 +23,22 @@ type OperationInfo struct {
 	// order, by name and location: see the Parameter option of the
 	// fizz package.
 	Parameters []*Parameter
+	// Tags are added to the tag of the group of the operation, after
+	// it and without duplicates, empty names left out: see the Tags
+	// option of the fizz package.
+	Tags []string
+	// ExternalDocs sets the externalDocs of the operation. An empty
+	// URL is an error: see the ExternalDocs option of the fizz package.
+	ExternalDocs *ExternalDocs
+	// Extensions are "x-" extensions of the operation, applied in order,
+	// the last one of a key winning: see the Extension option of the fizz
+	// package.
+	Extensions []*ExtensionInfo
+	// Customizers run on a copy of the operation once every other
+	// option has been applied, in order, before the OperationHook: see
+	// the CustomizeOperation option of the fizz package. A nil one is
+	// ignored.
+	Customizers []func(*Operation) error
 	// WildcardParams names the path parameters of the operation that
 	// come from a catch-all gin segment ("/*name"). The router sets it
 	// when it translates the gin path; the path given to AddOperation
@@ -58,6 +74,23 @@ type EncodingInfo struct {
 	ContentType string
 }
 
+// ExtensionInfo is one "x-" specification extension to set on an
+// operation or on a response; the generator validates the key and the
+// value when it applies it.
+type ExtensionInfo struct {
+	Key   string
+	Value any
+}
+
+// ResponseContent is one media type of an OperationResponse, in
+// addition to the default media type of the Model.
+type ResponseContent struct {
+	MediaType string
+	// Model gives the schema of the media type. A nil Model gives a
+	// media type without a schema.
+	Model any
+}
+
 // ResponseHeader represents a single header that
 // may be returned with an operation response.
 type ResponseHeader struct {
@@ -81,4 +114,13 @@ type OperationResponse struct {
 	Headers     []*ResponseHeader
 	Example     any
 	Examples    map[string]any
+	// Contents are further media types of the response, after the one
+	// of the Model (the default media type). A media type that the
+	// response already has is an error and the first is kept.
+	Contents []*ResponseContent
+	// Extensions are "x-" extensions of the response, applied in order.
+	Extensions []*ExtensionInfo
+	// KeepExamples, when both Example and Examples are set, drops the
+	// Example and records an error instead of failing the operation.
+	KeepExamples bool
 }

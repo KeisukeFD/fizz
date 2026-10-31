@@ -257,3 +257,131 @@ func Parameter(p *openapi.Parameter) OperationOption {
 		o.Parameters = append(o.Parameters, c)
 	}
 }
+
+// Tags adds tags to the operation, after the tag of its group and
+// without duplicates: a tag that is already there, and an empty one,
+// are ignored. The tags of an operation are not declared at the root of
+// the document; use Generator.SetTag for that.
+func Tags(tags ...string) OperationOption {
+	return func(o *openapi.OperationInfo) {
+		o.Tags = append(o.Tags, tags...)
+	}
+}
+
+// ExternalDocs sets the external documentation of the operation. An
+// empty url is a recorded error and nothing is emitted.
+func ExternalDocs(url, desc string) OperationOption {
+	return func(o *openapi.OperationInfo) {
+		o.ExternalDocs = &openapi.ExternalDocs{URL: url, Description: desc}
+	}
+}
+
+// Extension sets the "x-" specification extension key of the operation
+// to value, the last option of a key winning. An invalid key
+// (openapi.ErrInvalidExtensionKey, openapi.ErrReservedExtension), a
+// value that is not JSON-encodable, and a key that a typed option owns
+// ("x-codeSamples" is XCodeSample's, "x-internal" is XInternal's) are
+// recorded errors, and the extension is not emitted.
+func Extension(key string, value any) OperationOption {
+	return func(o *openapi.OperationInfo) {
+		o.Extensions = append(o.Extensions, &openapi.ExtensionInfo{Key: key, Value: value})
+	}
+}
+
+// CustomizeOperation adjusts the operation through fn, which runs on a
+// copy of it once every other option has been applied (whatever the
+// order of the options), and before the OperationHook. Several
+// functions run in the order they are given. If fn returns an error its
+// changes are discarded and the error is recorded with the operation ID;
+// the next function still runs. The operation ID cannot be changed: a
+// new one is reverted and a warning is recorded. A nil fn is ignored.
+func CustomizeOperation(fn func(*openapi.Operation) error) OperationOption {
+	return func(o *openapi.OperationInfo) {
+		if fn != nil {
+			o.Customizers = append(o.Customizers, fn)
+		}
+	}
+}
+
+// ResponseOption sets a part of a response added by ResponseWith.
+type ResponseOption func(*responseSpec)
+
+// responseSpec is the state a ResponseOption fills in.
+type responseSpec struct {
+	model      any
+	headers    []*openapi.ResponseHeader
+	example    any
+	examples   map[string]any
+	contents   []*openapi.ResponseContent
+	extensions []*openapi.ExtensionInfo
+}
+
+// ResponseWith adds a response to the operation, built the same way as
+// the one of Response: same naming of the schemas, default media type
+// and nullability. A code already used by the operation is an error.
+//
+// The model, the example and the examples go under the default media
+// type; WithContent adds other media types. WithExample together with
+// WithExamples, and a media type given twice, are recorded errors (the
+// examples, and the first media type, are kept).
+func ResponseWith(code, desc string, opts ...ResponseOption) OperationOption {
+	return func(o *openapi.OperationInfo) {
+		var s responseSpec
+		for _, opt := range opts {
+			if opt != nil {
+				opt(&s)
+			}
+		}
+		o.Responses = append(o.Responses, &openapi.OperationResponse{
+			Code:        code,
+			Description: desc,
+			Model:       s.model,
+			Headers:     s.headers,
+			Example:     s.example,
+			Examples:    s.examples,
+			Contents:    s.contents,
+			Extensions:  s.extensions,
+			// ResponseWith keeps the examples of a conflict and goes on.
+			KeepExamples: true,
+		})
+	}
+}
+
+// WithModel sets the type of the body of the response, under the default
+// media type.
+func WithModel(model any) ResponseOption {
+	return func(s *responseSpec) { s.model = model }
+}
+
+// WithHeaders adds headers to the response.
+func WithHeaders(headers ...*openapi.ResponseHeader) ResponseOption {
+	return func(s *responseSpec) { s.headers = append(s.headers, headers...) }
+}
+
+// WithExample sets the example of the response, under the default media
+// type. It excludes WithExamples.
+func WithExample(example any) ResponseOption {
+	return func(s *responseSpec) { s.example = example }
+}
+
+// WithExamples sets the named examples of the response, under the
+// default media type. It excludes WithExample.
+func WithExamples(examples map[string]any) ResponseOption {
+	return func(s *responseSpec) { s.examples = examples }
+}
+
+// WithContent adds a media type to the response, whose schema is the one
+// of model. A nil model gives a media type without a schema.
+func WithContent(mediaType string, model any) ResponseOption {
+	return func(s *responseSpec) {
+		s.contents = append(s.contents, &openapi.ResponseContent{MediaType: mediaType, Model: model})
+	}
+}
+
+// WithResponseExtension sets the "x-" extension key of the response, with
+// the rules of Extension.
+func WithResponseExtension(key string, value any) ResponseOption {
+	return func(s *responseSpec) {
+		s.extensions = append(s.extensions, &openapi.ExtensionInfo{Key: key, Value: value})
+	}
+}

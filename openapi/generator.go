@@ -530,6 +530,11 @@ func (g *Generator) buildOperation(path, method, tag string, in, out reflect.Typ
 	if tag != "" {
 		op.Tags = append(op.Tags, tag)
 	}
+	for _, t := range info.Tags {
+		if t != "" && !slices.Contains(op.Tags, t) {
+			op.Tags = append(op.Tags, t)
+		}
+	}
 	// Operations with methods GET/HEAD cannot have a body (DELETE
 	// can, D13). Non parameters fields will be ignored.
 	allowBody := method != http.MethodGet &&
@@ -561,22 +566,19 @@ func (g *Generator) buildOperation(path, method, tag string, in, out reflect.Typ
 	// informations.
 	for _, resp := range info.Responses {
 		if resp != nil {
-			if err := g.setOperationResponse(op,
-				"",
-				reflect.TypeOf(resp.Model),
-				resp.Code,
-				g.mediaType(),
-				resp.Description,
-				resp.Headers,
-				resp.Example,
-				resp.Examples,
-			); err != nil {
+			if err := g.addOperationResponse(op, resp); err != nil {
 				return nil, err
 			}
 		}
 	}
 	g.applyRequestBody(op, method, info.RequestBody)
 	g.applyParameters(op, path, info.Parameters)
+	g.applyOperationOptions(op, info)
+	for _, fn := range info.Customizers {
+		if fn != nil {
+			op = g.customizeOperation("CustomizeOperation", op, fn)
+		}
+	}
 	return g.operationHook(op, method, path), nil
 }
 

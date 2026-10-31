@@ -180,17 +180,27 @@ func (g *Generator) operationHook(op *Operation, method, path string) *Operation
 	if h == nil {
 		return op
 	}
+	return g.customizeOperation("OperationHook", op, func(c *Operation) error {
+		return h(&OperationContext{OperationID: op.ID, Method: method, Path: path}, c)
+	})
+}
+
+// customizeOperation runs fn on a copy of op and returns the operation
+// to use: the copy, or op if fn fails (the error is recorded, prefixed by
+// what). The operation ID cannot be changed: a new one is reverted and a
+// *Warning is recorded.
+func (g *Generator) customizeOperation(what string, op *Operation, fn func(*Operation) error) *Operation {
 	c, err := op.Clone()
 	if err != nil {
-		g.error(fmt.Errorf("OperationHook: %w", err))
+		g.error(fmt.Errorf("%s: %w", what, err))
 		return op
 	}
-	if err := h(&OperationContext{OperationID: op.ID, Method: method, Path: path}, c); err != nil {
-		g.error(fmt.Errorf("OperationHook: %w", err))
+	if err := fn(c); err != nil {
+		g.error(fmt.Errorf("%s: %w", what, err))
 		return op
 	}
 	if c.ID != op.ID {
-		g.warn(fmt.Sprintf("OperationHook: the operation ID cannot be changed (%q to %q): reverted", op.ID, c.ID))
+		g.warn(fmt.Sprintf("%s: the operation ID cannot be changed (%q to %q): reverted", what, op.ID, c.ID))
 		c.ID = op.ID
 	}
 	return c

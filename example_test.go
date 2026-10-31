@@ -62,3 +62,52 @@ func ExampleWithHooks() {
 	// Output:
 	// [{"name":"Pets","tags":["pets"]}]
 }
+
+type exPet struct {
+	Name string `json:"name"`
+}
+
+// This example documents a request body in XML instead of the JSON body
+// inferred from the input, and marks it required.
+func ExampleRequestBody() {
+	f := fizz.New()
+	f.POST("/pets", []fizz.OperationOption{
+		fizz.ID("createPet"),
+		fizz.RequestBody("The pet to create", true,
+			fizz.Content("application/xml", exPet{})),
+	}, tonic.Handler(func(*gin.Context, *exPet) error { return nil }, 201))
+
+	doc, err := f.Document()
+	if err != nil {
+		panic(err)
+	}
+	b, err := json.Marshal(doc.Paths["/pets"].POST.RequestBody)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(string(b))
+	// Output:
+	// {"description":"The pet to create","content":{"application/xml":{"schema":{"$ref":"#/components/schemas/Fizz_testExPet"}}},"required":true}
+}
+
+// This example edits the operation after every other option has been
+// applied: CustomizeOperation runs last, whatever its position.
+func ExampleCustomizeOperation() {
+	f := fizz.New()
+	f.GET("/pets", []fizz.OperationOption{
+		fizz.CustomizeOperation(func(op *openapi.Operation) error {
+			op.Summary += " (beta)"
+			return nil
+		}),
+		fizz.ID("listPets"),
+		fizz.Summary("List pets"),
+	}, tonic.Handler(func(*gin.Context, *optionsIn) error { return nil }, 200))
+
+	doc, err := f.Document()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(doc.Paths["/pets"].GET.Summary)
+	// Output:
+	// List pets (beta)
+}

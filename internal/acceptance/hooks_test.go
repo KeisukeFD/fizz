@@ -295,8 +295,7 @@ type fPrecBody struct {
 	Color bIColor `json:"color" enum:"red"`
 }
 
-// F32: one row per boundary of the precedence table (PLAN-v2 §1). Rows
-// 7 and 10 are in precedence_pending_test.go.
+// F32: one row per boundary of the precedence table (PLAN-v2 §1).
 func TestPrecedence(t *testing.T) {
 	const comp = "/components/schemas/Acceptance"
 	rows := []struct {
@@ -378,6 +377,21 @@ func TestPrecedence(t *testing.T) {
 			at.Frag(tb, at.Do(f, "GET", "/spec.json").Body.Bytes(), "/paths/~1x/get/summary", `"document"`)
 			if got := f.Generator().API().Paths["/x"].GET.Summary; got != "operation" {
 				tb.Errorf("API() summary = %q, want the OperationHook's", got)
+			}
+		}},
+		{"10 CustomizeOperation < OperationHook", func(tb testing.TB) {
+			ran := false
+			f := fHooked(openapi.Hooks{Operation: func(_ *openapi.OperationContext, op *openapi.Operation) error {
+				op.Summary = "hook"
+				return nil
+			}})
+			f.GET("/x", []fizz.OperationOption{
+				fizz.ID("x"),
+				fizz.CustomizeOperation(func(op *openapi.Operation) error { ran = true; op.Summary = "customize"; return nil }),
+			}, fHandler[fEmpty]())
+			at.Frag(tb, at.Spec(tb, f), "/paths/~1x/get/summary", `"hook"`)
+			if !ran {
+				tb.Error("the CustomizeOperation function did not run")
 			}
 		}},
 	}
