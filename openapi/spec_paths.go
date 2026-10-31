@@ -43,18 +43,34 @@ type RequestBody struct {
 
 // Operation describes an API operation on a path.
 type Operation struct {
-	Tags         []string               `json:"tags,omitempty" yaml:"tags,omitempty"`
-	Summary      string                 `json:"summary,omitempty" yaml:"summary,omitempty"`
-	Description  string                 `json:"description,omitempty" yaml:"description,omitempty"`
-	ID           string                 `json:"operationId,omitempty" yaml:"operationId,omitempty"`
-	Parameters   []*ParameterOrRef      `json:"parameters,omitempty" yaml:"parameters,omitempty"`
-	RequestBody  *RequestBody           `json:"requestBody,omitempty" yaml:"requestBody,omitempty"`
-	Responses    Responses              `json:"responses,omitempty" yaml:"responses,omitempty"`
-	Deprecated   bool                   `json:"deprecated,omitempty" yaml:"deprecated,omitempty"`
-	Servers      []*Server              `json:"servers,omitempty" yaml:"servers,omitempty"`
-	Security     []*SecurityRequirement `json:"security,omitzero" yaml:"security,omitempty"`
-	XCodeSamples []*XCodeSample         `json:"x-codeSamples,omitempty" yaml:"x-codeSamples,omitempty"`
-	XInternal    bool                   `json:"x-internal,omitempty" yaml:"x-internal,omitempty"`
+	Tags         []string                  `json:"tags,omitempty" yaml:"tags,omitempty"`
+	Summary      string                    `json:"summary,omitempty" yaml:"summary,omitempty"`
+	Description  string                    `json:"description,omitempty" yaml:"description,omitempty"`
+	ID           string                    `json:"operationId,omitempty" yaml:"operationId,omitempty"`
+	Parameters   []*ParameterOrRef         `json:"parameters,omitempty" yaml:"parameters,omitempty"`
+	RequestBody  *RequestBody              `json:"requestBody,omitempty" yaml:"requestBody,omitempty"`
+	Responses    Responses                 `json:"responses,omitempty" yaml:"responses,omitempty"`
+	Callbacks    map[string]*CallbackOrRef `json:"callbacks,omitempty" yaml:"callbacks,omitempty"`
+	Deprecated   bool                      `json:"deprecated,omitempty" yaml:"deprecated,omitempty"`
+	Servers      []*Server                 `json:"servers,omitempty" yaml:"servers,omitempty"`
+	Security     []*SecurityRequirement    `json:"security,omitzero" yaml:"-"`
+	XCodeSamples []*XCodeSample            `json:"x-codeSamples,omitempty" yaml:"x-codeSamples,omitempty"`
+	XInternal    bool                      `json:"x-internal,omitempty" yaml:"x-internal,omitempty"`
+}
+
+// MarshalYAML keeps an empty, non-nil Security (security: [], meaning
+// "no authentication") in YAML output while omitting a nil one.
+//
+// Temporary: yaml.v2 has no omitzero support. Deleted by P2.5.
+func (o *Operation) MarshalYAML() (any, error) {
+	type plain Operation
+	if o.Security == nil {
+		return plain(*o), nil
+	}
+	return struct {
+		plain    `yaml:",inline"`
+		Security []*SecurityRequirement `yaml:"security"`
+	}{plain(*o), o.Security}, nil
 }
 
 // Responses represents a container for the expected responses
@@ -103,16 +119,15 @@ type HeaderOrRef = OrRef[Header]
 
 // Header represents an HTTP header.
 type Header struct {
-	Description     string                   `json:"description,omitempty" yaml:"description,omitempty"`
-	Required        bool                     `json:"required,omitzero" yaml:"required,omitempty"`
-	Deprecated      bool                     `json:"deprecated,omitzero" yaml:"deprecated,omitempty"`
-	AllowEmptyValue bool                     `json:"allowEmptyValue,omitzero" yaml:"allowEmptyValue,omitempty"`
-	Schema          *Schema                  `json:"schema,omitempty" yaml:"schema,omitempty"`
-	Style           string                   `json:"style,omitempty" yaml:"style,omitempty"`
-	Explode         *bool                    `json:"explode,omitempty" yaml:"explode,omitempty"`
-	Example         any                      `json:"example,omitempty" yaml:"example,omitempty"`
-	Examples        map[string]*ExampleOrRef `json:"examples,omitempty" yaml:"examples,omitempty"`
-	Content         map[string]*MediaType    `json:"content,omitempty" yaml:"content,omitempty"`
+	Description string                   `json:"description,omitempty" yaml:"description,omitempty"`
+	Required    bool                     `json:"required,omitzero" yaml:"required,omitempty"`
+	Deprecated  bool                     `json:"deprecated,omitzero" yaml:"deprecated,omitempty"`
+	Schema      *Schema                  `json:"schema,omitempty" yaml:"schema,omitempty"`
+	Style       string                   `json:"style,omitempty" yaml:"style,omitempty"`
+	Explode     *bool                    `json:"explode,omitempty" yaml:"explode,omitempty"`
+	Example     any                      `json:"example,omitempty" yaml:"example,omitempty"`
+	Examples    map[string]*ExampleOrRef `json:"examples,omitempty" yaml:"examples,omitempty"`
+	Content     map[string]*MediaType    `json:"content,omitempty" yaml:"content,omitempty"`
 }
 
 // MediaTypeOrRef represents a MediaType that can be inlined
@@ -150,7 +165,7 @@ type Encoding struct {
 	ContentType    string                  `json:"contentType,omitempty" yaml:"contentType,omitempty"`
 	Headers        map[string]*HeaderOrRef `json:"headers,omitempty" yaml:"headers,omitempty"`
 	Style          string                  `json:"style,omitempty" yaml:"style,omitempty"`
-	Explode        bool                    `json:"explode,omitempty" yaml:"explode,omitempty"`
+	Explode        *bool                   `json:"explode,omitempty" yaml:"explode,omitempty"`
 	AllowReserved  bool                    `json:"allowReserved,omitempty" yaml:"allowReserved,omitempty"`
 	Encoding       map[string]*Encoding    `json:"encoding,omitempty" yaml:"encoding,omitempty"`
 	PrefixEncoding []*Encoding             `json:"prefixEncoding,omitempty" yaml:"prefixEncoding,omitempty"`

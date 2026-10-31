@@ -37,7 +37,7 @@ Phase 0 is done. Its rows list the existing tests that keep guarding it.
 | P2.2 | T: `TestSchemaMarshal`; `meta` gate from P2.6 | unit | Table in PLAN P2.2 |
 | P2.1a | T: `TestOrRefMarshal`; `ops/orref-both-nil` (P4.8) | unit | ref / value / both-nil error |
 | P2.1b | T: `TestRootMarshal`; H10 `TestSetSelfAndDialect` (P6.5) | unit | `$self`, `jsonSchemaDialect`, `Info.summary`, `License.identifier`, `Server.name`, Tag `summary/parent/kind` marshal |
-| P2.1c | T: `TestOperationOmitZero`, `TestMediaTypeNoNullSchema`; stray-null lint over all docs | unit, meta | No `"schema": null`; empty ops omitted |
+| P2.1c | T: `TestOperationOmitZero`, `TestMediaTypeNoNullSchema`; stray-null lint over all docs | unit, meta | No `"schema": null`; empty ops omitted; `values/default-response-examples-no-output` passes since P2.1c (`MediaType.Schema` omitzero) |
 | P2.1d | T: `TestSecuritySchemeMarshal` | unit | `deprecated`, `oauth2MetadataUrl`, `deviceAuthorization` |
 | P2.3 | `ops/security-nil-scopes`, `ops/oauth-flow-without-scopes`; H01 `TestExtensionsRoundTripEverywhere`, H02 `TestExtensionKeysSorted`, H03 `TestSetExtensionValidation`, H04 `TestTypedExtensionWins`, G21 `TestJSONv1Parity`; T: `TestExtensionsInlineSorted`, `TestV1EncodingJSONParity`, `TestRejectReservedExtension` | frag, unit | `[]` for nil scopes; `scopes:{}`; every 3.2 extensible object keeps `x-*` through a round trip; keys sorted; `x-oai-`/`x-oas-` rejected; v1 == v2 bytes |
 | P2.5 | `ops/yaml-json-parity-hidden-field`, `values/nan-example-recorded`; G14–G17, G19; A11 `TestYAMLDepSwap`; H12 `TestOAuthFlowYAML` | http, unit, imp | decode(YAML) deep-equals decode(JSON); ambiguous strings stay strings; user `MarshalYAML` ignored; NaN → `Errors()` + 200; no `gopkg.in/yaml.v2` in deps |
@@ -55,7 +55,7 @@ Phase 0 is done. Its rows list the existing tests that keep guarding it.
 | P4.2 | 5 `params/query-*` cases; G01 rows r1 | frag, unit | `-`/`""` skipped; `,required`; `,default=`; `omitempty` → `Errors()`, no panic; `explode:false` |
 | P4.2c | `params/cookie-placeholder`; K31; G01 row r10; F12 | frag | `in: cookie`; non-scalar → error |
 | P4.3 | `params/gin-wildcard-path`, `path-param-without-input`, `path-param-missing-from-input`; K39, K40; G02 (D10 warning) | frag | `{name}`; synthesized required string; a warning, not an error |
-| P4.4 | `ops/response-descriptions`, `ops/response-empty-examples`, `values/default-response-examples-no-output`, `values/empty-examples-map`; K20; D15 `TestWithDefaultMediaType`; T: response-header fields test | frag, unit | Descriptions per rule; no empty media types; custom media type used everywhere |
+| P4.4 | `ops/response-descriptions`, `ops/response-empty-examples`, `values/empty-examples-map`; K20; D15 `TestWithDefaultMediaType`; T: response-header fields test | frag, unit | Descriptions per rule; no empty media types; custom media type used everywhere |
 | P4.5 | `ops/generic-component-names`, `same-name-packages`, `typer-name-collision`; E01–E07 | frag, unit | Name format (§5 O2); first wins plus `CollisionError`; all names match the regex |
 | P4.6 | `ops/body-name-collision-op-ids`, `body-name-collision-go-type` (K-fix1), `params/delete-body-documented` (K-fix3); K21–K24; E08 | frag | `<OpID>Input`; never overwrites; direct `$ref` for a single struct; `required` inferred; DELETE body documented; GET/HEAD not |
 | P4.9 | `ops/handle-shared-handlers-slice` | frag | Both routes documented |
