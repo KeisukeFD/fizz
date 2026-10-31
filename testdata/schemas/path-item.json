@@ -5,6 +5,16 @@
         ],
         "description": "Update a test.",
         "operationId": "UpdateTest",
+        "parameters": [
+            {
+                "name": "a",
+                "in": "path",
+                "required": true,
+                "schema": {
+                    "type": "string"
+                }
+            }
+        ],
         "responses": {
             "204": {
                 "description": "No Content"

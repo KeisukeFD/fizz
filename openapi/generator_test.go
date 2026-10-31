@@ -672,15 +672,7 @@ func TestSetOperationParamsError(t *testing.T) {
 
 	// Use invalid input type for parameters.
 	typ := reflect.TypeFor[[]string]()
-	err := g.setOperationParams(op, typ, typ, false, "/")
-	assert.NotNil(t, err)
-
-	// Semantic error for path.
-	type T struct {
-		B string `path:"B"`
-	}
-	typ = reflect.TypeFor[T]()
-	err = g.setOperationParams(op, typ, typ, false, "/{a}/{B}")
+	err := g.setOperationParams(op, typ, typ, false)
 	assert.NotNil(t, err)
 }
 

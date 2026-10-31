@@ -96,7 +96,7 @@ func TestFailedAddOperationLeavesNoTrace(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			g := gen(t)
-			op, err := g.AddOperation("/p/{id}", "POST", "tag", tt.in, tt.out, tt.info)
+			op, err := g.AddOperation("/p", "POST", "tag", tt.in, tt.out, tt.info)
 			require.Error(t, err)
 			assert.Nil(t, op)
 			var oe *OperationError

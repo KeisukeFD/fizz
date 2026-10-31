@@ -129,8 +129,8 @@ func init() {
 			Register: pRegister("GET", "/users/:id", tonic.Handler(pHandler[PMissingIn], 200)),
 			Errors:   []string{"id"},
 			Expect: []Fragment{
-				{Pointer: "/paths/~1users~1{id}/get/parameters/1/name", JSON: `"id"`},
-				{Pointer: "/paths/~1users~1{id}/get/parameters/1/required", JSON: `true`},
+				{Pointer: "/paths/~1users~1{id}/get/parameters/0/name", JSON: `"id"`},
+				{Pointer: "/paths/~1users~1{id}/get/parameters/0/required", JSON: `true`},
 			},
 			FixedBy: "P4.3",
 		},

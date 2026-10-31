@@ -150,15 +150,15 @@ func TestMarshalerWarningOncePerType(t *testing.T) {
 
 func TestMarshalerWarningCarriesOperation(t *testing.T) {
 	g := gen(t)
-	_, err := g.AddOperation("/x/{id}", "POST", "", nil, reflect.TypeFor[tmHolder](), &OperationInfo{ID: "doX", StatusCode: 200})
+	_, err := g.AddOperation("/x", "POST", "", nil, reflect.TypeFor[tmHolder](), &OperationInfo{ID: "doX", StatusCode: 200})
 	require.NoError(t, err)
 	require.Len(t, g.Errors(), 1)
 	var w *Warning
 	require.True(t, errors.As(g.Errors()[0], &w))
 	assert.Equal(t, "POST", w.Method)
-	assert.Equal(t, "/x/{id}", w.Path)
+	assert.Equal(t, "/x", w.Path)
 	assert.Equal(t, "doX", w.ID)
-	assert.Contains(t, w.Error(), "POST /x/{id} (doX)")
+	assert.Contains(t, w.Error(), "POST /x (doX)")
 	assert.Nil(t, g.cur)
 }
 

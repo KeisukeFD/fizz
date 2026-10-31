@@ -143,6 +143,8 @@ func (g *RouterGroup) Handle(path, method string, infos []OperationOption, handl
 			oi.ID = defaultOperationID(method, openAPIPath(operationPath), name, g.idNamer, g.gen.OperationIDUsed)
 		}
 
+		oi.WildcardParams = wildcardParams(operationPath)
+
 		// Add operation to the OpenAPI spec.
 		// On failure the generator has recorded the error (see
 		// Errors) and the route is registered with the original

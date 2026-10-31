@@ -164,6 +164,7 @@ Each row is a stub until its task lands. Signatures are binding. A task that nee
 | `FieldError` gains `Field string`, `Err error` and `Unwrap()`. It already exists in openapi/errors.go, so this is a shape change: task-owned, not stubbed. | P4.2 |
 | `type CollisionError struct{ Name string; Kept, Rejected reflect.Type }`, `Error()` | P4.5 |
 | `(*Generator).SetRequestBodyNamer(func(opID string, t reflect.Type) string)` | P4.6 |
+| `OperationInfo.WildcardParams []string` (names of the path parameters that come from a gin `/*name` catch-all; set by the router, which translates the path before `AddOperation`) | P4.3 |
 | `(*Generator).OperationIDUsed(id string) bool` (lets the router choose among default IDs) | P4.7 |
 | `type OperationError struct{ Method, Path, ID string; Err error }`, `Error()`, `Unwrap()` | P4.8 |
 | `(*Generator).RecordError(err error)` (lets the router and `OpenAPI` record errors that do not come from `AddOperation`) | P4.8 |

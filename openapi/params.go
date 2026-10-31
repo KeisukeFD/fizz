@@ -13,7 +13,7 @@ import (
 
 // setOperationParams adds the fields of the struct type t
 // to the given operation.
-func (g *Generator) setOperationParams(op *Operation, t, parent reflect.Type, allowBody bool, path string) error {
+func (g *Generator) setOperationParams(op *Operation, t, parent reflect.Type, allowBody bool) error {
 	if t.Kind() != reflect.Struct {
 		return errors.New("input type is not a struct")
 	}
@@ -25,24 +25,40 @@ func (g *Generator) setOperationParams(op *Operation, t, parent reflect.Type, al
 	if op.RequestBody != nil {
 		g.nameRequestBody(op, t)
 	}
-	// Extract all the path parameter names.
-	matches := paramsInPathRe.FindAllStringSubmatch(path, -1)
-	var pathParams []string
-	for _, m := range matches {
-		pathParams = append(pathParams, m[1])
-	}
-	// Check that all declared path parameters are
-	// defined in the operation.
-	for _, pp := range pathParams {
-		has := false
-		for _, param := range op.Parameters {
-			if param.Value.In == "path" && param.Value.Name == pp {
-				has = true
+	return nil
+}
+
+// wildcardNote is appended to the description of a path parameter that
+// holds a gin catch-all ("*name") segment.
+const wildcardNote = "The value may contain '/'."
+
+// finishPathParams completes the path parameters of op once the input
+// has been processed. A parameter declared in path ("{name}") but
+// absent from the input (D10) is synthesized as a required string and
+// a warning is recorded. Parameters named in wildcards also get the
+// wildcardNote. The parameters are then sorted, if sorting is enabled.
+func (g *Generator) finishPathParams(op *Operation, path string, wildcards []string) {
+	for _, m := range paramsInPathRe.FindAllStringSubmatch(path, -1) {
+		name := m[1]
+		var p *Parameter
+		for _, pr := range op.Parameters {
+			if v := pr.Value; v != nil && v.In == "path" && v.Name == name {
+				p = v
 				break
 			}
 		}
-		if !has {
-			return fmt.Errorf("semantic error for path %s: declared path parameter %s needs to be defined at operation level", path, pp)
+		if p == nil {
+			p = &Parameter{
+				Name:     name,
+				In:       "path",
+				Required: true,
+				Schema:   &Schema{Type: Types("string")},
+			}
+			op.Parameters = append(op.Parameters, &ParameterOrRef{Value: p})
+			g.warn(fmt.Sprintf("path parameter %q is declared in the path but missing from the input: synthesized as a required string", name))
+		}
+		if slices.Contains(wildcards, name) {
+			p.Description = strings.TrimSpace(p.Description + " " + wildcardNote)
 		}
 	}
 	// Sort operations parameters by location and name
@@ -50,7 +66,6 @@ func (g *Generator) setOperationParams(op *Operation, t, parent reflect.Type, al
 	if g.sortParams {
 		slices.SortStableFunc(op.Parameters, g.compareParams)
 	}
-	return nil
 }
 
 // buildParams adds the parameters and the request body fields of

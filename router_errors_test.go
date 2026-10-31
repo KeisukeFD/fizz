@@ -87,3 +87,26 @@ func TestErrExcludesWarnings(t *testing.T) {
 	f.Generator().RecordError(&openapi.OperationError{Method: "GET", Path: "/x"})
 	assert.ErrorContains(t, f.Err(), "GET /x")
 }
+
+// TestHandleMissingPathParamWarns tests that a path parameter missing
+// from the input is synthesized with a warning, not an error, and that
+// a catch-all wildcard is documented as such.
+func TestHandleMissingPathParamWarns(t *testing.T) {
+	f := New()
+	f.GET("/u/:id/*rest", []OperationOption{ID("op")}, ok200())
+
+	assert.NoError(t, f.Err())
+	require.Len(t, f.Errors(), 2)
+	for _, e := range f.Errors() {
+		var w *openapi.Warning
+		require.ErrorAs(t, e, &w)
+		assert.Equal(t, "/u/{id}/{rest}", w.Path)
+	}
+	item := f.Generator().API().Paths["/u/{id}/{rest}"]
+	require.NotNil(t, item)
+	require.Len(t, item.GET.Parameters, 2)
+	assert.Equal(t, "id", item.GET.Parameters[0].Value.Name)
+	assert.Equal(t, "", item.GET.Parameters[0].Value.Description)
+	assert.Equal(t, "rest", item.GET.Parameters[1].Value.Name)
+	assert.Equal(t, "The value may contain '/'.", item.GET.Parameters[1].Value.Description)
+}

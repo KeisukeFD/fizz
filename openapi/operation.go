@@ -16,6 +16,12 @@ type OperationInfo struct {
 	XCodeSamples            []*XCodeSample
 	XInternal               bool
 	DefaultResponseExamples map[string]any
+	// WildcardParams names the path parameters of the operation that
+	// come from a catch-all gin segment ("/*name"). The router sets it
+	// when it translates the gin path; the path given to AddOperation
+	// no longer tells them apart. Their description notes that the value
+	// may contain a slash.
+	WildcardParams []string
 }
 
 // ResponseHeader represents a single header that

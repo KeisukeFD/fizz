@@ -1,6 +1,7 @@
 package fizz
 
 import (
+	"slices"
 	"testing"
 
 	"github.com/loopfz/gadgeto/tonic"
@@ -40,12 +41,27 @@ func TestParseParamTagMatchesTonic(t *testing.T) {
 	}
 }
 
+func TestGinWildcardParams(t *testing.T) {
+	for in, want := range map[string][]string{
+		"/a/:id":    nil,
+		"/a/*rest":  {"rest"},
+		"/a/:id/*p": {"p"},
+		"/":         nil,
+	} {
+		if got := wildcardParams(in); !slices.Equal(got, want) {
+			t.Errorf("wildcardParams(%q) = %v, want %v", in, got, want)
+		}
+	}
+}
+
 func TestGinPathTranslation(t *testing.T) {
 	for in, want := range map[string]string{
 		"/a/:id":      "/a/{id}",
 		"/a/:id/b/:x": "/a/{id}/b/{x}",
 		"/":           "/",
-		"/a/*rest":    "/a/*rest", // unchanged until P4.3
+		"/a/*rest":    "/a/{rest}",
+		"/a/:id/*p":   "/a/{id}/{p}",
+		"/*all":       "/{all}",
 		"/a/b":        "/a/b",
 	} {
 		if got := openAPIPath(in); got != want {

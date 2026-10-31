@@ -458,10 +458,11 @@ func (g *Generator) buildOperation(path, method, tag string, in, out reflect.Typ
 		if in.Kind() != reflect.Struct {
 			return nil, errors.New("input type is not a struct")
 		}
-		if err := g.setOperationParams(op, in, in, allowBody, path); err != nil {
+		if err := g.setOperationParams(op, in, in, allowBody); err != nil {
 			return nil, err
 		}
 	}
+	g.finishPathParams(op, path, info.WildcardParams)
 	// Generate the default response from the tonic
 	// handler return type. If the handler has no output
 	// type, the response won't have a schema.
