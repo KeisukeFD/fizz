@@ -54,7 +54,6 @@
                         "description": "Page size",
                         "schema": {
                             "type": "integer",
-                            "description": "Page size",
                             "format": "int64",
                             "default": 20,
                             "maximum": 100,
@@ -73,8 +72,7 @@
                         "in": "header",
                         "description": "Auth token",
                         "schema": {
-                            "type": "string",
-                            "description": "Auth token"
+                            "type": "string"
                         }
                     }
                 ],
@@ -172,7 +170,6 @@
                         "required": true,
                         "schema": {
                             "type": "integer",
-                            "description": "Pet ID",
                             "format": "int64"
                         }
                     }
@@ -206,7 +203,6 @@
                         "required": true,
                         "schema": {
                             "type": "integer",
-                            "description": "Pet ID",
                             "format": "int64"
                         }
                     }

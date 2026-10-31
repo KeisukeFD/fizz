@@ -98,8 +98,9 @@ func (g *Generator) fieldSchema(sf reflect.StructField, required bool, fname str
 			schema.Enum = enum
 		}
 	}
-	// Field description.
-	if desc, ok := tagLookup(sf, g.tags.Description); ok {
+	// Field description. A parameter keeps it on the parameter itself,
+	// not in its schema.
+	if desc, ok := tagLookup(sf, g.tags.Description); ok && !vf.param {
 		schema.Description = desc
 	}
 	// Deprecated.

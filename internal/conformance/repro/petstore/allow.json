@@ -4,19 +4,5 @@
     "kind": "missing",
     "category": "naming",
     "reason": "fizz omits required:false on generated parameters by design (false is the OAS default); the official example writes it out. Semantically identical."
-  },
-  {
-    "pointer": "/paths/~1pets/get/parameters/0/schema/description",
-    "kind": "extra",
-    "category": "limitation",
-    "task": "P10.9d",
-    "reason": "The description tag of a parameter is duplicated into its schema (description tag on a parameter is copied into schema.description); the official example has it on the parameter only."
-  },
-  {
-    "pointer": "/paths/~1pets~1{petId}/get/parameters/0/schema/description",
-    "kind": "extra",
-    "category": "limitation",
-    "task": "P10.9d",
-    "reason": "The description tag of a parameter is duplicated into its schema (description tag on a parameter is copied into schema.description); the official example has it on the parameter only."
   }
 ]

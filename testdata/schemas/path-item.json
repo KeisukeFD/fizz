@@ -36,7 +36,6 @@
                 "required": true,
                 "schema": {
                     "type": "integer",
-                    "description": "This is A",
                     "format": "int64"
                 }
             },
@@ -47,7 +46,6 @@
                 "required": true,
                 "schema": {
                     "type": "string",
-                    "description": "This is B",
                     "format": "date-time"
                 }
             },
@@ -102,7 +100,6 @@
                 "description": "This is C",
                 "schema": {
                     "type": "string",
-                    "description": "This is C",
                     "default": "test"
                 }
             }

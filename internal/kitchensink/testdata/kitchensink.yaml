@@ -36,7 +36,6 @@ paths:
           description: Page size
           schema:
             type: integer
-            description: Page size
             format: int64
             default: 20
             maximum: 100
@@ -50,7 +49,6 @@ paths:
           description: Auth token
           schema:
             type: string
-            description: Auth token
       responses:
         "200":
           description: OK
@@ -109,7 +107,6 @@ paths:
           required: true
           schema:
             type: integer
-            description: Pet ID
             format: int64
       responses:
         "200":
@@ -131,7 +128,6 @@ paths:
           required: true
           schema:
             type: integer
-            description: Pet ID
             format: int64
       responses:
         "204":

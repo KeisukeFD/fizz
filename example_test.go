@@ -34,7 +34,7 @@ func ExampleNew_options() {
 	}
 	fmt.Println(string(b))
 	// Output:
-	// {"name":"name","in":"query","description":"Name filter","schema":{"type":"string","description":"Name filter"}}
+	// {"name":"name","in":"query","description":"Name filter","schema":{"type":"string"}}
 }
 
 // This example adds an x-tagGroups extension to the served document with

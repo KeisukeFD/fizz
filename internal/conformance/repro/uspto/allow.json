@@ -19,33 +19,5 @@
     "category": "limitation",
     "task": "P10.9b",
     "reason": "A body field that is required loses its default tag, with a warning (README, default tag). A required property that also has a default is valid OAS and appears in the official example."
-  },
-  {
-    "pointer": "/paths/~1{dataset}~1{version}~1fields/get/parameters/0/schema/description",
-    "kind": "extra",
-    "category": "limitation",
-    "task": "P10.9d",
-    "reason": "The description tag of a parameter is duplicated into its schema (description tag on a parameter is copied into schema.description); the official example has it on the parameter only."
-  },
-  {
-    "pointer": "/paths/~1{dataset}~1{version}~1fields/get/parameters/1/schema/description",
-    "kind": "extra",
-    "category": "limitation",
-    "task": "P10.9d",
-    "reason": "The description tag of a parameter is duplicated into its schema (description tag on a parameter is copied into schema.description); the official example has it on the parameter only."
-  },
-  {
-    "pointer": "/paths/~1{dataset}~1{version}~1records/post/parameters/0/schema/description",
-    "kind": "extra",
-    "category": "limitation",
-    "task": "P10.9d",
-    "reason": "The description tag of a parameter is duplicated into its schema (description tag on a parameter is copied into schema.description); the official example has it on the parameter only."
-  },
-  {
-    "pointer": "/paths/~1{dataset}~1{version}~1records/post/parameters/1/schema/description",
-    "kind": "extra",
-    "category": "limitation",
-    "task": "P10.9d",
-    "reason": "The description tag of a parameter is duplicated into its schema (description tag on a parameter is copied into schema.description); the official example has it on the parameter only."
   }
 ]
