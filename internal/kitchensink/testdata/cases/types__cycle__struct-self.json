@@ -38,7 +38,14 @@
                         "type": "string"
                     },
                     "next": {
-                        "$ref": "#/components/schemas/KitchensinkTSelf"
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/KitchensinkTSelf"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
                     }
                 }
             }

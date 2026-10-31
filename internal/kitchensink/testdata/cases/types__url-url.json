@@ -67,7 +67,14 @@
                         "type": "string"
                     },
                     "User": {
-                        "$ref": "#/components/schemas/UrlUserinfo"
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/UrlUserinfo"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
                     }
                 }
             },

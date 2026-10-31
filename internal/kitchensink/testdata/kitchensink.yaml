@@ -193,7 +193,9 @@ components:
             - string
             - "null"
         owner:
-          $ref: '#/components/schemas/KitchensinkLegacyAddress'
+          anyOf:
+            - $ref: '#/components/schemas/KitchensinkLegacyAddress'
+            - type: "null"
         tags:
           type: array
           items:

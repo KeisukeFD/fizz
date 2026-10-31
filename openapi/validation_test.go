@@ -43,7 +43,7 @@ func TestSchemaValidation(t *testing.T) {
 	}
 	g := gen(t)
 
-	sor := g.newSchemaFromType(rt(new(T)))
+	sor := g.newSchemaFromType(rt(T{}))
 	assert.NotNil(t, sor)
 	schema := g.resolveSchema(sor)
 	assert.NotNil(t, schema)

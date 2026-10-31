@@ -18,9 +18,19 @@
             "minimum": 0
         },
         "K": {
-            "type": "object",
+            "type": [
+                "object",
+                "null"
+            ],
             "additionalProperties": {
-                "$ref": "#/components/schemas/Y"
+                "anyOf": [
+                    {
+                        "$ref": "#/components/schemas/Y"
+                    },
+                    {
+                        "type": "null"
+                    }
+                ]
             }
         },
         "N": {

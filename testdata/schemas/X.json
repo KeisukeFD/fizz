@@ -18,27 +18,62 @@
         "D": {
             "type": "array",
             "items": {
-                "$ref": "#/components/schemas/Y"
+                "anyOf": [
+                    {
+                        "$ref": "#/components/schemas/Y"
+                    },
+                    {
+                        "type": "null"
+                    }
+                ]
             }
         },
         "E": {
             "type": "array",
             "items": {
-                "$ref": "#/components/schemas/XXX"
+                "anyOf": [
+                    {
+                        "$ref": "#/components/schemas/XXX"
+                    },
+                    {
+                        "type": "null"
+                    }
+                ]
             },
             "maxItems": 3,
             "minItems": 3
         },
         "F": {
-            "$ref": "#/components/schemas/XXX"
+            "anyOf": [
+                {
+                    "$ref": "#/components/schemas/XXX"
+                },
+                {
+                    "type": "null"
+                }
+            ]
         },
         "G": {
-            "$ref": "#/components/schemas/Y"
+            "anyOf": [
+                {
+                    "$ref": "#/components/schemas/Y"
+                },
+                {
+                    "type": "null"
+                }
+            ]
         },
         "H": {
             "type": "object",
             "additionalProperties": {
-                "$ref": "#/components/schemas/Y"
+                "anyOf": [
+                    {
+                        "$ref": "#/components/schemas/Y"
+                    },
+                    {
+                        "type": "null"
+                    }
+                ]
             },
             "propertyNames": {
                 "pattern": "^-?[0-9]+$"
@@ -57,9 +92,19 @@
             "minimum": 0
         },
         "K": {
-            "type": "object",
+            "type": [
+                "object",
+                "null"
+            ],
             "additionalProperties": {
-                "$ref": "#/components/schemas/Y"
+                "anyOf": [
+                    {
+                        "$ref": "#/components/schemas/Y"
+                    },
+                    {
+                        "type": "null"
+                    }
+                ]
             }
         },
         "N": {
@@ -78,10 +123,7 @@
             }
         },
         "NI": {
-            "type": [
-                "integer",
-                "null"
-            ],
+            "type": "integer",
             "format": "int64"
         },
         "NS": {
@@ -95,7 +137,14 @@
             "format": "int64"
         },
         "data": {
-            "$ref": "#/components/schemas/V"
+            "anyOf": [
+                {
+                    "$ref": "#/components/schemas/V"
+                },
+                {
+                    "type": "null"
+                }
+            ]
         },
         "nnNnnN": {
             "type": "string"

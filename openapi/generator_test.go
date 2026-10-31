@@ -179,7 +179,7 @@ func TestSchemaFromComplex(t *testing.T) {
 	g := gen(t)
 	g.UseFullSchemaNames(false)
 
-	sor := g.newSchemaFromType(rt(new(X)))
+	sor := g.newSchemaFromType(rt(X{}))
 	assert.NotNil(t, sor)
 
 	b, err := json.Marshal(sor)

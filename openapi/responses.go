@@ -86,7 +86,7 @@ func (g *Generator) setOperationResponse(op *Operation, where string, t reflect.
 
 	// The response may have no content type specified,
 	// in which case we don't assign a schema.
-	schema := g.newSchemaFromType(t)
+	schema := g.newSchemaFromModel(t)
 
 	if schema != nil || example != nil || castedExamples != nil {
 		r.Content[mt] = &MediaTypeOrRef{Value: &MediaType{
@@ -103,7 +103,7 @@ func (g *Generator) setOperationResponse(op *Operation, where string, t reflect.
 				// default to string if no type is given.
 				sor = &Schema{Type: Types("string")}
 			} else {
-				sor = g.newSchemaFromType(reflect.TypeOf(h.Model))
+				sor = g.newSchemaFromModel(reflect.TypeOf(h.Model))
 			}
 			r.Headers[h.Name] = &HeaderOrRef{Value: &Header{
 				Description: h.Description,

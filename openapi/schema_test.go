@@ -105,12 +105,13 @@ type (
 )
 
 func TestSchemaForCycleThroughStructNotPromoted(t *testing.T) {
+	const nullYRef = `{"anyOf":[{"$ref":"#/components/schemas/SchYStruct"},{"type":"null"}]}`
 	g := gen(t)
 
 	s := g.newSchemaFromType(reflect.TypeFor[SchZ]())
-	assert.JSONEq(t, `{"type":"object","additionalProperties":{"$ref":"#/components/schemas/SchYStruct"}}`, schemaJSON(t, s))
+	assert.JSONEq(t, `{"type":"object","additionalProperties":`+nullYRef+`}`, schemaJSON(t, s))
 	assert.NotContains(t, g.api.Components.Schemas, "SchZ")
 	assert.JSONEq(t,
-		`{"type":"object","properties":{"K":{"type":"object","additionalProperties":{"$ref":"#/components/schemas/SchYStruct"}}}}`,
+		`{"type":"object","properties":{"K":{"type":["object","null"],"additionalProperties":`+nullYRef+`}}}`,
 		schemaJSON(t, g.api.Components.Schemas["SchYStruct"]))
 }

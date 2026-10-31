@@ -96,6 +96,12 @@ func TestMakeNullable(t *testing.T) {
 		{"type", &Schema{Type: Types("string")}, `{"type":["string","null"]}`},
 		{"already null", &Schema{Type: Types("string", "null")}, `{"type":["string","null"]}`},
 		{"no type", &Schema{Description: "d"}, `{"description":"d"}`},
+		{"ref with anyOf", &Schema{Ref: "#/c", AnyOf: []*Schema{{Type: Types("string")}}},
+			`{"anyOf":[{"$ref":"#/c","anyOf":[{"type":"string"}]},{"type":"null"}]}`},
+		{"anyOf without type", &Schema{AnyOf: []*Schema{{Ref: "#/a"}, {Ref: "#/b"}}},
+			`{"anyOf":[{"$ref":"#/a"},{"$ref":"#/b"},{"type":"null"}]}`},
+		{"anyOf already null", &Schema{AnyOf: []*Schema{{Ref: "#/a"}, {Type: Types("null")}}},
+			`{"anyOf":[{"$ref":"#/a"},{"type":"null"}]}`},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

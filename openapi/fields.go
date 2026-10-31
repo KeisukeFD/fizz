@@ -55,7 +55,7 @@ func (g *Generator) newSchemaFromStructField(sf reflect.StructField, required bo
 	// parameter is an array, instead of the parameter schema.
 	enum := g.enumFromStructField(sf, fname, parent)
 
-	if len(schema.Type) == 1 && schema.Type[0] == "array" && schema.Items != nil {
+	if slices.Contains(schema.Type, "array") && schema.Items != nil {
 		itemsSchema := g.resolveSchema(schema.Items)
 		if itemsSchema != nil {
 			itemsSchema.Enum = enum
@@ -162,7 +162,7 @@ func (g *Generator) flattenStructSchema(t, parent reflect.Type, schema *Schema) 
 // so its schema type becomes string.
 func (g *Generator) newSchemaFromField(f field, required bool, parent reflect.Type) *Schema {
 	sor := g.newSchemaFromStructField(f.sf, required, f.name, parent)
-	if sor == nil || !f.quoted || sor.Ref != "" {
+	if sor == nil || !f.quoted || sor.Ref != "" || len(sor.Type) == 0 {
 		return sor
 	}
 	if slices.Contains(sor.Type, "null") {

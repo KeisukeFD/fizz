@@ -33,7 +33,10 @@
                         "format": "tptr"
                     },
                     "n": {
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     }
                 }
             }

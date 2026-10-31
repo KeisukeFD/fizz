@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"encoding/json/jsontext"
 	"reflect"
+	"slices"
 	"strconv"
 )
 
@@ -196,21 +197,32 @@ func (s *Schema) UnmarshalJSON(b []byte) error { return unmarshalJSON(b, s) }
 
 // MakeNullable allows the schema to also validate null. A
 // reference is moved into anyOf next to a null type schema,
-// keeping the other keywords of s in place. Otherwise "null"
-// is added to the type set, if any.
+// keeping the other keywords of s in place; if s already has an
+// anyOf, it moves with the reference into the first branch. A
+// schema with an anyOf and no type gets a null branch. Otherwise
+// "null" is added to the type set, if any.
 func (s *Schema) MakeNullable() {
+	null := &Schema{Type: Types("null")}
 	if s.Ref != "" {
-		s.AnyOf = []*Schema{{Ref: s.Ref}, {Type: Types("null")}}
+		first := &Schema{Ref: s.Ref, AnyOf: s.AnyOf}
+		s.AnyOf = []*Schema{first, null}
 		s.Ref = ""
 		return
 	}
 	if len(s.Type) == 0 {
-		return
-	}
-	for _, t := range s.Type {
-		if t == "null" {
+		if len(s.AnyOf) == 0 {
 			return
 		}
+		for _, b := range s.AnyOf {
+			if b != nil && slices.Equal(b.Type, null.Type) {
+				return
+			}
+		}
+		s.AnyOf = append(s.AnyOf[:len(s.AnyOf):len(s.AnyOf)], null)
+		return
+	}
+	if slices.Contains(s.Type, "null") {
+		return
 	}
 	s.Type = append(s.Type[:len(s.Type):len(s.Type)], "null")
 }

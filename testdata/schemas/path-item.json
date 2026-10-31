@@ -128,7 +128,14 @@
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
-                                "$ref": "#/components/schemas/Y"
+                                "anyOf": [
+                                    {
+                                        "$ref": "#/components/schemas/Y"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
                             }
                         }
                     }

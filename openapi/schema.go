@@ -15,24 +15,47 @@ func (g *Generator) newSchemaFromType(t reflect.Type) *Schema {
 	return g.schemaFor(t)
 }
 
+// newSchemaFromModel is newSchemaFromType for a model passed to the
+// API (response body, header): its pointer-ness only denotes a value
+// to describe, as in new(T), so it does not make the schema nullable.
+// Nullable pointers nested in the model still do.
+func (g *Generator) newSchemaFromModel(t reflect.Type) *Schema {
+	for t != nil && t.Kind() == reflect.Pointer {
+		t = t.Elem()
+	}
+	return g.newSchemaFromType(t)
+}
+
 // schemaFor returns the schema of type t at a use site. It is the single
 // recursion for top-level types, struct fields, slice/array elements and
 // map values.
 func (g *Generator) schemaFor(t reflect.Type) *Schema {
-	var nullable bool
-
-	// Dereference pointers.
+	nullable := false
 	if t.Kind() == reflect.Pointer {
+		nullable = g.pointersNullable
 		for t.Kind() == reflect.Pointer {
 			t = t.Elem()
 		}
-		nullable = true
-	} else if t.Implements(tofNullable) {
-		i, ok := reflect.New(t).Interface().(Nullable)
-		if ok {
+	}
+	// The Nullable interface, on either receiver, wins over
+	// the pointer-ness of the type.
+	if implementsAny(t, tofNullable) {
+		if i, ok := reflect.New(t).Interface().(Nullable); ok {
 			nullable = i.Nullable()
 		}
 	}
+	s := g.schemaOf(t)
+	if s != nil && nullable {
+		// A reference becomes anyOf [$ref, null], any other
+		// schema gets "null" in its type set. {} already
+		// accepts null.
+		s.MakeNullable()
+	}
+	return s
+}
+
+// schemaOf returns the non-nullable schema of the dereferenced type t.
+func (g *Generator) schemaOf(t reflect.Type) *Schema {
 	// Overrides, interfaces and known types are all
 	// resolved by datatype.
 	dt := g.datatype(t)
@@ -66,9 +89,6 @@ func (g *Generator) schemaFor(t reflect.Type) *Schema {
 	}
 	if isUnsigned(dt) {
 		schema.Minimum = Num(0)
-	}
-	if nullable {
-		schema.MakeNullable()
 	}
 	return schema
 }

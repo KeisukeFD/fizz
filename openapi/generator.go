@@ -49,6 +49,8 @@ type Generator struct {
 	fullNames     bool
 	sortParams    bool
 	sortTags      bool
+
+	pointersNullable bool
 }
 
 // NewGenerator returns a new OpenAPI generator.
@@ -79,6 +81,8 @@ func NewGenerator(conf *SpecGenConfig) (*Generator, error) {
 		fullNames:     true,
 		sortParams:    true,
 		sortTags:      true,
+
+		pointersNullable: true,
 	}, nil
 }
 
@@ -185,6 +189,13 @@ func (g *Generator) UseFullSchemaNames(b bool) {
 // name in ascending order.
 func (g *Generator) SetSortParams(b bool) {
 	g.sortParams = b
+}
+
+// SetPointersAreNullable controls whether a pointer type makes its
+// schema nullable. The Nullable interface applies regardless.
+// Default to true.
+func (g *Generator) SetPointersAreNullable(b bool) {
+	g.pointersNullable = b
 }
 
 // SetSortTags controls whether the generator should
