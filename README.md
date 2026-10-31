@@ -796,6 +796,19 @@ fmt.Println(first)
 - A default value of a parameter must match what *tonic* can bind: a `time.Duration` is an integer of nanoseconds, not `"1s"`.
 - The `deepObject` style has the [nesting policy](#deepobject-query-parameters) above, and cookies are scalar only, without a style or `explode`.
 - Fizz does not infer callbacks, webhooks or links. Add them with the `Generator` setters, `fizz.CustomizeOperation` or a hook.
+
+Gaps found by checking the output against the official OpenAPI 3.2 examples (tracked in `docs/plan/PLAN-v2.md`, Phase 10). They do not make the document invalid; each one is a feature fizz cannot express yet:
+
+- Webhooks: there is no API to declare them, so the `webhooks` object is never emitted. Add it with a `DocumentHook`.
+- Components of kind link, callback and path item cannot be registered, so a `$ref` to one (set with `CustomizeOperation`) dangles. Add the component with a `DocumentHook`.
+- Path-item-level `parameters` and `$ref` to a component parameter are not supported: a shared path parameter is repeated in each operation.
+- Examples on a non-default response media type (for example `text/html`) cannot be set: `WithExample` and `WithExamples` only target the default media type.
+- The description of an inline (anonymous) struct body or response cannot be set. Give the type a name and use a `SchemaCustomizer`, which makes it a component.
+- A request body cannot be a `$ref` to a component or external document. Patch the operation with `CustomizeOperation`.
+- A `Schema` cannot carry `$id` or `$anchor`.
+- The default (tonic) response has no singular `example`, only `examples`, and declaring the same status code with `Response` is a duplicate error.
+- A required body field loses its `default` tag, with a warning, although OpenAPI allows both.
+- Under *tonic*, a slice or array header or path parameter is a generation error, and an optional non-string header needs a `default` tag, otherwise an absent header returns 400 (a warning says so).
 - Swagger UI renders OpenAPI 3.2 only partly, see [Docs UI](#docs-ui).
 - Tools that read OpenAPI 3.0 only cannot use the generated document as is. See [MIGRATION.md](MIGRATION.md) for a `DocumentHook` that rewrites it.
 
@@ -810,6 +823,10 @@ go build
 # Retrieve the specification marshaled in JSON.
 curl -i http://localhost:4242/openapi.json
 ```
+
+## Conformance testing
+
+Fizz output is checked against the official OAS 3.2.1 JSON Schema and the OpenAPI Initiative's examples and schema fixtures, upgraded to 3.2.1 (attribution in `internal/conformance/oai/NOTICE`). It is also checked against the examples of the specification text, against reproduction apps built from the official examples, and with spec-driven request tests. A second validator, [libopenapi-validator](https://github.com/pb33f/libopenapi-validator), cross-checks the corpus and the goldens in a separate module.
 
 ## Credits
 
