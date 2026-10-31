@@ -55,6 +55,16 @@ func (g *Generator) schemaFor(t reflect.Type) *Schema {
 
 // schemaOf returns the non-nullable schema of the dereferenced type t.
 func (g *Generator) schemaOf(t reflect.Type) *Schema {
+	// A named type with a component stage interface is always a
+	// component (interfaces.go).
+	if hasStageInterfaces(t) {
+		return g.stagedSchema(t)
+	}
+	return g.reflectSchema(t)
+}
+
+// reflectSchema returns the schema of t derived by reflection.
+func (g *Generator) reflectSchema(t reflect.Type) *Schema {
 	// Overrides, interfaces and known types are all
 	// resolved by datatype.
 	dt := g.datatype(t)

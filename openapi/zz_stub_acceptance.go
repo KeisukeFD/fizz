@@ -16,24 +16,6 @@ func (o *OpenAPI) Clone() (*OpenAPI, error) {
 	return nil, errors.New("stub: P5.1")
 }
 
-// SchemaProvider is a stub type.
-// FixedBy: P6.3
-type SchemaProvider interface {
-	OpenAPISchema() *Schema
-}
-
-// SchemaCustomizer is a stub type.
-// FixedBy: P6.3
-type SchemaCustomizer interface {
-	CustomizeSchema(*Schema) error
-}
-
-// Enumer is a stub type.
-// FixedBy: P6.3
-type Enumer interface {
-	Enum() []any
-}
-
 // SchemaContext is a stub type.
 // FixedBy: P6.4
 type SchemaContext struct {
