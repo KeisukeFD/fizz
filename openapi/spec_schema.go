@@ -210,7 +210,9 @@ func (s *Schema) clone() *Schema {
 // keeping the other keywords of s in place; if s already has an
 // anyOf, it moves with the reference into the first branch. A
 // schema with an anyOf and no type gets a null branch. Otherwise
-// "null" is added to the type set, if any.
+// "null" is added to the type set, if any, and the enum or const
+// of that schema admits null too. The enum of a branch of an anyOf
+// is left alone.
 func (s *Schema) MakeNullable() {
 	null := &Schema{Type: Types("null")}
 	if s.Ref != "" {
@@ -235,6 +237,24 @@ func (s *Schema) MakeNullable() {
 		return
 	}
 	s.Type = append(s.Type[:len(s.Type):len(s.Type)], "null")
+	s.allowNullValue()
+}
+
+// allowNullValue lets null through the enum and const of s: null is
+// appended to a non-empty enum, and a const becomes an enum of the
+// const and null, since a nil Const is omitted. A schema with both
+// an enum and a const keeps the const. It is idempotent.
+func (s *Schema) allowNullValue() {
+	if len(s.Enum) > 0 {
+		if !slices.Contains(s.Enum, nil) {
+			s.Enum = append(s.Enum[:len(s.Enum):len(s.Enum)], nil)
+		}
+		return
+	}
+	if s.Const != nil {
+		s.Enum = []any{s.Const, nil}
+		s.Const = nil
+	}
 }
 
 // Num returns v as a json.Number, preserving its exact

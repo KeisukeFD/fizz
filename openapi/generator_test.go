@@ -376,11 +376,11 @@ func TestNewSchemaFromEnumField(t *testing.T) {
 	}{
 		{"A", []any{"a", "b", "c"}, false},
 		{"B", []any{int64(1), int64(2), int64(3)}, false},
-		{"C", []any{"d", "e", "f"}, false},
-		{"D", []any{int64(4), int64(5), int64(6)}, false},
+		{"C", []any{"d", "e", "f", nil}, false},
+		{"D", []any{int64(4), int64(5), int64(6), nil}, false},
 		{"E", []any{"g", "h", "i"}, true},
 		{"F", []any{"j", "k", "l"}, true},
-		{"G", []any{"m", "n", "o"}, false},
+		{"G", []any{"m", "n", "o", nil}, false},
 		{"H", []any{"p", "q", "r"}, true},
 		{"I", []any{7.0, 8.1, 9.2}, true},
 	}

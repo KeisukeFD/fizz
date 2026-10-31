@@ -110,6 +110,11 @@ func (g *Generator) fieldSchema(sf reflect.StructField, required bool, fname str
 	// Update schema fields related to the JSON Validation
 	// spec based on the content of the validator tag.
 	schema = g.updateSchemaValidation(schema, sf, fname, parent)
+	// The enum and const tags land after MakeNullable ran: they must
+	// admit the null the schema accepts.
+	if acceptsNull(schema) {
+		schema.allowNullValue()
+	}
 
 	// Allow overidding schema properties that were
 	// auto inferred manually via tags.
@@ -412,12 +417,21 @@ func isNullSchema(s *Schema) bool {
 	return s != nil && s.Ref == "" && slices.Equal(s.Type, Types("null"))
 }
 
+// acceptsNull reports whether s accepts null through its type set or
+// a null branch of its anyOf.
+func acceptsNull(s *Schema) bool {
+	return slices.Contains(s.Type, "null") || slices.ContainsFunc(s.AnyOf, isNullSchema)
+}
+
 // withoutNull returns a copy of s that does not accept null: the
 // inverse of Schema.MakeNullable. s is returned if it is not nullable.
 func withoutNull(s *Schema) *Schema {
 	if slices.Contains(s.Type, "null") {
 		c := s.clone()
 		c.Type = slices.DeleteFunc(slices.Clone(s.Type), func(t string) bool { return t == "null" })
+		if slices.Contains(s.Enum, nil) {
+			c.Enum = slices.DeleteFunc(slices.Clone(s.Enum), func(v any) bool { return v == nil })
+		}
 		return c
 	}
 	if len(s.Type) == 0 && len(s.AnyOf) == 2 && isNullSchema(s.AnyOf[1]) && s.AnyOf[0] != nil {
