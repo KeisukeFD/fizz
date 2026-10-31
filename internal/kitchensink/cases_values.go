@@ -195,7 +195,7 @@ func init() {
 				{Pointer: "/paths/~1x/get/responses/204/content/application~1json/schema", Absent: true},
 				{Pointer: "/paths/~1x/get/responses/204/content/application~1json/examples/a/value", JSON: `"b"`},
 			},
-			FixedBy: "P4.4",
+			FixedBy: "P2.1c",
 		},
 		Case{
 			Name: "values/empty-examples-map",

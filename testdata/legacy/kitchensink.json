@@ -101,7 +101,6 @@
                         "description": "Bad request",
                         "content": {
                             "application/json": {
-                                "schema": null,
                                 "examples": {
                                     "empty": {
                                         "value": {

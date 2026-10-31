@@ -263,11 +263,11 @@ func (g *Generator) newParameterFromField(idx int, t reflect.Type) (*Parameter, 
 	// Style.
 	if location == g.config.QueryLocationTag {
 		if field.Type.Kind() == reflect.Slice || field.Type.Kind() == reflect.Array {
-			p.Explode = true // default
-			p.Style = "form" // default in spec, but make it obvious
+			p.Explode = new(true) // default
+			p.Style = "form"      // default in spec, but make it obvious
 			if t := field.Tag.Get(BinderTags.Explode); t != "" {
 				if explode, err := strconv.ParseBool(t); err == nil && !explode { // ignore invalid values
-					p.Explode = explode
+					p.Explode = nil // explode=false is not emitted (kept until P2.6)
 				}
 			}
 		}

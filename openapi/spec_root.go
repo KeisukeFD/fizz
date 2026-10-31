@@ -26,6 +26,8 @@ type Components struct {
 	RequestBodies   map[string]*RequestBodyOrRef    `json:"requestBodies,omitempty" yaml:"requestBodies,omitempty"`
 	Headers         map[string]*HeaderOrRef         `json:"headers,omitempty" yaml:"headers,omitempty"`
 	SecuritySchemes map[string]*SecuritySchemeOrRef `json:"securitySchemes,omitempty" yaml:"securitySchemes,omitempty"`
+	Links           map[string]*LinkOrRef           `json:"links,omitempty" yaml:"links,omitempty"`
+	Callbacks       map[string]*CallbackOrRef       `json:"callbacks,omitempty" yaml:"callbacks,omitempty"`
 	PathItems       map[string]*PathItem            `json:"pathItems,omitempty" yaml:"pathItems,omitempty"`
 	MediaTypes      map[string]*MediaTypeOrRef      `json:"mediaTypes,omitempty" yaml:"mediaTypes,omitempty"`
 }
@@ -94,6 +96,11 @@ type PathItem struct {
 	TRACE       *Operation        `json:"trace,omitempty" yaml:"trace,omitempty"`
 	Servers     []*Server         `json:"servers,omitempty" yaml:"servers,omitempty"`
 	Parameters  []*ParameterOrRef `json:"parameters,omitempty" yaml:"parameters,omitempty"`
+	Query       *Operation        `json:"query,omitempty" yaml:"query,omitempty"`
+
+	// AdditionalOperations holds operations for HTTP methods
+	// that have no dedicated field, keyed by method name.
+	AdditionalOperations map[string]*Operation `json:"additionalOperations,omitempty" yaml:"additionalOperations,omitempty"`
 }
 
 // Tag represents the metadata of a single tag.
