@@ -171,7 +171,7 @@ func Wrap(heading, title string, v any) (Wrapped, string) {
 	}
 	path := func(kind string, item any) (Wrapped, string) {
 		d := doc()
-		d["paths"] = map[string]any{"/example": item}
+		d["paths"] = map[string]any{pathTemplate(m, item): item}
 		return Wrapped{Kind: kind, Doc: d}, ""
 	}
 	rootField := func(field string, val any) (Wrapped, string) {
@@ -265,6 +265,67 @@ func Wrap(heading, title string, v any) (Wrapped, string) {
 		return Wrapped{}, "example data (a value used in prose), not an OpenAPI object"
 	}
 	return Wrapped{}, "fragment of an enclosing object"
+}
+
+// pathTemplate returns the synthesized path for a Path Item or Operation
+// fragment: "/example" plus a "/{name}" segment for each distinct in:path
+// parameter the fragment declares, in declaration order. Parameters are read
+// inline or through a "#/components/parameters/<name>" reference resolved
+// against the fragment's own components. The fragment is never modified.
+func pathTemplate(frag map[string]any, item any) string {
+	var names []string
+	add := func(params any) {
+		list, _ := params.([]any)
+		for _, p := range list {
+			pm, ok := p.(map[string]any)
+			if !ok {
+				continue
+			}
+			if ref, ok := pm["$ref"].(string); ok {
+				key, found := strings.CutPrefix(ref, "#/components/parameters/")
+				if !found {
+					continue
+				}
+				comps, _ := frag["components"].(map[string]any)
+				all, _ := comps["parameters"].(map[string]any)
+				pm, ok = all[key].(map[string]any)
+				if !ok {
+					continue
+				}
+			}
+			if in, _ := pm["in"].(string); in != "path" {
+				continue
+			}
+			if name, ok := pm["name"].(string); ok && !slices.Contains(names, name) {
+				names = append(names, name)
+			}
+		}
+	}
+	var walk func(v any, depth int)
+	walk = func(v any, depth int) {
+		im, ok := v.(map[string]any)
+		if !ok {
+			return
+		}
+		add(im["parameters"])
+		if depth > 0 {
+			return
+		}
+		for _, k := range methods {
+			walk(im[k], 1)
+		}
+		if ops, ok := im["additionalOperations"].(map[string]any); ok {
+			for _, op := range ops {
+				walk(op, 1)
+			}
+		}
+	}
+	walk(item, 0)
+	path := "/example"
+	for _, n := range names {
+		path += "/{" + n + "}"
+	}
+	return path
 }
 
 func named(d map[string]any, kind string, m map[string]any) (Wrapped, string) {

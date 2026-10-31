@@ -116,6 +116,33 @@
                     }
                 ],
                 "x-internal": true
+            },
+            "post": {
+                "operationId": "PostTest",
+                "parameters": [
+                    {
+                        "name": "a",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PostTestInput"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    }
+                }
             }
         },
         "/test/{a}/{b}": {
@@ -161,35 +188,6 @@
                         ]
                     }
                 ]
-            }
-        },
-        "/test/{c}": {
-            "post": {
-                "operationId": "PostTest",
-                "parameters": [
-                    {
-                        "name": "c",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/PostTestInput"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Created"
-                    }
-                }
             }
         }
     },

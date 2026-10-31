@@ -102,6 +102,34 @@ func TestWrap(t *testing.T) {
 	}
 }
 
+// TestWrapPathTemplate checks that the synthesized path carries one {name}
+// segment per in:path parameter, in declaration order.
+func TestWrapPathTemplate(t *testing.T) {
+	for _, tc := range []struct {
+		name, src, want string
+	}{
+		{"path-item", "parameters:\n  - {name: id, in: path, required: true, schema: {type: string}}\n  - {name: q, in: query, schema: {type: string}}\nget:\n  responses: {'200': {description: ok}}\n", "/example/{id}"},
+		{"operation", "operationId: x\nparameters:\n  - {name: a, in: path, required: true, schema: {type: string}}\n  - {name: b, in: path, required: true, schema: {type: string}}\nresponses: {'200': {description: ok}}\n", "/example/{a}/{b}"},
+		{"op-in-item", "get:\n  parameters:\n    - {name: petId, in: path, required: true, schema: {type: string}}\n  responses: {'200': {description: ok}}\n", "/example/{petId}"},
+		{"none", "get:\n  responses: {'200': {description: ok}}\n", "/example"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			v, err := upgrade.DecodeYAML([]byte(tc.src))
+			if err != nil {
+				t.Fatal(err)
+			}
+			w, reason := upgrade.Wrap("Path Item Object Example", "t", v)
+			if reason != "" {
+				t.Fatal(reason)
+			}
+			paths := w.Doc["paths"].(map[string]any)
+			if _, ok := paths[tc.want]; !ok || len(paths) != 1 {
+				t.Errorf("paths = %v, want only %q", paths, tc.want)
+			}
+		})
+	}
+}
+
 // TestWrapKeepsFragmentContent checks the wrapper is the only synthesized part.
 func TestWrapKeepsFragmentContent(t *testing.T) {
 	const src = "type: object\nproperties:\n  a:\n    type: string\n    nullable: true\n"

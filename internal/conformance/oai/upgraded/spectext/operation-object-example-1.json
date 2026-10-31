@@ -5,7 +5,7 @@
   },
   "openapi": "3.2.1",
   "paths": {
-    "/example": {
+    "/example/{petId}": {
       "get": {
         "operationId": "updatePetWithForm",
         "parameters": [

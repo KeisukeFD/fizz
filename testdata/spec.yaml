@@ -75,6 +75,22 @@ paths:
           label: v4.4
           source: curl http://0.0.0.0:8080
       x-internal: true
+    post:
+      operationId: PostTest
+      parameters:
+        - name: a
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostTestInput'
+      responses:
+        "201":
+          description: Created
   /test/{a}/{b}:
     get:
       operationId: GetTest2
@@ -102,23 +118,6 @@ paths:
         - oauth2:
             - write:pets
             - read:pets
-  /test/{c}:
-    post:
-      operationId: PostTest
-      parameters:
-        - name: c
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PostTestInput'
-      responses:
-        "201":
-          description: Created
 components:
   schemas:
     FizzCustomTime:

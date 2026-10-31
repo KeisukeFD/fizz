@@ -5,7 +5,7 @@
   },
   "openapi": "3.2.1",
   "paths": {
-    "/example": {
+    "/example/{id}": {
       "additionalOperations": {
         "COPY": {
           "description": "Copies pet information based on ID",

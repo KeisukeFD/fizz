@@ -151,19 +151,8 @@ var semanticExceptions = map[string]struct {
 	problems []string
 	reason   string
 }{
-	// The spec shows a Path Item / Operation fragment without its path. The
-	// extractor (upgrade.Wrap) wraps it under the placeholder path /example,
-	// which has no {id} / {petId} template expression, so the path parameter
-	// "does not appear in the path template". Not a spec or lint bug: an
-	// artifact of wrapping the fragment.
-	"upgraded/spectext/path-item-object-example-1.json": {
-		[]string{`/paths/~1example/parameters/0: path parameter "id" does not appear in the path template "/example"`},
-		"fragment wrapped under placeholder path /example",
-	},
-	"upgraded/spectext/operation-object-example-1.json": {
-		[]string{`/paths/~1example/get/parameters/0: path parameter "petId" does not appear in the path template "/example"`},
-		"fragment wrapped under placeholder path /example",
-	},
+	// Empty today (upgrade.Wrap now templates its placeholder path); the
+	// mechanism stays for future upstream bugs.
 }
 
 // TestLintSemanticsOnCorpus requires the learn examples, the pass fixtures

@@ -261,7 +261,7 @@ type testInputModel1 struct {
 }
 
 type testInputModel2 struct {
-	C        string `path:"c"`
+	C        string `path:"a"`
 	Message  string `json:"message" description:"A short message"`
 	AnyValue any    `json:"value" description:"A nullable value of arbitrary type"`
 }
@@ -326,7 +326,7 @@ func TestSpecHandler(t *testing.T) {
 		Version:     "1.0.0",
 	}
 
-	fizz.POST("/test/:c",
+	fizz.POST("/test/:a",
 		[]OperationOption{
 			ID("PostTest"),
 			StatusDescription("201"),
