@@ -15,6 +15,7 @@ import (
 // fails every skipped test that names the task in FixedBy.
 var Done = map[string]bool{
 	"P1.0": true,
+	"P1.1": true,
 }
 
 // IsDone reports whether task is in the done ledger. A composite ID
