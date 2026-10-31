@@ -106,6 +106,7 @@ func (g *Generator) stagedSchema(t reflect.Type) *Schema {
 		delete(g.schemaTypes, t)
 		return nil
 	}
+	g.schemaHook(t, name, s)
 	g.api.Components.Schemas[name] = s
 	return &Schema{Ref: componentsSchemaPath + name}
 }

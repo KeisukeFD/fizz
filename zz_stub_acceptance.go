@@ -6,23 +6,10 @@
 package fizz
 
 import (
-	"errors"
 	"github.com/loopfz/gadgeto/tonic"
 	"github.com/wI2L/fizz/docsui"
 	"github.com/wI2L/fizz/openapi"
 )
-
-// WithHooks is a stub.
-// FixedBy: P6.4
-func WithHooks(openapi.Hooks) Option {
-	return func(*config) {}
-}
-
-// Document is a stub.
-// FixedBy: P6.4
-func (f *Fizz) Document() (*openapi.OpenAPI, error) {
-	return nil, errors.New("stub: P6.4")
-}
 
 // EmbeddedSwaggerUI is a stub.
 // FixedBy: P8.3

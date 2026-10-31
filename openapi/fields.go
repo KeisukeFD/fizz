@@ -266,7 +266,10 @@ func (g *Generator) flattenStructSchema(t, parent reflect.Type, schema *Schema) 
 			schema.Required = append(schema.Required, f.name)
 			sort.Strings(schema.Required)
 		}
-		if sfs := g.newSchemaFromField(f, required, t); sfs != nil {
+		sfs, skipped := g.newSchemaFromField(f, required, t)
+		if skipped {
+			dropRequired(schema, f.name)
+		} else if sfs != nil {
 			schema.Properties[f.name] = sfs
 		}
 	}
@@ -276,18 +279,25 @@ func (g *Generator) flattenStructSchema(t, parent reflect.Type, schema *Schema) 
 // newSchemaFromField returns the property schema of f. A field with
 // the ",string" option is encoded as a JSON string by encoding/json,
 // so its schema type becomes string.
-func (g *Generator) newSchemaFromField(f field, required bool, parent reflect.Type) *Schema {
+// It runs the FieldHook last, and reports whether the hook skips the
+// field.
+func (g *Generator) newSchemaFromField(f field, required bool, parent reflect.Type) (s *Schema, skipped bool) {
 	sor := g.fieldSchema(f.sf, required, f.name, parent, valueForm{quoted: f.quoted})
-	if sor == nil || !f.quoted || sor.Ref != "" || len(sor.Type) == 0 {
-		return sor
+	if sor == nil {
+		return nil, false
 	}
-	if slices.Contains(sor.Type, "null") {
-		sor.Type = Types("string", "null")
-	} else {
-		sor.Type = Types("string")
+	if f.quoted && sor.Ref == "" && len(sor.Type) > 0 {
+		if slices.Contains(sor.Type, "null") {
+			sor.Type = Types("string", "null")
+		} else {
+			sor.Type = Types("string")
+		}
+		sor.Format = ""
 	}
-	sor.Format = ""
-	return sor
+	if g.fieldHook(f, parent, sor) {
+		return nil, true
+	}
+	return sor, false
 }
 
 // isStructFieldRequired returns whether a struct field is required,
@@ -390,7 +400,7 @@ func (g *Generator) inlineComponent(sor *Schema, sf reflect.StructField, fname s
 		g.tagError(sf, fname, parent, g.tags.Inline, "a recursive type cannot be inlined")
 		return sor
 	}
-	c := comp.clone()
+	c := copySchemaTree(comp)
 	if nullable {
 		c.MakeNullable()
 	}

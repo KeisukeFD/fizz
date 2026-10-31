@@ -37,6 +37,9 @@ type Fizz struct {
 	*RouterGroup
 
 	specCache atomic.Pointer[specEntry] // serialized document, see spec
+	// docErrGen is 1 + the generation for which a failure to build the
+	// document has been recorded, 0 if none: it is recorded once.
+	docErrGen atomic.Uint64
 }
 
 // RouterGroup is an abstraction of a Gin router group.
@@ -86,6 +89,7 @@ func NewFromEngine(e *gin.Engine, opts ...Option) *Fizz {
 	gen.SetRequestBodyNamer(cfg.bodyNamer)
 	gen.SetPointersAreNullable(cfg.pointersNullable)
 	gen.SetAnnotationStyle(cfg.annotationStyle)
+	gen.SetHooks(cfg.hooks)
 	return &Fizz{
 		engine: e,
 		gen:    gen,

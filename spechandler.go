@@ -18,28 +18,44 @@ var errInvalidContentType = errors.New("invalid content type for the OpenAPI han
 // generator. The encodings are built on first use, once each.
 type specEntry struct {
 	gen        uint64
+	doc        func() (*openapi.OpenAPI, error) // hooked document, built once
 	json, yaml func() ([]byte, error)
 }
 
-// newSpecEntry returns the entry of generation gen. A build takes a
-// snapshot of the document under the lock of the generator, which may
-// be of a later generation than gen: a stale label only costs a
-// rebuild, a document is never served under a label newer than itself.
-// The encoding is done outside the lock.
-func newSpecEntry(gen *openapi.Generator, n uint64) *specEntry {
-	build := func(encode func(*openapi.OpenAPI) ([]byte, error)) func() ([]byte, error) {
+// newSpecEntry returns the entry of generation n. A build takes a
+// copy of the document under the lock of the generator, which may be of
+// a later generation than n: a stale label only costs a rebuild, a
+// document is never served under a label newer than itself. The
+// DocumentHook and the encoding run outside the lock, once per entry,
+// and the JSON and YAML encodings share the hooked document.
+func (f *Fizz) newSpecEntry(n uint64) *specEntry {
+	doc := sync.OnceValues(func() (*openapi.OpenAPI, error) {
+		doc, built, err := f.gen.Document()
+		if err != nil {
+			// A copy failure is recorded by the generator. A hook
+			// error is recorded once per generation, even if an
+			// entry is rebuilt for it.
+			if errors.Is(err, openapi.ErrDocumentHook) && f.docErrGen.Swap(built+1) != built+1 {
+				f.gen.RecordError(err)
+			}
+			return nil, err
+		}
+		return doc, nil
+	})
+	encode := func(enc func(*openapi.OpenAPI) ([]byte, error)) func() ([]byte, error) {
 		return sync.OnceValues(func() ([]byte, error) {
-			doc, _, err := gen.Snapshot()
+			d, err := doc()
 			if err != nil {
 				return nil, err
 			}
-			return encode(doc)
+			return enc(d)
 		})
 	}
 	return &specEntry{
 		gen:  n,
-		json: build(openapi.MarshalJSON),
-		yaml: build(openapi.MarshalYAML),
+		doc:  doc,
+		json: encode(openapi.MarshalJSON),
+		yaml: encode(openapi.MarshalYAML),
 	}
 }
 
@@ -52,7 +68,7 @@ func (f *Fizz) spec() *specEntry {
 		if cur != nil && cur.gen == n {
 			return cur
 		}
-		if f.specCache.CompareAndSwap(cur, newSpecEntry(f.gen, n)) {
+		if f.specCache.CompareAndSwap(cur, f.newSpecEntry(n)) {
 			return f.specCache.Load()
 		}
 	}
@@ -110,4 +126,21 @@ func (f *Fizz) OpenAPI(info *openapi.Info, ct string) gin.HandlerFunc {
 		ct = "json"
 	}
 	return gin.WrapH(f.SpecHandler(ct))
+}
+
+// Document returns the document as served by SpecHandler: a deep copy
+// with the DocumentHook applied, which the caller may change. It is
+// built once per generation, like the served encodings. An error of the
+// hook or of the copy is returned, and recorded in Errors once per
+// generation.
+func (f *Fizz) Document() (*openapi.OpenAPI, error) {
+	doc, err := f.spec().doc()
+	if err != nil {
+		return nil, err
+	}
+	c, err := doc.Clone()
+	if err != nil {
+		return nil, fmt.Errorf("copying the document: %w", err)
+	}
+	return c, nil
 }

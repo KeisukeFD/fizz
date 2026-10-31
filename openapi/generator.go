@@ -68,6 +68,7 @@ type Generator struct {
 	schemaNamer      func(reflect.Type) string
 	bodyNamer        func(opID string, t reflect.Type) string
 	registry         registry
+	hooks            Hooks
 	inlining         map[reflect.Type]bool // collision losers being inlined
 }
 
@@ -220,6 +221,11 @@ func (g *Generator) Generation() uint64 { return g.gen.Load() }
 func (g *Generator) Snapshot() (*OpenAPI, uint64, error) {
 	g.mu.Lock()
 	defer g.mu.Unlock()
+	return g.cloneLocked()
+}
+
+// cloneLocked is Snapshot for a caller that holds mu.
+func (g *Generator) cloneLocked() (*OpenAPI, uint64, error) {
 	gen := g.gen.Load()
 	api, err := g.api.Clone()
 	if err != nil {
@@ -565,7 +571,7 @@ func (g *Generator) buildOperation(path, method, tag string, in, out reflect.Typ
 			}
 		}
 	}
-	return op, nil
+	return g.operationHook(op, method, path), nil
 }
 
 // snapshot is the generator state that building an operation may

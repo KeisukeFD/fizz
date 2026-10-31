@@ -212,7 +212,10 @@ func (g *Generator) addBodyField(op *Operation, t reflect.Type, f field) {
 	}
 	// A field whose type has no schema was reported: it is left out,
 	// as flattenStructSchema does, rather than emitted as null.
-	if sfs := g.newSchemaFromField(f, required, t); sfs != nil {
+	sfs, skipped := g.newSchemaFromField(f, required, t)
+	if skipped {
+		dropRequired(schema, f.name)
+	} else if sfs != nil {
 		schema.Properties[f.name] = sfs
 	}
 }
@@ -313,6 +316,9 @@ func (g *Generator) newParameterFromField(idx int, t reflect.Type) (*Parameter, 
 		}
 	}
 	g.applyStyleTags(p, field, location, fieldErr)
+	if g.parameterHook(t.Field(idx), p) {
+		return nil, nil
+	}
 	return p, nil
 }
 

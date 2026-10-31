@@ -181,6 +181,7 @@ Each row is a stub until its task lands. Signatures are binding. A task that nee
 | `OperationContext{ OperationID, Method, Path string }` | P6.4 |
 | `SchemaHook func(*SchemaContext, *Schema)`, `FieldHook func(*FieldContext, *Schema) (skip bool)`, `ParameterHook func(*ParameterContext, *Parameter) (skip bool)`, `OperationHook func(*OperationContext, *Operation) error`, `DocumentHook func(*OpenAPI) error` | P6.4 |
 | `type Hooks struct{ Schema SchemaHook; Field FieldHook; Parameter ParameterHook; Operation OperationHook; Document DocumentHook }`, `(*Generator).SetHooks(Hooks)` | P6.4 |
+| `(*Generator).Document() (*OpenAPI, uint64, error)` (deep copy taken under the lock, `DocumentHook` applied after the lock is released; a hook error is returned wrapping `ErrDocumentHook`, not recorded), `var ErrDocumentHook` | P6.4 |
 | `(*Generator)`: `SetExtension(key string, value any) error`, `RegisterSchema(name string, s *Schema) error`, `RegisterType(t reflect.Type) error`, `RegisterParameter(name string, p *Parameter) error`, `RegisterResponse(name string, r *Response) error`, `RegisterExample(name string, e *Example) error`, `RegisterRequestBody(name string, rb *RequestBody) error`, `RegisterHeader(name string, h *Header) error`, `SetTag(t *Tag)`, `SetTagGroups(groups []*XTagGroup)`, `SetSelf(uri string)`, `SetJSONSchemaDialect(uri string)`, `SetExternalDocs(d *ExternalDocs)` | P6.5 |
 | `OpenAPI.ExternalDocs *ExternalDocs` (root `externalDocs`, set by `SetExternalDocs`) | P6.5 |
 

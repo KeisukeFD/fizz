@@ -170,6 +170,7 @@ func (g *Generator) composite(t reflect.Type) *Schema {
 	}
 	if named && g.promoted[t] {
 		name := g.typeName(t)
+		g.schemaHook(t, name, schema)
 		g.api.Components.Schemas[name] = schema
 		return &Schema{Ref: componentsSchemaPath + name}
 	}
@@ -282,6 +283,7 @@ func (g *Generator) newSchemaFromStruct(t reflect.Type) *Schema {
 	// relative reference. Unnamed types, like anonymous structs,
 	// will always be inlined in the specification.
 	if name != "" {
+		g.schemaHook(t, name, sor)
 		g.api.Components.Schemas[name] = sor
 
 		return &Schema{Ref: componentsSchemaPath + name}

@@ -17,6 +17,7 @@ type config struct {
 	mediaType        string
 	idNamer          func(method, path, handlerName string) string
 	noBindHook       bool // consumed by P7.2b; no effect yet
+	hooks            openapi.Hooks
 }
 
 // Option configures a Fizz instance. Options are passed to
@@ -81,4 +82,76 @@ func WithDefaultMediaType(mediaType string) Option {
 // ("get_users_id"). A nil function selects the default naming.
 func WithOperationIDNamer(fn func(method, path, handlerName string) string) Option {
 	return func(c *config) { c.idNamer = fn }
+}
+
+// WithHooks sets the generator hooks. The hooks of several calls
+// compose in order: the Schema hooks all run; the Field and Parameter
+// hooks run until one skips; the Operation and Document hooks run until
+// one fails. A nil member is ignored. See openapi.Hooks for what each
+// hook receives and openapi.Generator.SetHooks for the restrictions.
+func WithHooks(h openapi.Hooks) Option {
+	return func(c *config) { c.hooks = composeHooks(c.hooks, h) }
+}
+
+// composeHooks returns hooks that call a, then b.
+func composeHooks(a, b openapi.Hooks) openapi.Hooks {
+	var out openapi.Hooks
+	switch {
+	case a.Schema == nil:
+		out.Schema = b.Schema
+	case b.Schema == nil:
+		out.Schema = a.Schema
+	default:
+		out.Schema = func(ctx *openapi.SchemaContext, s *openapi.Schema) {
+			a.Schema(ctx, s)
+			b.Schema(ctx, s)
+		}
+	}
+	switch {
+	case a.Field == nil:
+		out.Field = b.Field
+	case b.Field == nil:
+		out.Field = a.Field
+	default:
+		out.Field = func(ctx *openapi.FieldContext, s *openapi.Schema) bool {
+			return a.Field(ctx, s) || b.Field(ctx, s)
+		}
+	}
+	switch {
+	case a.Parameter == nil:
+		out.Parameter = b.Parameter
+	case b.Parameter == nil:
+		out.Parameter = a.Parameter
+	default:
+		out.Parameter = func(ctx *openapi.ParameterContext, p *openapi.Parameter) bool {
+			return a.Parameter(ctx, p) || b.Parameter(ctx, p)
+		}
+	}
+	switch {
+	case a.Operation == nil:
+		out.Operation = b.Operation
+	case b.Operation == nil:
+		out.Operation = a.Operation
+	default:
+		out.Operation = func(ctx *openapi.OperationContext, op *openapi.Operation) error {
+			if err := a.Operation(ctx, op); err != nil {
+				return err
+			}
+			return b.Operation(ctx, op)
+		}
+	}
+	switch {
+	case a.Document == nil:
+		out.Document = b.Document
+	case b.Document == nil:
+		out.Document = a.Document
+	default:
+		out.Document = func(doc *openapi.OpenAPI) error {
+			if err := a.Document(doc); err != nil {
+				return err
+			}
+			return b.Document(doc)
+		}
+	}
+	return out
 }

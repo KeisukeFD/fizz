@@ -7,6 +7,7 @@ import (
 	"slices"
 	"strings"
 	"testing"
+	"testing/synctest"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -394,4 +395,45 @@ func bGNoContextFallback(e *gin.Engine) {
 	if v := reflect.ValueOf(e).Elem().FieldByName("ContextWithFallback"); v.IsValid() && v.CanSet() {
 		v.SetBool(false)
 	}
+}
+
+// G09: a DocumentHook that is slow while serving does not hold the lock
+// of the generator, so a route can be registered meanwhile.
+func TestSlowDocumentHookDoesNotBlockRegistration(t *testing.T) {
+	// Not wrapped in at.Pending: synctest.Test needs the real *testing.T.
+	synctest.Test(t, func(t *testing.T) {
+		release := make(chan struct{})
+		f := fizz.New(fizz.WithHooks(openapi.Hooks{Document: func(*openapi.OpenAPI) error {
+			<-release
+			return nil
+		}}))
+		f.GET("/a", bGOpts(fizz.ID("a")), bGHandler2())
+		h := f.SpecHandler("json")
+
+		served := make(chan int, 1)
+		go func() { served <- at.Do(h, http.MethodGet, "/").Code }()
+		synctest.Wait() // the request is blocked in the hook
+
+		registered := make(chan struct{})
+		go func() {
+			f.GET("/b", bGOpts(fizz.ID("b")), bGHandler2())
+			close(registered)
+		}()
+		synctest.Wait()
+		select {
+		case <-registered:
+		default:
+			t.Error("registration is blocked by the DocumentHook")
+		}
+		close(release)
+		synctest.Wait()
+		if code := <-served; code != http.StatusOK {
+			t.Errorf("status %d", code)
+		}
+	})
+}
+
+// bGHandler2 is a handler with an empty input.
+func bGHandler2() gin.HandlerFunc {
+	return tonic.Handler(bGHandler[bGEmpty], 200)
 }
