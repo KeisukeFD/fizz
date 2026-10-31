@@ -1,0 +1,58 @@
+{
+  "components": {
+    "headers": {
+      "SetCookieWithContent": {
+        "content": {
+          "text/plain": {
+            "schema": {
+              "type": "string"
+            }
+          }
+        },
+        "examples": {
+          "WithExpires": {
+            "dataValue": "lang=en-US; Expires=Wed, 09 Jun 2021 10:18:14 GMT\nfoo=bar; Expires=Wed, 09 Jun 2021 10:18:14 GMT\nurlSafeData: Hello%2C%20world%21\n",
+            "serializedValue": "lang=en-US; Expires=Wed, 09 Jun 2021 10:18:14 GMT\nfoo=bar; Expires=Wed, 09 Jun 2021 10:18:14 GMT\nurlSafeData: Hello%2C%20world%21\n"
+          }
+        }
+      },
+      "SetCookieWithSchemaAndStyle": {
+        "examples": {
+          "SetCookies": {
+            "dataValue": {
+              "foo": "bar; Expires=Wed, 09 Jun 2021 10:18:14 GMT",
+              "lang": "en-US; Expires=Wed, 09 Jun 2021 10:18:14 GMT",
+              "urlSafeData": "Hello%2C%20world%21"
+            },
+            "serializedValue": "lang=en-US; Expires=Wed, 09 Jun 2021 10:18:14 GMT\nfoo=bar; Expires=Wed, 09 Jun 2021 10:18:14 GMT\nurlSafeData: Hello%2C%20world%21\n"
+          }
+        },
+        "explode": true,
+        "schema": {
+          "additionalProperties": {
+            "$comment": "Require an Expires parameter",
+            "pattern": "; *Expires="
+          },
+          "properties": {
+            "urlSafeData": {
+              "pattern": "^[-_.%a-zA-Z0-9]+(;|$)",
+              "type": "string"
+            }
+          },
+          "required": [
+            "lang",
+            "foo",
+            "urlSafeData"
+          ],
+          "type": "object"
+        },
+        "style": "simple"
+      }
+    }
+  },
+  "info": {
+    "title": "spec text representing-the-set-cookie-header-1",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

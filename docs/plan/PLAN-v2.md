@@ -818,7 +818,7 @@ Rules for every task:
 - **P10.7b** A non-deepObject query, header or path param of map or struct type is a generation error (same rule as cookies).
 - **P10.7c** A slice `default` tag is split on `,` and converted per element, as tonic does.
 - **P10.7d** Nullable items (`[]*T`) get null in `enum`/`const`.
-- **P10.7e** Slice header params. The doc says `simple` (comma-split), but tonic does not split. **Open question O-10a:** split in the bind hook, or document `explode`/single value?
+- **P10.7e** Slice header params. The doc says `simple` (comma-split), but tonic does not split. **D25 (user, 2026-10-31):** the fizz bind hook splits simple-style slice header values on `,` and merges repeated header lines, so the runtime matches the doc. Runtime change: mention it in MIGRATION.
 - **P10.7f** Reserved header param names (Accept, Content-Type, Authorization): op warning that points to security schemes / content.
 - **P10.7g** Carried over from earlier: duplicate path+method is silently overwritten (→ op error); `RegisterRequestBody` with nil Content emits `content: null` (→ error).
 
@@ -960,7 +960,7 @@ Rules for every task:
 
 ---
 
-4. **O-10a (P10.7e):** slice header params: should the bind hook split `simple`-style values on `,`, or should the doc stop claiming it?
+4. ~~O-10a~~ resolved as D25 (bind hook splits slice headers).
 
 ## Addendum — user decisions after v2 (2026-10-30)
 

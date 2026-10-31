@@ -1,0 +1,9 @@
+{
+  "components": {},
+  "info": {
+    "summary": "My lovely API",
+    "title": "API",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

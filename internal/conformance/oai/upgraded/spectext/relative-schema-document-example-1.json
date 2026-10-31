@@ -1,0 +1,14 @@
+{
+  "components": {
+    "schemas": {
+      "Example": {
+        "$ref": "Pet.yaml"
+      }
+    }
+  },
+  "info": {
+    "title": "spec text relative-schema-document-example-1",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

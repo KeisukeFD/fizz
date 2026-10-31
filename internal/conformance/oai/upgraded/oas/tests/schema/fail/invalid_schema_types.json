@@ -1,0 +1,14 @@
+{
+  "components": {
+    "schemas": {
+      "invalid_array": [],
+      "invalid_null": null,
+      "invalid_number": 0
+    }
+  },
+  "info": {
+    "title": "API",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

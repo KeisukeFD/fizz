@@ -1,0 +1,42 @@
+{
+  "components": {
+    "responses": {
+      "AwesomeDocs": {
+        "content": {
+          "application/xml": {
+            "examples": {
+              "docs": {
+                "dataValue": {
+                  "content": "<html><head><title>Awesome Docs</title></head><body></body><html>"
+                },
+                "externalValue": "./examples/docs.xml"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Documentation"
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "Documentation": {
+        "properties": {
+          "content": {
+            "contentMediaType": "text/html",
+            "type": "string",
+            "xml": {
+              "nodeType": "cdata"
+            }
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "title": "spec text referenced-element-with-cdata-1",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

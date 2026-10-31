@@ -1,0 +1,19 @@
+{
+  "components": {
+    "headers": {
+      "ETag": {
+        "example": "\"xyzzy\"",
+        "required": true,
+        "schema": {
+          "pattern": "^\"",
+          "type": "string"
+        }
+      }
+    }
+  },
+  "info": {
+    "title": "spec text header-object-example-2",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

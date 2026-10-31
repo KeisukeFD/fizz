@@ -1,0 +1,119 @@
+{
+  "info": {
+    "title": "Flight API",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1",
+  "paths": {
+    "/flights/search": {
+      "query": {
+        "description": "Uses the HTTP QUERY method to perform a safe, idempotent flight search with filters that are too complex for a URL query string.\n",
+        "operationId": "searchFlights",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "cabinClass": {
+                    "enum": [
+                      "economy",
+                      "premium-economy",
+                      "business",
+                      "first"
+                    ],
+                    "example": "business",
+                    "type": "string"
+                  },
+                  "departureDate": {
+                    "example": "2026-06-15",
+                    "format": "date",
+                    "type": "string"
+                  },
+                  "destination": {
+                    "example": "LHR",
+                    "type": "string"
+                  },
+                  "nonStopOnly": {
+                    "example": true,
+                    "type": "boolean"
+                  },
+                  "origin": {
+                    "example": "ATL",
+                    "type": "string"
+                  },
+                  "passengers": {
+                    "example": 2,
+                    "minimum": 1,
+                    "type": "integer"
+                  },
+                  "returnDate": {
+                    "example": "2026-06-25",
+                    "format": "date",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "origin",
+                  "destination",
+                  "departureDate"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "flights": {
+                      "items": {
+                        "properties": {
+                          "arrivalTime": {
+                            "example": "2026-06-16T10:15:00Z",
+                            "format": "date-time",
+                            "type": "string"
+                          },
+                          "departureTime": {
+                            "example": "2026-06-15T22:30:00Z",
+                            "format": "date-time",
+                            "type": "string"
+                          },
+                          "destination": {
+                            "example": "LHR",
+                            "type": "string"
+                          },
+                          "flightNumber": {
+                            "example": "DL30",
+                            "type": "string"
+                          },
+                          "origin": {
+                            "example": "ATL",
+                            "type": "string"
+                          },
+                          "price": {
+                            "example": 1249.99,
+                            "format": "float",
+                            "type": "number"
+                          }
+                        },
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Matching flights"
+          }
+        },
+        "summary": "Search flights with complex criteria"
+      }
+    }
+  }
+}

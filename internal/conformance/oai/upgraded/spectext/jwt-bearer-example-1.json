@@ -1,0 +1,16 @@
+{
+  "components": {
+    "securitySchemes": {
+      "Example": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "title": "spec text jwt-bearer-example-1",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

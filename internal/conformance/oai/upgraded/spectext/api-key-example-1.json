@@ -1,0 +1,16 @@
+{
+  "components": {
+    "securitySchemes": {
+      "Example": {
+        "in": "header",
+        "name": "api-key",
+        "type": "apiKey"
+      }
+    }
+  },
+  "info": {
+    "title": "spec text api-key-example-1",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

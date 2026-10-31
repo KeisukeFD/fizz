@@ -1,0 +1,35 @@
+{
+  "$self": "https://example.com/api/shared/foo",
+  "components": {
+    "requestBodies": {
+      "Foo": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "../schemas/foo"
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "Bar": {
+        "$id": "https://example.com/api/schemas/bar",
+        "type": "string"
+      },
+      "Foo": {
+        "$id": "https://example.com/api/schemas/foo",
+        "properties": {
+          "bar": {
+            "$ref": "bar"
+          }
+        }
+      }
+    }
+  },
+  "info": {
+    "title": "Shared components for all APIs",
+    "version": "1.0"
+  },
+  "openapi": "3.2.1"
+}

@@ -1,0 +1,16 @@
+{
+  "components": {
+    "requestBodies": {
+      "Example": {
+        "content": {
+          "image/png": {}
+        }
+      }
+    }
+  },
+  "info": {
+    "title": "spec text considerations-for-file-uploads-1",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

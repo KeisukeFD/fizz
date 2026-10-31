@@ -1,0 +1,23 @@
+{
+  "components": {
+    "requestBodies": {
+      "Example": {
+        "content": {
+          "image/png": {
+            "examples": {
+              "Red": {
+                "externalValue": "./examples/2-by-2-red-pixels.png"
+              }
+            },
+            "schema": {}
+          }
+        }
+      }
+    }
+  },
+  "info": {
+    "title": "spec text binary-examples-1",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

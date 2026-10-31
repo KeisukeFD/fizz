@@ -1,0 +1,21 @@
+{
+  "components": {
+    "responses": {
+      "Example": {
+        "content": {
+          "text/plain": {
+            "schema": {
+              "type": "string"
+            }
+          }
+        },
+        "description": "A simple string response"
+      }
+    }
+  },
+  "info": {
+    "title": "spec text response-object-examples-2",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

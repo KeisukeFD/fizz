@@ -1,0 +1,15 @@
+{
+  "components": {
+    "securitySchemes": {
+      "Example": {
+        "description": "Cert must be signed by example.com CA",
+        "type": "mutualTLS"
+      }
+    }
+  },
+  "info": {
+    "title": "spec text mutualtls-example-1",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

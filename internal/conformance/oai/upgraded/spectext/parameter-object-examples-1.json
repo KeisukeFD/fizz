@@ -1,0 +1,34 @@
+{
+  "components": {
+    "parameters": {
+      "Example": {
+        "description": "token to be passed as a header",
+        "examples": {
+          "Tokens": {
+            "dataValue": [
+              12345678,
+              90099
+            ],
+            "serializedValue": "12345678,90099"
+          }
+        },
+        "in": "header",
+        "name": "X-Token",
+        "required": true,
+        "schema": {
+          "items": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "type": "array"
+        },
+        "style": "simple"
+      }
+    }
+  },
+  "info": {
+    "title": "spec text parameter-object-examples-1",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

@@ -1,0 +1,23 @@
+{
+  "components": {
+    "securitySchemes": {
+      "Example": {
+        "flows": {
+          "implicit": {
+            "authorizationUrl": "https://example.com/api/oauth/dialog",
+            "scopes": {
+              "read:pets": "read your pets",
+              "write:pets": "modify pets in your account"
+            }
+          }
+        },
+        "type": "oauth2"
+      }
+    }
+  },
+  "info": {
+    "title": "spec text implicit-oauth2-example-1",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

@@ -1,0 +1,25 @@
+{
+  "info": {
+    "title": "spec text server-object-example-2",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1",
+  "paths": {},
+  "servers": [
+    {
+      "description": "Development server",
+      "name": "dev",
+      "url": "https://development.gigantic-server.com/v1"
+    },
+    {
+      "description": "Staging server",
+      "name": "staging",
+      "url": "https://staging.gigantic-server.com/v1"
+    },
+    {
+      "description": "Production server",
+      "name": "prod",
+      "url": "https://api.gigantic-server.com/v1"
+    }
+  ]
+}

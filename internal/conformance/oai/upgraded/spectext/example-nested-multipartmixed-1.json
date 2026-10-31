@@ -1,0 +1,52 @@
+{
+  "components": {
+    "requestBodies": {
+      "Example": {
+        "content": {
+          "multipart/mixed": {
+            "prefixEncoding": [
+              {},
+              {
+                "contentType": "multipart/mixed",
+                "prefixEncoding": [
+                  {
+                    "contentType": "application/xml"
+                  },
+                  {},
+                  {
+                    "contentType": "image/png"
+                  }
+                ]
+              }
+            ],
+            "schema": {
+              "prefixItems": [
+                {
+                  "type": "array"
+                },
+                {
+                  "prefixItems": [
+                    {
+                      "type": "object"
+                    },
+                    {
+                      "type": "string"
+                    },
+                    {}
+                  ],
+                  "type": "array"
+                }
+              ],
+              "type": "array"
+            }
+          }
+        }
+      }
+    }
+  },
+  "info": {
+    "title": "spec text example-nested-multipartmixed-1",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

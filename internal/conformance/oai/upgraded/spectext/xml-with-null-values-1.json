@@ -1,0 +1,72 @@
+{
+  "components": {
+    "requestBodies": {
+      "Example": {
+        "content": {
+          "application/xml": {
+            "examples": {
+              "productNoNulls": {
+                "dataValue": {
+                  "count": 42,
+                  "description": "Thing",
+                  "related": {}
+                },
+                "externalValue": "./examples/productNoNulls.xml"
+              },
+              "productWithNulls": {
+                "dataValue": {
+                  "count": null,
+                  "description": "Thing",
+                  "related": null
+                },
+                "externalValue": "./examples/productWithNulls.xml"
+              }
+            },
+            "schema": {
+              "properties": {
+                "count": {
+                  "type": [
+                    "number",
+                    "null"
+                  ],
+                  "xml": {
+                    "nodeType": "attribute"
+                  }
+                },
+                "description": {
+                  "type": "string"
+                },
+                "rating": {
+                  "type": "string",
+                  "xml": {
+                    "nodeType": "attribute"
+                  }
+                },
+                "related": {
+                  "type": [
+                    "object",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "count",
+                "description",
+                "related"
+              ],
+              "type": "object",
+              "xml": {
+                "name": "product"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "info": {
+    "title": "spec text xml-with-null-values-1",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

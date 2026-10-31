@@ -1,0 +1,45 @@
+{
+  "components": {
+    "requestBodies": {
+      "Example": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "cat": {
+                "summary": "An example of a cat",
+                "value": {
+                  "breed": "Persian",
+                  "color": "White",
+                  "gender": "male",
+                  "name": "Fluffy",
+                  "petType": "Cat"
+                }
+              },
+              "dog": {
+                "summary": "An example of a dog with a cat's name",
+                "value": {
+                  "breed": "Mixed",
+                  "color": "Black",
+                  "gender": "Female",
+                  "name": "Puma",
+                  "petType": "Dog"
+                }
+              },
+              "frog": {
+                "$ref": "#/components/examples/frog-example"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Pet"
+            }
+          }
+        }
+      }
+    }
+  },
+  "info": {
+    "title": "spec text json-2",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

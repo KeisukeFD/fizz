@@ -1,0 +1,61 @@
+{
+  "components": {
+    "parameters": {
+      "Example": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "TwoNoFlag": {
+                "dataValue": {
+                  "flag": null,
+                  "numbers": [
+                    1,
+                    2
+                  ]
+                },
+                "description": "Serialize with minimized whitespace",
+                "serializedValue": "{\"numbers\":[1,2],\"flag\":null}"
+              }
+            },
+            "schema": {
+              "properties": {
+                "flag": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "numbers": {
+                  "items": {
+                    "type": "integer"
+                  },
+                  "type": "array"
+                }
+              },
+              "type": "object"
+            }
+          }
+        },
+        "examples": {
+          "TwoNoFlag": {
+            "dataValue": {
+              "flag": null,
+              "numbers": [
+                1,
+                2
+              ]
+            },
+            "serializedValue": "%7B%22numbers%22%3A%5B1%2C2%5D%2C%22flag%22%3Anull%7D"
+          }
+        },
+        "in": "querystring",
+        "name": "json"
+      }
+    }
+  },
+  "info": {
+    "title": "spec text parameter-object-examples-9",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

@@ -1,0 +1,72 @@
+{
+  "components": {
+    "headers": {
+      "RFC2557ContentLocation": {
+        "required": true,
+        "schema": {
+          "$comment": "Use a full URI (not a relative reference)",
+          "format": "uri",
+          "type": "string"
+        }
+      },
+      "RFC2557NoContentId": {
+        "description": "Use Content-Location instead of Content-ID",
+        "schema": false
+      }
+    },
+    "requestBodies": {
+      "RFC2557": {
+        "content": {
+          "multipart/related; type=text/html": {
+            "itemEncoding": {
+              "contentType": "text/css,text/javascript,image/*",
+              "headers": {
+                "Content-ID": {
+                  "$ref": "#/components/headers/RFC2557NoContentId"
+                },
+                "Content-Location": {
+                  "$ref": "#/components/headers/RFC2557ContentLocation"
+                }
+              }
+            },
+            "prefixEncoding": [
+              {
+                "contentType": "text/html",
+                "headers": {
+                  "Content-ID": {
+                    "$ref": "#/components/headers/RFC2557NoContentId"
+                  },
+                  "Content-Location": {
+                    "$ref": "#/components/headers/RFC2557ContentLocation"
+                  }
+                }
+              }
+            ],
+            "schema": {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "$comment": "To allow binary, this must always pass"
+                  }
+                ]
+              },
+              "prefixItems": [
+                {
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  },
+  "info": {
+    "title": "spec text example-ordered-multipart-with-required-header-1",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

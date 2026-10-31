@@ -1,0 +1,67 @@
+{
+  "components": {
+    "requestBodies": {
+      "Example": {
+        "content": {
+          "text/event-stream": {
+            "itemSchema": {
+              "$ref": "#/components/schemas/Event",
+              "oneOf": [
+                {
+                  "properties": {
+                    "event": {
+                      "const": "addString"
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "data": {
+                      "$comment": "Since the `data` field is a string,\nwe need a format to signal that it\nshould be handled as a 64-bit integer.\n",
+                      "format": "int64"
+                    },
+                    "event": {
+                      "const": "addInt64"
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "data": {
+                      "$comment": "These content fields indicate\nthat the string value should\nbe parsed and validated as a\nJSON document (since JSON is not\na binary format, `contentEncoding`\nis not needed)\n",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "properties": {
+                          "foo": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "foo"
+                        ],
+                        "type": "object"
+                      }
+                    },
+                    "event": {
+                      "const": "addJSON"
+                    }
+                  }
+                }
+              ],
+              "required": [
+                "event"
+              ]
+            }
+          }
+        },
+        "description": "A request body to add a stream of typed data.",
+        "required": true
+      }
+    }
+  },
+  "info": {
+    "title": "spec text server-sent-event-streams-1",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

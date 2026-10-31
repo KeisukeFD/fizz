@@ -1,0 +1,106 @@
+{
+  "components": {
+    "parameters": {
+      "limitParam": {
+        "description": "max records to return",
+        "in": "query",
+        "name": "limit",
+        "required": true,
+        "schema": {
+          "format": "int32",
+          "type": "integer"
+        }
+      },
+      "skipParam": {
+        "description": "number of items to skip",
+        "in": "query",
+        "name": "skip",
+        "required": true,
+        "schema": {
+          "format": "int32",
+          "type": "integer"
+        }
+      }
+    },
+    "responses": {
+      "GeneralError": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/GeneralError"
+            }
+          }
+        },
+        "description": "General Error"
+      },
+      "IllegalInput": {
+        "description": "Illegal input for operation."
+      },
+      "NotFound": {
+        "description": "Entity not found."
+      }
+    },
+    "schemas": {
+      "Category": {
+        "properties": {
+          "id": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "GeneralError": {
+        "properties": {
+          "code": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Tag": {
+        "properties": {
+          "id": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "api_key": {
+        "in": "header",
+        "name": "api-key",
+        "type": "apiKey"
+      },
+      "petstore_auth": {
+        "flows": {
+          "implicit": {
+            "authorizationUrl": "https://example.org/api/oauth/dialog",
+            "scopes": {
+              "read:pets": "read your pets",
+              "write:pets": "modify pets in your account"
+            }
+          }
+        },
+        "type": "oauth2"
+      }
+    }
+  },
+  "info": {
+    "title": "spec text components-object-example-1",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

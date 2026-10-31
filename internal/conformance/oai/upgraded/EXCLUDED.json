@@ -1,0 +1,44 @@
+[
+  {
+    "name": "examples-8",
+    "source": "orig/oas/versions/3.2.1.md:L4966",
+    "heading": "Examples",
+    "category": "unclassified",
+    "reason": "example data (a value used in prose), not an OpenAPI object"
+  },
+  {
+    "name": "examples-of-api-base-url-determination-1",
+    "source": "orig/oas/versions/3.2.1.md:L290",
+    "heading": "Examples of API Base URL Determination",
+    "category": "fails-validation",
+    "reason": "upstream spec text bug: a full document with none of paths, components, webhooks (fails validation after wrapping as document: : missing property 'paths'; : missing property 'components'; : missing property 'webhooks')"
+  },
+  {
+    "name": "expansion-with-non-rfc6570-supported-options-2",
+    "source": "orig/oas/versions/3.2.1.md:L5058",
+    "heading": "Expansion with Non-RFC6570-Supported Options",
+    "category": "unclassified",
+    "reason": "example data (a value used in prose), not an OpenAPI object"
+  },
+  {
+    "name": "illegal-variable-names-as-parameter-names-2",
+    "source": "orig/oas/versions/3.2.1.md:L5128",
+    "heading": "Illegal Variable Names as Parameter Names",
+    "category": "unclassified",
+    "reason": "example data (a value used in prose), not an OpenAPI object"
+  },
+  {
+    "name": "undefined-values-and-manual-uri-template-construction-1",
+    "source": "orig/oas/versions/3.2.1.md:L5079",
+    "heading": "Undefined Values and Manual URI Template Construction",
+    "category": "unclassified",
+    "reason": "example data (a value used in prose), not an OpenAPI object"
+  },
+  {
+    "name": "undefined-values-and-manual-uri-template-construction-2",
+    "source": "orig/oas/versions/3.2.1.md:L5096",
+    "heading": "Undefined Values and Manual URI Template Construction",
+    "category": "unclassified",
+    "reason": "example data (a value used in prose), not an OpenAPI object"
+  }
+]

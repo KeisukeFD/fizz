@@ -1,0 +1,17 @@
+{
+  "components": {
+    "schemas": {
+      "anything_boolean": true,
+      "anything_object": {},
+      "nothing_boolean": false,
+      "nothing_object": {
+        "not": {}
+      }
+    }
+  },
+  "info": {
+    "title": "API",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

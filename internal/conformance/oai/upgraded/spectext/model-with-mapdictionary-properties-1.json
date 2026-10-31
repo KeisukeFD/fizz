@@ -1,0 +1,17 @@
+{
+  "components": {
+    "schemas": {
+      "Example": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "title": "spec text model-with-mapdictionary-properties-1",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

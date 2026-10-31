@@ -1,0 +1,81 @@
+{
+  "components": {
+    "schemas": {
+      "genericArrayComponent": {
+        "$defs": {
+          "allowAll": {
+            "$dynamicAnchor": "generic-array"
+          }
+        },
+        "$id": "fully_generic_array",
+        "items": {
+          "$dynamicRef": "#generic-array"
+        },
+        "type": "array"
+      },
+      "numberArray": {
+        "$defs": {
+          "numbersOnly": {
+            "$dynamicAnchor": "generic-array",
+            "type": "number"
+          }
+        },
+        "$id": "array_of_numbers",
+        "$ref": "fully_generic_array"
+      },
+      "objWithTypedArray": {
+        "$id": "obj_with_typed_array",
+        "oneOf": [
+          {
+            "properties": {
+              "data": {
+                "$ref": "array_of_strings"
+              },
+              "dataType": {
+                "const": "string"
+              }
+            }
+          },
+          {
+            "properties": {
+              "data": {
+                "$ref": "array_of_numbers"
+              },
+              "dataType": {
+                "const": "number"
+              }
+            }
+          }
+        ],
+        "properties": {
+          "dataType": {
+            "enum": [
+              "string",
+              "number"
+            ]
+          }
+        },
+        "required": [
+          "dataType",
+          "data"
+        ],
+        "type": "object"
+      },
+      "stringArray": {
+        "$defs": {
+          "stringsOnly": {
+            "$dynamicAnchor": "generic-array",
+            "type": "string"
+          }
+        },
+        "$id": "array_of_strings",
+        "$ref": "fully_generic_array"
+      }
+    }
+  },
+  "info": {
+    "title": "spec text generic-data-structure-model-1",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

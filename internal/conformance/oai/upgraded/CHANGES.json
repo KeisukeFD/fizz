@@ -1,0 +1,1142 @@
+[
+  {
+    "file": "upgraded/learn/examples/v3.0/api-with-examples.json",
+    "source": "orig/learn/examples/v3.0/api-with-examples.yaml",
+    "changes": [
+      {
+        "pointer": "/openapi",
+        "rule": "openapi-version",
+        "before": "3.0.0",
+        "after": "3.2.1"
+      }
+    ]
+  },
+  {
+    "file": "upgraded/learn/examples/v3.0/callback-example.json",
+    "source": "orig/learn/examples/v3.0/callback-example.yaml",
+    "changes": [
+      {
+        "pointer": "/openapi",
+        "rule": "openapi-version",
+        "before": "3.0.0",
+        "after": "3.2.1"
+      }
+    ]
+  },
+  {
+    "file": "upgraded/learn/examples/v3.0/link-example.json",
+    "source": "orig/learn/examples/v3.0/link-example.yaml",
+    "changes": [
+      {
+        "pointer": "/openapi",
+        "rule": "openapi-version",
+        "before": "3.0.0",
+        "after": "3.2.1"
+      }
+    ]
+  },
+  {
+    "file": "upgraded/learn/examples/v3.0/petstore-expanded.json",
+    "source": "orig/learn/examples/v3.0/petstore-expanded.yaml",
+    "changes": [
+      {
+        "pointer": "/openapi",
+        "rule": "openapi-version",
+        "before": "3.0.0",
+        "after": "3.2.1"
+      }
+    ]
+  },
+  {
+    "file": "upgraded/learn/examples/v3.0/petstore.json",
+    "source": "orig/learn/examples/v3.0/petstore.yaml",
+    "changes": [
+      {
+        "pointer": "/openapi",
+        "rule": "openapi-version",
+        "before": "3.0.0",
+        "after": "3.2.1"
+      }
+    ]
+  },
+  {
+    "file": "upgraded/learn/examples/v3.0/uspto.json",
+    "source": "orig/learn/examples/v3.0/uspto.yaml",
+    "changes": [
+      {
+        "pointer": "/openapi",
+        "rule": "openapi-version",
+        "before": "3.0.1",
+        "after": "3.2.1"
+      }
+    ]
+  },
+  {
+    "file": "upgraded/learn/examples/v3.1/non-oauth-scopes.json",
+    "source": "orig/learn/examples/v3.1/non-oauth-scopes.yaml",
+    "changes": [
+      {
+        "pointer": "/openapi",
+        "rule": "openapi-version",
+        "before": "3.1.0",
+        "after": "3.2.1"
+      }
+    ]
+  },
+  {
+    "file": "upgraded/learn/examples/v3.1/tictactoe.json",
+    "source": "orig/learn/examples/v3.1/tictactoe.yaml",
+    "changes": [
+      {
+        "pointer": "/openapi",
+        "rule": "openapi-version",
+        "before": "3.1.0",
+        "after": "3.2.1"
+      }
+    ]
+  },
+  {
+    "file": "upgraded/learn/examples/v3.1/webhook-example.json",
+    "source": "orig/learn/examples/v3.1/webhook-example.yaml",
+    "changes": [
+      {
+        "pointer": "/openapi",
+        "rule": "openapi-version",
+        "before": "3.1.0",
+        "after": "3.2.1"
+      }
+    ]
+  },
+  {
+    "file": "upgraded/learn/examples/v3.2/3.2-query-example.json",
+    "source": "orig/learn/examples/v3.2/3.2-query-example.yaml",
+    "changes": [
+      {
+        "pointer": "/openapi",
+        "rule": "openapi-version",
+        "before": "3.2.0",
+        "after": "3.2.1"
+      }
+    ]
+  },
+  {
+    "file": "upgraded/learn/examples/v3.2/3.2-tags-example.json",
+    "source": "orig/learn/examples/v3.2/3.2-tags-example.yaml",
+    "changes": [
+      {
+        "pointer": "/openapi",
+        "rule": "openapi-version",
+        "before": "3.2.0",
+        "after": "3.2.1"
+      }
+    ]
+  },
+  {
+    "file": "upgraded/oas/tests/schema/fail/invalid_schema_types.json",
+    "source": "orig/oas/tests/schema/fail/invalid_schema_types.yaml",
+    "changes": [
+      {
+        "pointer": "/openapi",
+        "rule": "openapi-version",
+        "before": "3.1.1",
+        "after": "3.2.1"
+      }
+    ]
+  },
+  {
+    "file": "upgraded/oas/tests/schema/fail/no_containers.json",
+    "source": "orig/oas/tests/schema/fail/no_containers.yaml",
+    "changes": [
+      {
+        "pointer": "/openapi",
+        "rule": "openapi-version",
+        "before": "3.1.0",
+        "after": "3.2.1"
+      }
+    ]
+  },
+  {
+    "file": "upgraded/oas/tests/schema/fail/server_enum_empty.json",
+    "source": "orig/oas/tests/schema/fail/server_enum_empty.yaml",
+    "changes": [
+      {
+        "pointer": "/openapi",
+        "rule": "openapi-version",
+        "before": "3.1.0",
+        "after": "3.2.1"
+      }
+    ]
+  },
+  {
+    "file": "upgraded/oas/tests/schema/fail/servers.json",
+    "source": "orig/oas/tests/schema/fail/servers.yaml",
+    "changes": [
+      {
+        "pointer": "/openapi",
+        "rule": "openapi-version",
+        "before": "3.1.0",
+        "after": "3.2.1"
+      }
+    ]
+  },
+  {
+    "file": "upgraded/oas/tests/schema/fail/unknown_container.json",
+    "source": "orig/oas/tests/schema/fail/unknown_container.yaml",
+    "changes": [
+      {
+        "pointer": "/openapi",
+        "rule": "openapi-version",
+        "before": "3.1.0",
+        "after": "3.2.1"
+      }
+    ]
+  },
+  {
+    "file": "upgraded/oas/tests/schema/pass/comp_pathitems.json",
+    "source": "orig/oas/tests/schema/pass/comp_pathitems.yaml",
+    "changes": [
+      {
+        "pointer": "/openapi",
+        "rule": "openapi-version",
+        "before": "3.1.0",
+        "after": "3.2.1"
+      }
+    ]
+  },
+  {
+    "file": "upgraded/oas/tests/schema/pass/info_summary.json",
+    "source": "orig/oas/tests/schema/pass/info_summary.yaml",
+    "changes": [
+      {
+        "pointer": "/openapi",
+        "rule": "openapi-version",
+        "before": "3.1.0",
+        "after": "3.2.1"
+      }
+    ]
+  },
+  {
+    "file": "upgraded/oas/tests/schema/pass/json_schema_dialect.json",
+    "source": "orig/oas/tests/schema/pass/json_schema_dialect.yaml",
+    "changes": [
+      {
+        "pointer": "/openapi",
+        "rule": "openapi-version",
+        "before": "3.1.0",
+        "after": "3.2.1"
+      },
+      {
+        "pointer": "/jsonSchemaDialect",
+        "rule": "dialect-uri",
+        "before": "https://spec.openapis.org/oas/3.1/dialect/WORK-IN-PROGRESS",
+        "after": "https://spec.openapis.org/oas/3.2/dialect/2026-02-26"
+      },
+      {
+        "pointer": "/components/schemas/WithDollarSchema/$schema",
+        "rule": "dialect-uri",
+        "before": "https://spec.openapis.org/oas/3.1/dialect/WORK-IN-PROGRESS",
+        "after": "https://spec.openapis.org/oas/3.2/dialect/2026-02-26"
+      }
+    ]
+  },
+  {
+    "file": "upgraded/oas/tests/schema/pass/license_identifier.json",
+    "source": "orig/oas/tests/schema/pass/license_identifier.yaml",
+    "changes": [
+      {
+        "pointer": "/openapi",
+        "rule": "openapi-version",
+        "before": "3.1.0",
+        "after": "3.2.1"
+      }
+    ]
+  },
+  {
+    "file": "upgraded/oas/tests/schema/pass/mega.json",
+    "source": "orig/oas/tests/schema/pass/mega.yaml",
+    "changes": [
+      {
+        "pointer": "/openapi",
+        "rule": "openapi-version",
+        "before": "3.1.0",
+        "after": "3.2.1"
+      }
+    ]
+  },
+  {
+    "file": "upgraded/oas/tests/schema/pass/minimal_comp.json",
+    "source": "orig/oas/tests/schema/pass/minimal_comp.yaml",
+    "changes": [
+      {
+        "pointer": "/openapi",
+        "rule": "openapi-version",
+        "before": "3.1.0",
+        "after": "3.2.1"
+      }
+    ]
+  },
+  {
+    "file": "upgraded/oas/tests/schema/pass/minimal_hooks.json",
+    "source": "orig/oas/tests/schema/pass/minimal_hooks.yaml",
+    "changes": [
+      {
+        "pointer": "/openapi",
+        "rule": "openapi-version",
+        "before": "3.1.0",
+        "after": "3.2.1"
+      }
+    ]
+  },
+  {
+    "file": "upgraded/oas/tests/schema/pass/minimal_paths.json",
+    "source": "orig/oas/tests/schema/pass/minimal_paths.yaml",
+    "changes": [
+      {
+        "pointer": "/openapi",
+        "rule": "openapi-version",
+        "before": "3.1.0",
+        "after": "3.2.1"
+      }
+    ]
+  },
+  {
+    "file": "upgraded/oas/tests/schema/pass/non-oauth-scopes.json",
+    "source": "orig/oas/tests/schema/pass/non-oauth-scopes.yaml",
+    "changes": [
+      {
+        "pointer": "/openapi",
+        "rule": "openapi-version",
+        "before": "3.1.0",
+        "after": "3.2.1"
+      }
+    ]
+  },
+  {
+    "file": "upgraded/oas/tests/schema/pass/path_no_response.json",
+    "source": "orig/oas/tests/schema/pass/path_no_response.yaml",
+    "changes": [
+      {
+        "pointer": "/openapi",
+        "rule": "openapi-version",
+        "before": "3.1.0",
+        "after": "3.2.1"
+      }
+    ]
+  },
+  {
+    "file": "upgraded/oas/tests/schema/pass/path_var_empty_pathitem.json",
+    "source": "orig/oas/tests/schema/pass/path_var_empty_pathitem.yaml",
+    "changes": [
+      {
+        "pointer": "/openapi",
+        "rule": "openapi-version",
+        "before": "3.1.0",
+        "after": "3.2.1"
+      }
+    ]
+  },
+  {
+    "file": "upgraded/oas/tests/schema/pass/schema.json",
+    "source": "orig/oas/tests/schema/pass/schema.yaml",
+    "changes": [
+      {
+        "pointer": "/openapi",
+        "rule": "openapi-version",
+        "before": "3.1.0",
+        "after": "3.2.1"
+      }
+    ]
+  },
+  {
+    "file": "upgraded/oas/tests/schema/pass/servers.json",
+    "source": "orig/oas/tests/schema/pass/servers.yaml",
+    "changes": [
+      {
+        "pointer": "/openapi",
+        "rule": "openapi-version",
+        "before": "3.1.0",
+        "after": "3.2.1"
+      }
+    ]
+  },
+  {
+    "file": "upgraded/oas/tests/schema/pass/valid_schema_types.json",
+    "source": "orig/oas/tests/schema/pass/valid_schema_types.yaml",
+    "changes": [
+      {
+        "pointer": "/openapi",
+        "rule": "openapi-version",
+        "before": "3.1.1",
+        "after": "3.2.1"
+      }
+    ]
+  },
+  {
+    "file": "upgraded/oas/tests/schema/pass/webhook-example.json",
+    "source": "orig/oas/tests/schema/pass/webhook-example.yaml",
+    "changes": [
+      {
+        "pointer": "/openapi",
+        "rule": "openapi-version",
+        "before": "3.1.0",
+        "after": "3.2.1"
+      }
+    ]
+  },
+  {
+    "file": "upgraded/spectext/api-key-example-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L4624",
+    "wrapper": "components/securitySchemes",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/base-uri-from-the-retrieval-uri-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L5396",
+    "changes": [
+      {
+        "pointer": "/info/version",
+        "rule": "info-version-string",
+        "before": 1,
+        "after": "1.0"
+      }
+    ]
+  },
+  {
+    "file": "upgraded/spectext/base-uri-within-content-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L5276",
+    "changes": [
+      {
+        "pointer": "/info/version",
+        "rule": "info-version-string",
+        "before": 1,
+        "after": "1.0"
+      }
+    ]
+  },
+  {
+    "file": "upgraded/spectext/base-uri-within-content-2.json",
+    "source": "orig/oas/versions/3.2.1.md:L5291",
+    "changes": [
+      {
+        "pointer": "/info/version",
+        "rule": "info-version-string",
+        "before": 1,
+        "after": "1.0"
+      }
+    ]
+  },
+  {
+    "file": "upgraded/spectext/basic-authentication-example-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L4617",
+    "wrapper": "components/securitySchemes",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/binary-examples-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L2477",
+    "wrapper": "components/requestBodies",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/boolean-query-parameter-examples-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L2490",
+    "wrapper": "components/parameters",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/callback-object-examples-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L2312",
+    "wrapper": "components/callbacks (named map)",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/callback-object-examples-2.json",
+    "source": "orig/oas/versions/3.2.1.md:L2329",
+    "wrapper": "components/callbacks (named map)",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/components-object-example-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L432",
+    "wrapper": "document-fields",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/considerations-for-file-uploads-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L1666",
+    "wrapper": "components/requestBodies",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/considerations-for-file-uploads-2.json",
+    "source": "orig/oas/versions/3.2.1.md:L1672",
+    "wrapper": "components/requestBodies",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/considerations-for-file-uploads-3.json",
+    "source": "orig/oas/versions/3.2.1.md:L1678",
+    "wrapper": "components/requestBodies",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/considerations-for-file-uploads-4.json",
+    "source": "orig/oas/versions/3.2.1.md:L1688",
+    "wrapper": "paths/operation",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/considerations-for-file-uploads-5.json",
+    "source": "orig/oas/versions/3.2.1.md:L1696",
+    "wrapper": "paths/operation",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/contact-object-example-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L235",
+    "wrapper": "info/contact",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/elements-with-attributes-and-text-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L4286",
+    "wrapper": "components/requestBodies (content)",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/equivalences-between-fields-and-rfc6570-operators-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L4921",
+    "wrapper": "paths/path-item (parameters)",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/example-basic-multipart-form-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L1892",
+    "wrapper": "paths/operation",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/example-multipart-form-with-encoding-objects-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L1925",
+    "wrapper": "paths/operation",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/example-multipart-form-with-multiple-files-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L1975",
+    "wrapper": "paths/operation",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/example-nested-multipartmixed-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L2103",
+    "wrapper": "components/requestBodies (content)",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/example-ordered-multipart-with-required-header-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L2027",
+    "wrapper": "document-fields",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/example-ordered-unnamed-multipart-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L1994",
+    "wrapper": "components/requestBodies (content)",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/example-streaming-byte-ranges-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L2083",
+    "wrapper": "components/requestBodies (content)",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/example-streaming-multipart-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L2071",
+    "wrapper": "components/requestBodies (content)",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/example-url-encoded-form-with-binary-values-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L1832",
+    "wrapper": "paths/operation",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/example-url-encoded-form-with-json-values-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L1787",
+    "wrapper": "paths/operation",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/examples-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L2540",
+    "wrapper": "document-fields",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/examples-2.json",
+    "source": "orig/oas/versions/3.2.1.md:L2590",
+    "wrapper": "components/responses (links)",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/examples-3.json",
+    "source": "orig/oas/versions/3.2.1.md:L3697",
+    "wrapper": "components/schemas (named map)",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/examples-4.json",
+    "source": "orig/oas/versions/3.2.1.md:L3707",
+    "wrapper": "components/schemas (named map)",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/examples-5.json",
+    "source": "orig/oas/versions/3.2.1.md:L3730",
+    "wrapper": "components/schemas (named map)",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/examples-6.json",
+    "source": "orig/oas/versions/3.2.1.md:L3752",
+    "wrapper": "components/schemas (named map)",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/examples-7.json",
+    "source": "orig/oas/versions/3.2.1.md:L3774",
+    "wrapper": "document-fields",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/expansion-with-non-rfc6570-supported-options-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L5016",
+    "wrapper": "paths/path-item (parameters)",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/external-documentation-object-example-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L754",
+    "wrapper": "externalDocs",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/generic-data-structure-model-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L3577",
+    "wrapper": "document-fields",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/header-object-example-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L2890",
+    "wrapper": "components/headers (named map)",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/header-object-example-2.json",
+    "source": "orig/oas/versions/3.2.1.md:L2899",
+    "wrapper": "components/headers (named map)",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/illegal-variable-names-as-parameter-names-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L5117",
+    "wrapper": "paths/path-item (parameters)",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/implicit-connection-resolution-examples-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L5575",
+    "wrapper": "document-fields",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/implicit-connection-resolution-examples-2.json",
+    "source": "orig/oas/versions/3.2.1.md:L5621",
+    "wrapper": "document-fields",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/implicit-oauth2-example-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L4647",
+    "wrapper": "components/securitySchemes",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/info-object-example-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L204",
+    "wrapper": "info",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/json-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L1423",
+    "wrapper": "components/requestBodies (content)",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/json-2.json",
+    "source": "orig/oas/versions/3.2.1.md:L1450",
+    "wrapper": "components/requestBodies (content)",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/json-data-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L3073",
+    "wrapper": "components/schemas",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/json-examples-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L2435",
+    "wrapper": "components/requestBodies",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/jwt-bearer-example-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L4632",
+    "wrapper": "components/securitySchemes",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/license-object-example-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L257",
+    "wrapper": "info/license",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/model-with-annotated-enumeration-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L3363",
+    "wrapper": "components/schemas",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/model-with-example-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L3375",
+    "wrapper": "components/schemas",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/model-with-mapdictionary-properties-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L3347",
+    "wrapper": "components/schemas",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/model-with-mapdictionary-properties-2.json",
+    "source": "orig/oas/versions/3.2.1.md:L3355",
+    "wrapper": "components/schemas",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/modeling-link-headers-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L2744",
+    "wrapper": "document-fields",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/models-with-composition-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L3392",
+    "wrapper": "document-fields",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/models-with-polymorphism-support-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L3422",
+    "wrapper": "document-fields",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/models-with-polymorphism-support-and-a-discriminator-object-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L3472",
+    "wrapper": "document-fields",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/models-with-polymorphism-support-using-allof-and-a-discriminator-object-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L3528",
+    "wrapper": "document-fields",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/mutualtls-example-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L4640",
+    "wrapper": "components/securitySchemes",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/no-xml-object-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L3929",
+    "wrapper": "components/requestBodies (content)",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/no-xml-object-2.json",
+    "source": "orig/oas/versions/3.2.1.md:L3950",
+    "wrapper": "components/requestBodies (content)",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/non-json-data-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L3102",
+    "wrapper": "components/schemas",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/non-json-data-2.json",
+    "source": "orig/oas/versions/3.2.1.md:L3112",
+    "wrapper": "components/schemas",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/non-json-data-3.json",
+    "source": "orig/oas/versions/3.2.1.md:L3126",
+    "wrapper": "document-fields",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/non-oauth2-security-requirement-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L4737",
+    "wrapper": "security",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/oauth-flow-object-example-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L4691",
+    "wrapper": "components/securitySchemes",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/oauth2-security-requirement-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L4745",
+    "wrapper": "security",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/operation-object-example-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L696",
+    "wrapper": "paths/operation",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/operationref-examples-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L2610",
+    "wrapper": "components/responses (links)",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/operationref-examples-2.json",
+    "source": "orig/oas/versions/3.2.1.md:L2621",
+    "wrapper": "components/responses (links)",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/optional-discriminating-property-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L3680",
+    "wrapper": "components/schemas (named map)",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/optional-oauth2-security-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L4757",
+    "wrapper": "document-fields",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/ordered-elements-and-text-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L4436",
+    "wrapper": "components/requestBodies (content)",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/ordered-elements-and-text-2.json",
+    "source": "orig/oas/versions/3.2.1.md:L4491",
+    "wrapper": "components/requestBodies (content)",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/parameter-object-examples-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L953",
+    "wrapper": "components/parameters",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/parameter-object-examples-10.json",
+    "source": "orig/oas/versions/3.2.1.md:L1189",
+    "wrapper": "components/parameters",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/parameter-object-examples-2.json",
+    "source": "orig/oas/versions/3.2.1.md:L975",
+    "wrapper": "components/parameters",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/parameter-object-examples-3.json",
+    "source": "orig/oas/versions/3.2.1.md:L1001",
+    "wrapper": "components/parameters",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/parameter-object-examples-4.json",
+    "source": "orig/oas/versions/3.2.1.md:L1020",
+    "wrapper": "components/parameters",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/parameter-object-examples-5.json",
+    "source": "orig/oas/versions/3.2.1.md:L1042",
+    "wrapper": "components/parameters",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/parameter-object-examples-6.json",
+    "source": "orig/oas/versions/3.2.1.md:L1062",
+    "wrapper": "components/parameters",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/parameter-object-examples-7.json",
+    "source": "orig/oas/versions/3.2.1.md:L1080",
+    "wrapper": "components/parameters",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/parameter-object-examples-8.json",
+    "source": "orig/oas/versions/3.2.1.md:L1113",
+    "wrapper": "components/parameters",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/parameter-object-examples-9.json",
+    "source": "orig/oas/versions/3.2.1.md:L1147",
+    "wrapper": "components/parameters",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/path-item-object-example-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L619",
+    "wrapper": "paths/path-item",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/paths-object-example-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L574",
+    "wrapper": "paths",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/primitive-example-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L3321",
+    "wrapper": "components/schemas",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/reference-object-example-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L2973",
+    "wrapper": "components/schemas",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/referenced-element-with-cdata-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L4329",
+    "wrapper": "document-fields",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/referenced-element-with-cdata-2.json",
+    "source": "orig/oas/versions/3.2.1.md:L4363",
+    "wrapper": "document-fields",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/relative-documents-with-embedded-schema-example-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L2985",
+    "wrapper": "components/schemas",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/relative-schema-document-example-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L2979",
+    "wrapper": "components/schemas",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/representing-the-set-cookie-header-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L2821",
+    "wrapper": "document-fields",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/request-body-examples-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L1228",
+    "wrapper": "components/requestBodies",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/resolving-relative-self-and-id-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L5437",
+    "changes": [
+      {
+        "pointer": "/info/version",
+        "rule": "info-version-string",
+        "before": 1,
+        "after": "1.0"
+      }
+    ]
+  },
+  {
+    "file": "upgraded/spectext/resolving-relative-self-and-id-2.json",
+    "source": "orig/oas/versions/3.2.1.md:L5452",
+    "changes": [
+      {
+        "pointer": "/info/version",
+        "rule": "info-version-string",
+        "before": 1,
+        "after": "1.0"
+      }
+    ]
+  },
+  {
+    "file": "upgraded/spectext/response-object-examples-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L2197",
+    "wrapper": "components/responses",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/response-object-examples-2.json",
+    "source": "orig/oas/versions/3.2.1.md:L2209",
+    "wrapper": "components/responses",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/response-object-examples-3.json",
+    "source": "orig/oas/versions/3.2.1.md:L2219",
+    "wrapper": "components/responses",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/response-object-examples-4.json",
+    "source": "orig/oas/versions/3.2.1.md:L2243",
+    "wrapper": "components/responses",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/responses-object-example-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L2161",
+    "wrapper": "paths/operation/responses",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/rfc6570-equivalent-expansion-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L4981",
+    "wrapper": "paths/path-item (parameters)",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/sequential-json-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L1486",
+    "wrapper": "document-fields",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/server-object-example-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L309",
+    "wrapper": "servers",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/server-object-example-2.json",
+    "source": "orig/oas/versions/3.2.1.md:L317",
+    "wrapper": "document-fields",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/server-object-example-3.json",
+    "source": "orig/oas/versions/3.2.1.md:L332",
+    "wrapper": "document-fields",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/server-sent-event-streams-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L1590",
+    "wrapper": "components/requestBodies",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/simple-model-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L3328",
+    "wrapper": "components/schemas",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/special-considerations-for-server-sent-events-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L1352",
+    "wrapper": "components/schemas",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/tag-object-example-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L2932",
+    "wrapper": "document-fields",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/xml-arrays-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L4060",
+    "wrapper": "components/requestBodies (content)",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/xml-arrays-2.json",
+    "source": "orig/oas/versions/3.2.1.md:L4095",
+    "wrapper": "components/requestBodies (content)",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/xml-arrays-3.json",
+    "source": "orig/oas/versions/3.2.1.md:L4132",
+    "wrapper": "components/requestBodies (content)",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/xml-arrays-4.json",
+    "source": "orig/oas/versions/3.2.1.md:L4169",
+    "wrapper": "components/requestBodies (content)",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/xml-arrays-5.json",
+    "source": "orig/oas/versions/3.2.1.md:L4208",
+    "wrapper": "components/requestBodies (content)",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/xml-arrays-6.json",
+    "source": "orig/oas/versions/3.2.1.md:L4248",
+    "wrapper": "components/requestBodies (content)",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/xml-attribute-prefix-and-namespace-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L4018",
+    "wrapper": "document-fields",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/xml-name-replacement-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L3983",
+    "wrapper": "components/requestBodies (content)",
+    "changes": []
+  },
+  {
+    "file": "upgraded/spectext/xml-with-null-values-1.json",
+    "source": "orig/oas/versions/3.2.1.md:L4529",
+    "wrapper": "components/requestBodies (content)",
+    "changes": []
+  }
+]

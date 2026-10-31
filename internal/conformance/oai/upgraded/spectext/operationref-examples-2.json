@@ -1,0 +1,22 @@
+{
+  "components": {
+    "responses": {
+      "Example": {
+        "description": "Example response.",
+        "links": {
+          "UserRepositories": {
+            "operationRef": "https://na2.gigantic-server.com/#/paths/~12.0~1repositories~1%7Busername%7D/get",
+            "parameters": {
+              "username": "$response.body#/username"
+            }
+          }
+        }
+      }
+    }
+  },
+  "info": {
+    "title": "spec text operationref-examples-2",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

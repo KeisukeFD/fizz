@@ -1,0 +1,80 @@
+{
+  "components": {
+    "requestBodies": {
+      "Example": {
+        "content": {
+          "application/xml": {
+            "examples": {
+              "OneTwoThree": {
+                "dataValue": [
+                  "Some text",
+                  {
+                    "unit": "cubits",
+                    "value": 42
+                  },
+                  null
+                ],
+                "externalValue": "./examples/OneTwoThree.xml"
+              }
+            },
+            "schema": {
+              "maxLength": 3,
+              "minLength": 3,
+              "prefixItems": [
+                {
+                  "type": "string",
+                  "xml": {
+                    "name": "One"
+                  }
+                },
+                {
+                  "properties": {
+                    "unit": {
+                      "type": "string",
+                      "xml": {
+                        "nodeType": "attribute"
+                      }
+                    },
+                    "value": {
+                      "type": "number",
+                      "xml": {
+                        "nodeType": "text"
+                      }
+                    }
+                  },
+                  "required": [
+                    "unit",
+                    "value"
+                  ],
+                  "type": "object",
+                  "xml": {
+                    "name": "Two"
+                  }
+                },
+                {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ],
+                  "xml": {
+                    "name": "Three"
+                  }
+                }
+              ],
+              "type": "array",
+              "xml": {
+                "name": "OneTwoThree",
+                "nodeType": "element"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "info": {
+    "title": "spec text ordered-elements-and-text-1",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

@@ -1,0 +1,50 @@
+{
+  "components": {
+    "parameters": {
+      "Example": {
+        "content": {
+          "application/x-www-form-urlencoded": {
+            "examples": {
+              "spacesAndPluses": {
+                "dataValue": {
+                  "bar": true,
+                  "foo": "a + b"
+                },
+                "description": "Note handling of spaces and \"+\" per media type.",
+                "serializedValue": "foo=a+%2B+b&bar=true"
+              }
+            },
+            "schema": {
+              "properties": {
+                "bar": {
+                  "type": "boolean"
+                },
+                "foo": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          }
+        },
+        "examples": {
+          "spacesAndPluses": {
+            "dataValue": {
+              "bar": true,
+              "foo": "a + b"
+            },
+            "description": "Note that no additional percent encoding is done, as this\nmedia type is URI query string-ready by definition.\n",
+            "serializedValue": "foo=a+%2B+b&bar=true"
+          }
+        },
+        "in": "querystring",
+        "name": "metadata"
+      }
+    }
+  },
+  "info": {
+    "title": "spec text parameter-object-examples-8",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

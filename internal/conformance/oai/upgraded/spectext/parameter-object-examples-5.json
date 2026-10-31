@@ -1,0 +1,33 @@
+{
+  "components": {
+    "parameters": {
+      "Example": {
+        "examples": {
+          "ObjectList": {
+            "dataValue": [
+              "one thing",
+              "another thing"
+            ],
+            "serializedValue": "thing=one%20thing&thing=another%20thing"
+          }
+        },
+        "explode": true,
+        "in": "query",
+        "name": "thing",
+        "required": false,
+        "schema": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "style": "form"
+      }
+    }
+  },
+  "info": {
+    "title": "spec text parameter-object-examples-5",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

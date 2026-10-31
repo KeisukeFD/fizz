@@ -1,0 +1,45 @@
+{
+  "components": {
+    "schemas": {
+      "MyResponseType": {
+        "discriminator": {
+          "defaultMapping": "OtherPet",
+          "propertyName": "petType"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/Cat"
+          },
+          {
+            "$ref": "#/components/schemas/Dog"
+          },
+          {
+            "$ref": "#/components/schemas/Lizard"
+          },
+          {
+            "$ref": "#/components/schemas/OtherPet"
+          }
+        ]
+      },
+      "OtherPet": {
+        "properties": {
+          "petType": {
+            "not": {
+              "enum": [
+                "Cat",
+                "Dog",
+                "Lizard"
+              ]
+            }
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "title": "spec text examples-6",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

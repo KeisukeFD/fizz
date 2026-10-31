@@ -1,0 +1,16 @@
+{
+  "components": {
+    "requestBodies": {
+      "Example": {
+        "content": {
+          "application/octet-stream": {}
+        }
+      }
+    }
+  },
+  "info": {
+    "title": "spec text considerations-for-file-uploads-2",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

@@ -1,0 +1,14 @@
+{
+  "components": {
+    "schemas": {
+      "Example": {
+        "$ref": "#/components/schemas/Pet"
+      }
+    }
+  },
+  "info": {
+    "title": "spec text reference-object-example-1",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

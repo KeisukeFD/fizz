@@ -8,3 +8,5 @@
 package oai
 
 //go:generate go run ../internal/fetchoai
+
+//go:generate go run ../internal/upgradeoai

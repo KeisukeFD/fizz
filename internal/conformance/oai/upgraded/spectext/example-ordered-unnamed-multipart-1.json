@@ -1,0 +1,47 @@
+{
+  "components": {
+    "requestBodies": {
+      "Example": {
+        "content": {
+          "multipart/mixed": {
+            "prefixEncoding": [
+              {},
+              {
+                "contentType": "image/*"
+              }
+            ],
+            "schema": {
+              "prefixItems": [
+                {
+                  "properties": {
+                    "author": {
+                      "type": "string"
+                    },
+                    "copyright": {
+                      "type": "string"
+                    },
+                    "created": {
+                      "format": "datetime",
+                      "type": "string"
+                    },
+                    "license": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                {}
+              ],
+              "type": "array"
+            }
+          }
+        }
+      }
+    }
+  },
+  "info": {
+    "title": "spec text example-ordered-unnamed-multipart-1",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

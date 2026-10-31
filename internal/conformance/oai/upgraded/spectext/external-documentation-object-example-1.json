@@ -1,0 +1,12 @@
+{
+  "externalDocs": {
+    "description": "Find more info here",
+    "url": "https://example.com"
+  },
+  "info": {
+    "title": "spec text external-documentation-object-example-1",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1",
+  "paths": {}
+}

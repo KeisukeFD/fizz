@@ -1,0 +1,54 @@
+{
+  "components": {
+    "requestBodies": {
+      "Example": {
+        "content": {
+          "*/*": {
+            "examples": {
+              "user": {
+                "externalValue": "https://foo.bar/examples/user-example.whatever",
+                "summary": "User example in other format"
+              }
+            }
+          },
+          "application/json": {
+            "examples": {
+              "user": {
+                "externalValue": "https://foo.bar/examples/user-example.json",
+                "summary": "User example"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/User"
+            }
+          },
+          "application/xml": {
+            "examples": {
+              "user": {
+                "externalValue": "https://foo.bar/examples/user-example.xml",
+                "summary": "User example in XML"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/User"
+            }
+          },
+          "text/plain": {
+            "examples": {
+              "user": {
+                "externalValue": "https://foo.bar/examples/user-example.txt",
+                "summary": "User example in plain text"
+              }
+            }
+          }
+        },
+        "description": "user to add to the system"
+      }
+    }
+  },
+  "info": {
+    "title": "spec text request-body-examples-1",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

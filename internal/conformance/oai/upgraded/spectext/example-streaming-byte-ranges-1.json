@@ -1,0 +1,31 @@
+{
+  "components": {
+    "requestBodies": {
+      "Example": {
+        "content": {
+          "multipart/byteranges": {
+            "itemEncoding": {
+              "contentType": "video/mp4",
+              "headers": {
+                "Content-Range": {
+                  "required": true,
+                  "schema": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "itemSchema": {
+              "$comment": "A single range of bytes from a video"
+            }
+          }
+        }
+      }
+    }
+  },
+  "info": {
+    "title": "spec text example-streaming-byte-ranges-1",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

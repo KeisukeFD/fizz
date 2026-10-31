@@ -1,0 +1,13 @@
+{
+  "components": {},
+  "info": {
+    "license": {
+      "identifier": "Apache-2.0",
+      "name": "Apache"
+    },
+    "summary": "My lovely API",
+    "title": "API",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

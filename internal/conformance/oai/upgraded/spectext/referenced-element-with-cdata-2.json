@@ -1,0 +1,82 @@
+{
+  "components": {
+    "schemas": {
+      "Documentation": {
+        "properties": {
+          "content": {
+            "contentMediaType": "text/html",
+            "type": "string",
+            "xml": {
+              "nodeType": "cdata"
+            }
+          }
+        },
+        "type": "object",
+        "xml": {
+          "nodeType": "none"
+        }
+      }
+    }
+  },
+  "info": {
+    "title": "spec text referenced-element-with-cdata-2",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1",
+  "paths": {
+    "/docs": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/xml": {
+                "examples": {
+                  "stored": {
+                    "dataValue": {
+                      "content": "<html><head><title>Awesome Docs</title></head><body></body><html>"
+                    },
+                    "externalValue": "./examples/stored.xml"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Documentation",
+                  "xml": {
+                    "name": "StoredDocument",
+                    "nodeType": "element"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "requestBody": {
+          "content": {
+            "application/xml": {
+              "examples": {
+                "updated": {
+                  "dataValue": {
+                    "content": "<html><head><title>Awesome Docs</title></head><body></body><html>"
+                  },
+                  "externalValue": "./examples/updated.xml"
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/Documentation",
+                "xml": {
+                  "name": "UpdatedDocument",
+                  "nodeType": "element"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {}
+        }
+      }
+    }
+  }
+}

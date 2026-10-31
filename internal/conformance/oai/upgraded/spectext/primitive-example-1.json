@@ -1,0 +1,15 @@
+{
+  "components": {
+    "schemas": {
+      "Example": {
+        "format": "email",
+        "type": "string"
+      }
+    }
+  },
+  "info": {
+    "title": "spec text primitive-example-1",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

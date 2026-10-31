@@ -1,0 +1,30 @@
+{
+  "components": {
+    "schemas": {
+      "Example": {
+        "properties": {
+          "address": {
+            "$ref": "#/components/schemas/Address"
+          },
+          "age": {
+            "format": "int32",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "title": "spec text simple-model-1",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

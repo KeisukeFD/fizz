@@ -1,0 +1,50 @@
+{
+  "components": {
+    "requestBodies": {
+      "Person": {
+        "content": {
+          "application/xml": {
+            "examples": {
+              "Person": {
+                "dataValue": {
+                  "id": 123,
+                  "name": "example"
+                },
+                "externalValue": "./examples/Person.xml"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Person"
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "Person": {
+        "properties": {
+          "id": {
+            "format": "int32",
+            "type": "integer",
+            "xml": {
+              "nodeType": "attribute"
+            }
+          },
+          "name": {
+            "type": "string",
+            "xml": {
+              "namespace": "https://example.com/schema/sample",
+              "prefix": "sample"
+            }
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "title": "spec text xml-attribute-prefix-and-namespace-1",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

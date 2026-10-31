@@ -1,0 +1,46 @@
+{
+  "components": {
+    "schemas": {
+      "ErrorModel": {
+        "properties": {
+          "code": {
+            "maximum": 600,
+            "minimum": 100,
+            "type": "integer"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "message",
+          "code"
+        ],
+        "type": "object"
+      },
+      "ExtendedErrorModel": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ErrorModel"
+          },
+          {
+            "properties": {
+              "rootCause": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "rootCause"
+            ],
+            "type": "object"
+          }
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "spec text models-with-composition-1",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

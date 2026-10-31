@@ -1,0 +1,36 @@
+{
+  "info": {
+    "title": "spec text example-url-encoded-form-with-binary-values-1",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1",
+  "paths": {
+    "/example": {
+      "get": {
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "encoding": {
+                "icon": {
+                  "contentType": "image/png, image/jpeg"
+                }
+              },
+              "schema": {
+                "properties": {
+                  "icon": {
+                    "contentEncoding": "base64url",
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

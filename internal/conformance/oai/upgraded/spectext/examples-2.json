@@ -1,0 +1,22 @@
+{
+  "components": {
+    "responses": {
+      "Example": {
+        "description": "Example response.",
+        "links": {
+          "address": {
+            "operationId": "getUserAddressByUUID",
+            "parameters": {
+              "userUuid": "$response.body#/uuid"
+            }
+          }
+        }
+      }
+    }
+  },
+  "info": {
+    "title": "spec text examples-2",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

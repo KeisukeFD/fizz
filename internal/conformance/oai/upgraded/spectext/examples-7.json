@@ -1,0 +1,73 @@
+{
+  "components": {
+    "schemas": {
+      "Cat": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Pet"
+          },
+          {
+            "properties": {
+              "name": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ]
+      },
+      "Dog": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Pet"
+          },
+          {
+            "properties": {
+              "bark": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ]
+      },
+      "Lizard": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Pet"
+          },
+          {
+            "properties": {
+              "lovesRocks": {
+                "type": "boolean"
+              }
+            },
+            "type": "object"
+          }
+        ]
+      },
+      "Pet": {
+        "discriminator": {
+          "mapping": {
+            "dog": "Dog"
+          },
+          "propertyName": "petType"
+        },
+        "properties": {
+          "petType": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "petType"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "title": "spec text examples-7",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

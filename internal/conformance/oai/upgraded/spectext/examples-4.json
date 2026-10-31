@@ -1,0 +1,27 @@
+{
+  "components": {
+    "schemas": {
+      "MyResponseType": {
+        "discriminator": {
+          "propertyName": "petType"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/Cat"
+          },
+          {
+            "$ref": "#/components/schemas/Dog"
+          },
+          {
+            "$ref": "#/components/schemas/Lizard"
+          }
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "spec text examples-4",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

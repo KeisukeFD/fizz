@@ -1,0 +1,23 @@
+{
+  "components": {
+    "requestBodies": {
+      "Example": {
+        "content": {
+          "multipart/mixed": {
+            "itemEncoding": {
+              "contentType": "image/jpg"
+            },
+            "itemSchema": {
+              "$comment": "A single data image from the device"
+            }
+          }
+        }
+      }
+    }
+  },
+  "info": {
+    "title": "spec text example-streaming-multipart-1",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

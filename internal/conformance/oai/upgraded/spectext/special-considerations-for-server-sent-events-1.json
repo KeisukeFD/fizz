@@ -1,0 +1,32 @@
+{
+  "components": {
+    "schemas": {
+      "Example": {
+        "properties": {
+          "data": {
+            "type": "string"
+          },
+          "event": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "retry": {
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "title": "spec text special-considerations-for-server-sent-events-1",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

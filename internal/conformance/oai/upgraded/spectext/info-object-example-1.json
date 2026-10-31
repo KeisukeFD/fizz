@@ -1,0 +1,20 @@
+{
+  "info": {
+    "contact": {
+      "email": "support@example.com",
+      "name": "API Support",
+      "url": "https://www.example.com/support"
+    },
+    "description": "This is an example server for a pet store.",
+    "license": {
+      "name": "Apache 2.0",
+      "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
+    },
+    "summary": "A pet store manager.",
+    "termsOfService": "https://example.com/terms/",
+    "title": "Example Pet Store App",
+    "version": "1.0.1"
+  },
+  "openapi": "3.2.1",
+  "paths": {}
+}

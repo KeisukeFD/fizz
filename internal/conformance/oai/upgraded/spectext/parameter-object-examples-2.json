@@ -1,0 +1,38 @@
+{
+  "components": {
+    "parameters": {
+      "Example": {
+        "examples": {
+          "Object": {
+            "dataValue": {
+              "code": 42,
+              "greeting": "Hello%2C%20world!"
+            },
+            "description": "Note that the comma (,) and space ( ) have been pre-percent-encoded\nin the data, as they are forbidden in cookie values. However, the\nexclamation point (!) is legal in cookies, so it can be left unencoded.\n",
+            "serializedValue": "greeting=Hello%2C%20world!; code=42"
+          }
+        },
+        "in": "cookie",
+        "name": "cookie",
+        "schema": {
+          "properties": {
+            "code": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "greeting": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "style": "cookie"
+      }
+    }
+  },
+  "info": {
+    "title": "spec text parameter-object-examples-2",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

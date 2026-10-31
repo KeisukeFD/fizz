@@ -1,0 +1,56 @@
+{
+  "components": {
+    "requestBodies": {
+      "Example": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "noRating": {
+                "dataValue": {
+                  "author": "A. Writer",
+                  "title": "The Newest Book"
+                },
+                "summary": "A not-yet-rated work"
+              },
+              "withRating": {
+                "dataValue": {
+                  "author": "A. Writer",
+                  "rating": 4.5,
+                  "title": "An Older Book"
+                },
+                "serializedValue": "{\n  \"author\": \"A. Writer\",\n  \"title\": \"An Older Book\",\n  \"rating\": 4.5\n}\n",
+                "summary": "A work with an average rating of 4.5 stars"
+              }
+            },
+            "schema": {
+              "properties": {
+                "author": {
+                  "type": "string"
+                },
+                "rating": {
+                  "maximum": 5,
+                  "minimum": 1,
+                  "multipleOf": 0.5,
+                  "type": "number"
+                },
+                "title": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "author",
+                "title"
+              ],
+              "type": "object"
+            }
+          }
+        }
+      }
+    }
+  },
+  "info": {
+    "title": "spec text json-examples-1",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

@@ -1,0 +1,28 @@
+{
+  "info": {
+    "title": "spec text equivalences-between-fields-and-rfc6570-operators-1",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1",
+  "paths": {
+    "/example": {
+      "parameters": [
+        {
+          "explode": true,
+          "in": "query",
+          "name": "foo",
+          "schema": {
+            "type": "object"
+          }
+        },
+        {
+          "in": "query",
+          "name": "bar",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ]
+    }
+  }
+}

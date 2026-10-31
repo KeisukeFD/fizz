@@ -1,0 +1,23 @@
+{
+  "components": {
+    "schemas": {
+      "Example": {
+        "anyOf": [
+          {
+            "minimum": 0,
+            "type": "number"
+          },
+          {
+            "maximum": 100,
+            "type": "number"
+          }
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "spec text non-json-data-1",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

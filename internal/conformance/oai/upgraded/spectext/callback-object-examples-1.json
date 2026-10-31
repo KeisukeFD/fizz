@@ -1,0 +1,32 @@
+{
+  "components": {
+    "callbacks": {
+      "myCallback": {
+        "{$request.query.queryUrl}": {
+          "post": {
+            "requestBody": {
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/SomePayload"
+                  }
+                }
+              },
+              "description": "Callback payload"
+            },
+            "responses": {
+              "200": {
+                "description": "callback successfully processed"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "info": {
+    "title": "spec text callback-object-examples-1",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

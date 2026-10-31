@@ -1,0 +1,65 @@
+{
+  "info": {
+    "title": "spec text example-multipart-form-with-encoding-objects-1",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1",
+  "paths": {
+    "/example": {
+      "get": {
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "encoding": {
+                "addresses": {
+                  "contentType": "application/xml; charset=utf-8"
+                },
+                "alias": {
+                  "contentType": "text/plain"
+                },
+                "profileImage": {
+                  "contentType": "image/png, image/jpeg",
+                  "headers": {
+                    "X-Rate-Limit-Limit": {
+                      "description": "The number of allowed requests in the current period",
+                      "schema": {
+                        "type": "integer"
+                      }
+                    }
+                  }
+                }
+              },
+              "schema": {
+                "properties": {
+                  "addresses": {
+                    "description": "addresses in XML format",
+                    "items": {
+                      "$ref": "#/components/schemas/Address"
+                    },
+                    "type": "array"
+                  },
+                  "alias": {
+                    "items": {
+                      "pattern": "^[A-Z][a-z]*$"
+                    },
+                    "pattern": "^[A-Z][a-z]*$",
+                    "type": [
+                      "string",
+                      "array"
+                    ]
+                  },
+                  "id": {
+                    "format": "uuid",
+                    "type": "string"
+                  },
+                  "profileImage": {}
+                },
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

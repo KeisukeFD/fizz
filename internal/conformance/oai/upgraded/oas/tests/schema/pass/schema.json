@@ -1,0 +1,79 @@
+{
+  "components": {
+    "schemas": {
+      "model": {
+        "properties": {
+          "eight": {
+            "description": "exclusiveMaximum true",
+            "exclusiveMaximum": 20
+          },
+          "eleven": {
+            "description": "x-nullable string",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "five": {
+            "description": "singular example",
+            "examples": [
+              "exampleValue"
+            ],
+            "type": "string"
+          },
+          "four": {
+            "description": "array with no items",
+            "type": "array"
+          },
+          "nine": {
+            "description": "exclusiveMaximum false",
+            "maximum": 20
+          },
+          "one": {
+            "description": "type array",
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "seven": {
+            "description": "exclusiveMinimum false",
+            "minimum": 10
+          },
+          "six": {
+            "description": "exclusiveMinimum true",
+            "exclusiveMinimum": 10
+          },
+          "ten": {
+            "description": "nullable string",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "three": {
+            "description": "type array including 'null'",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "twelve": {
+            "description": "file/binary"
+          },
+          "two": {
+            "description": "type 'null'",
+            "type": "null"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "title": "API",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1",
+  "paths": {}
+}

@@ -34,8 +34,492 @@ and by TestManifestMatchesFiles.
 Modified copies
 ---------------
 
-The upgraded/ directory (added later by task P10.1) contains copies of these
-files that were modified by a deterministic converter, for example to raise
-the "openapi" version to 3.2.1. These are modified versions, not the
-originals. The changes made to each file are listed per file in this NOTICE,
-as required by CC BY 4.0 section 3(a)(1)(B).
+The upgraded/ directory contains copies of the files above that were
+modified by a deterministic converter (internal/conformance/upgrade, run by
+"go generate" through internal/conformance/internal/upgradeoai). These are
+modified versions, not the originals. As required by CC BY 4.0 section
+3(a)(1)(B) and Apache-2.0 section 4(b), this section states the changes made
+to each file. The exact, machine-readable change list (JSON pointer, rule,
+before, after) is upgraded/CHANGES.json.
+
+Changes applied to every file:
+  - converted from YAML to JSON (sorted keys, two-space indent);
+  - "openapi" set to 3.2.1 when it had another value;
+  - unquoted YAML scalars in info.version were made strings, preserving the
+    source text (1.0 became "1.0");
+  - a jsonSchemaDialect or Schema Object $schema naming an OAS 3.1 dialect
+    (https://spec.openapis.org/oas/3.1/dialect/...) became the OAS 3.2
+    dialect URI. Other $schema values, such as JSON Schema 2020-12, are kept.
+
+Changes applied only to openapi 3.0.x documents (OAI 3.1 migration guidance),
+inside Schema Objects only:
+  - "nullable: true" became a "null" entry in "type" (and in "enum" when
+    present); "nullable: false" was removed;
+  - boolean "exclusiveMinimum"/"exclusiveMaximum" with "minimum"/"maximum"
+    became the numeric form;
+  - in multipart and form-urlencoded bodies, "type: string, format: binary"
+    became "contentMediaType: application/octet-stream" and "format: base64"
+    became "contentEncoding: base64".
+
+Specification text (orig/oas/versions/3.2.1.md): each yaml block was parsed
+and wrapped, unmodified, in a minimal OpenAPI 3.2.1 document (an "info"
+object and the container named below). Blocks that could not be wrapped or
+that do not validate are not copied; see upgraded/EXCLUDED.json.
+
+Files:
+  upgraded/learn/examples/v3.0/api-with-examples.json
+      from orig/learn/examples/v3.0/api-with-examples.yaml
+      openapi 3.0.0 -> 3.2.1
+  upgraded/learn/examples/v3.0/callback-example.json
+      from orig/learn/examples/v3.0/callback-example.yaml
+      openapi 3.0.0 -> 3.2.1
+  upgraded/learn/examples/v3.0/link-example.json
+      from orig/learn/examples/v3.0/link-example.yaml
+      openapi 3.0.0 -> 3.2.1
+  upgraded/learn/examples/v3.0/petstore-expanded.json
+      from orig/learn/examples/v3.0/petstore-expanded.yaml
+      openapi 3.0.0 -> 3.2.1
+  upgraded/learn/examples/v3.0/petstore.json
+      from orig/learn/examples/v3.0/petstore.yaml
+      openapi 3.0.0 -> 3.2.1
+  upgraded/learn/examples/v3.0/uspto.json
+      from orig/learn/examples/v3.0/uspto.yaml
+      openapi 3.0.1 -> 3.2.1
+  upgraded/learn/examples/v3.1/non-oauth-scopes.json
+      from orig/learn/examples/v3.1/non-oauth-scopes.yaml
+      openapi 3.1.0 -> 3.2.1
+  upgraded/learn/examples/v3.1/tictactoe.json
+      from orig/learn/examples/v3.1/tictactoe.yaml
+      openapi 3.1.0 -> 3.2.1
+  upgraded/learn/examples/v3.1/webhook-example.json
+      from orig/learn/examples/v3.1/webhook-example.yaml
+      openapi 3.1.0 -> 3.2.1
+  upgraded/learn/examples/v3.2/3.2-query-example.json
+      from orig/learn/examples/v3.2/3.2-query-example.yaml
+      openapi 3.2.0 -> 3.2.1
+  upgraded/learn/examples/v3.2/3.2-tags-example.json
+      from orig/learn/examples/v3.2/3.2-tags-example.yaml
+      openapi 3.2.0 -> 3.2.1
+  upgraded/oas/tests/schema/fail/invalid_schema_types.json
+      from orig/oas/tests/schema/fail/invalid_schema_types.yaml
+      openapi 3.1.1 -> 3.2.1
+  upgraded/oas/tests/schema/fail/no_containers.json
+      from orig/oas/tests/schema/fail/no_containers.yaml
+      openapi 3.1.0 -> 3.2.1
+  upgraded/oas/tests/schema/fail/server_enum_empty.json
+      from orig/oas/tests/schema/fail/server_enum_empty.yaml
+      openapi 3.1.0 -> 3.2.1
+  upgraded/oas/tests/schema/fail/servers.json
+      from orig/oas/tests/schema/fail/servers.yaml
+      openapi 3.1.0 -> 3.2.1
+  upgraded/oas/tests/schema/fail/unknown_container.json
+      from orig/oas/tests/schema/fail/unknown_container.yaml
+      openapi 3.1.0 -> 3.2.1
+  upgraded/oas/tests/schema/pass/comp_pathitems.json
+      from orig/oas/tests/schema/pass/comp_pathitems.yaml
+      openapi 3.1.0 -> 3.2.1
+  upgraded/oas/tests/schema/pass/info_summary.json
+      from orig/oas/tests/schema/pass/info_summary.yaml
+      openapi 3.1.0 -> 3.2.1
+  upgraded/oas/tests/schema/pass/json_schema_dialect.json
+      from orig/oas/tests/schema/pass/json_schema_dialect.yaml
+      openapi 3.1.0 -> 3.2.1; 2x dialect-uri
+  upgraded/oas/tests/schema/pass/license_identifier.json
+      from orig/oas/tests/schema/pass/license_identifier.yaml
+      openapi 3.1.0 -> 3.2.1
+  upgraded/oas/tests/schema/pass/mega.json
+      from orig/oas/tests/schema/pass/mega.yaml
+      openapi 3.1.0 -> 3.2.1
+  upgraded/oas/tests/schema/pass/minimal_comp.json
+      from orig/oas/tests/schema/pass/minimal_comp.yaml
+      openapi 3.1.0 -> 3.2.1
+  upgraded/oas/tests/schema/pass/minimal_hooks.json
+      from orig/oas/tests/schema/pass/minimal_hooks.yaml
+      openapi 3.1.0 -> 3.2.1
+  upgraded/oas/tests/schema/pass/minimal_paths.json
+      from orig/oas/tests/schema/pass/minimal_paths.yaml
+      openapi 3.1.0 -> 3.2.1
+  upgraded/oas/tests/schema/pass/non-oauth-scopes.json
+      from orig/oas/tests/schema/pass/non-oauth-scopes.yaml
+      openapi 3.1.0 -> 3.2.1
+  upgraded/oas/tests/schema/pass/path_no_response.json
+      from orig/oas/tests/schema/pass/path_no_response.yaml
+      openapi 3.1.0 -> 3.2.1
+  upgraded/oas/tests/schema/pass/path_var_empty_pathitem.json
+      from orig/oas/tests/schema/pass/path_var_empty_pathitem.yaml
+      openapi 3.1.0 -> 3.2.1
+  upgraded/oas/tests/schema/pass/schema.json
+      from orig/oas/tests/schema/pass/schema.yaml
+      openapi 3.1.0 -> 3.2.1
+  upgraded/oas/tests/schema/pass/servers.json
+      from orig/oas/tests/schema/pass/servers.yaml
+      openapi 3.1.0 -> 3.2.1
+  upgraded/oas/tests/schema/pass/valid_schema_types.json
+      from orig/oas/tests/schema/pass/valid_schema_types.yaml
+      openapi 3.1.1 -> 3.2.1
+  upgraded/oas/tests/schema/pass/webhook-example.json
+      from orig/oas/tests/schema/pass/webhook-example.yaml
+      openapi 3.1.0 -> 3.2.1
+  upgraded/spectext/api-key-example-1.json
+      from orig/oas/versions/3.2.1.md:L4624
+      wrapped as components/securitySchemes, content unmodified
+  upgraded/spectext/base-uri-from-the-retrieval-uri-1.json
+      from orig/oas/versions/3.2.1.md:L5396
+      1x info-version-string
+  upgraded/spectext/base-uri-within-content-1.json
+      from orig/oas/versions/3.2.1.md:L5276
+      1x info-version-string
+  upgraded/spectext/base-uri-within-content-2.json
+      from orig/oas/versions/3.2.1.md:L5291
+      1x info-version-string
+  upgraded/spectext/basic-authentication-example-1.json
+      from orig/oas/versions/3.2.1.md:L4617
+      wrapped as components/securitySchemes, content unmodified
+  upgraded/spectext/binary-examples-1.json
+      from orig/oas/versions/3.2.1.md:L2477
+      wrapped as components/requestBodies, content unmodified
+  upgraded/spectext/boolean-query-parameter-examples-1.json
+      from orig/oas/versions/3.2.1.md:L2490
+      wrapped as components/parameters, content unmodified
+  upgraded/spectext/callback-object-examples-1.json
+      from orig/oas/versions/3.2.1.md:L2312
+      wrapped as components/callbacks (named map), content unmodified
+  upgraded/spectext/callback-object-examples-2.json
+      from orig/oas/versions/3.2.1.md:L2329
+      wrapped as components/callbacks (named map), content unmodified
+  upgraded/spectext/components-object-example-1.json
+      from orig/oas/versions/3.2.1.md:L432
+      wrapped as document-fields, content unmodified
+  upgraded/spectext/considerations-for-file-uploads-1.json
+      from orig/oas/versions/3.2.1.md:L1666
+      wrapped as components/requestBodies, content unmodified
+  upgraded/spectext/considerations-for-file-uploads-2.json
+      from orig/oas/versions/3.2.1.md:L1672
+      wrapped as components/requestBodies, content unmodified
+  upgraded/spectext/considerations-for-file-uploads-3.json
+      from orig/oas/versions/3.2.1.md:L1678
+      wrapped as components/requestBodies, content unmodified
+  upgraded/spectext/considerations-for-file-uploads-4.json
+      from orig/oas/versions/3.2.1.md:L1688
+      wrapped as paths/operation, content unmodified
+  upgraded/spectext/considerations-for-file-uploads-5.json
+      from orig/oas/versions/3.2.1.md:L1696
+      wrapped as paths/operation, content unmodified
+  upgraded/spectext/contact-object-example-1.json
+      from orig/oas/versions/3.2.1.md:L235
+      wrapped as info/contact, content unmodified
+  upgraded/spectext/elements-with-attributes-and-text-1.json
+      from orig/oas/versions/3.2.1.md:L4286
+      wrapped as components/requestBodies (content), content unmodified
+  upgraded/spectext/equivalences-between-fields-and-rfc6570-operators-1.json
+      from orig/oas/versions/3.2.1.md:L4921
+      wrapped as paths/path-item (parameters), content unmodified
+  upgraded/spectext/example-basic-multipart-form-1.json
+      from orig/oas/versions/3.2.1.md:L1892
+      wrapped as paths/operation, content unmodified
+  upgraded/spectext/example-multipart-form-with-encoding-objects-1.json
+      from orig/oas/versions/3.2.1.md:L1925
+      wrapped as paths/operation, content unmodified
+  upgraded/spectext/example-multipart-form-with-multiple-files-1.json
+      from orig/oas/versions/3.2.1.md:L1975
+      wrapped as paths/operation, content unmodified
+  upgraded/spectext/example-nested-multipartmixed-1.json
+      from orig/oas/versions/3.2.1.md:L2103
+      wrapped as components/requestBodies (content), content unmodified
+  upgraded/spectext/example-ordered-multipart-with-required-header-1.json
+      from orig/oas/versions/3.2.1.md:L2027
+      wrapped as document-fields, content unmodified
+  upgraded/spectext/example-ordered-unnamed-multipart-1.json
+      from orig/oas/versions/3.2.1.md:L1994
+      wrapped as components/requestBodies (content), content unmodified
+  upgraded/spectext/example-streaming-byte-ranges-1.json
+      from orig/oas/versions/3.2.1.md:L2083
+      wrapped as components/requestBodies (content), content unmodified
+  upgraded/spectext/example-streaming-multipart-1.json
+      from orig/oas/versions/3.2.1.md:L2071
+      wrapped as components/requestBodies (content), content unmodified
+  upgraded/spectext/example-url-encoded-form-with-binary-values-1.json
+      from orig/oas/versions/3.2.1.md:L1832
+      wrapped as paths/operation, content unmodified
+  upgraded/spectext/example-url-encoded-form-with-json-values-1.json
+      from orig/oas/versions/3.2.1.md:L1787
+      wrapped as paths/operation, content unmodified
+  upgraded/spectext/examples-1.json
+      from orig/oas/versions/3.2.1.md:L2540
+      wrapped as document-fields, content unmodified
+  upgraded/spectext/examples-2.json
+      from orig/oas/versions/3.2.1.md:L2590
+      wrapped as components/responses (links), content unmodified
+  upgraded/spectext/examples-3.json
+      from orig/oas/versions/3.2.1.md:L3697
+      wrapped as components/schemas (named map), content unmodified
+  upgraded/spectext/examples-4.json
+      from orig/oas/versions/3.2.1.md:L3707
+      wrapped as components/schemas (named map), content unmodified
+  upgraded/spectext/examples-5.json
+      from orig/oas/versions/3.2.1.md:L3730
+      wrapped as components/schemas (named map), content unmodified
+  upgraded/spectext/examples-6.json
+      from orig/oas/versions/3.2.1.md:L3752
+      wrapped as components/schemas (named map), content unmodified
+  upgraded/spectext/examples-7.json
+      from orig/oas/versions/3.2.1.md:L3774
+      wrapped as document-fields, content unmodified
+  upgraded/spectext/expansion-with-non-rfc6570-supported-options-1.json
+      from orig/oas/versions/3.2.1.md:L5016
+      wrapped as paths/path-item (parameters), content unmodified
+  upgraded/spectext/external-documentation-object-example-1.json
+      from orig/oas/versions/3.2.1.md:L754
+      wrapped as externalDocs, content unmodified
+  upgraded/spectext/generic-data-structure-model-1.json
+      from orig/oas/versions/3.2.1.md:L3577
+      wrapped as document-fields, content unmodified
+  upgraded/spectext/header-object-example-1.json
+      from orig/oas/versions/3.2.1.md:L2890
+      wrapped as components/headers (named map), content unmodified
+  upgraded/spectext/header-object-example-2.json
+      from orig/oas/versions/3.2.1.md:L2899
+      wrapped as components/headers (named map), content unmodified
+  upgraded/spectext/illegal-variable-names-as-parameter-names-1.json
+      from orig/oas/versions/3.2.1.md:L5117
+      wrapped as paths/path-item (parameters), content unmodified
+  upgraded/spectext/implicit-connection-resolution-examples-1.json
+      from orig/oas/versions/3.2.1.md:L5575
+      wrapped as document-fields, content unmodified
+  upgraded/spectext/implicit-connection-resolution-examples-2.json
+      from orig/oas/versions/3.2.1.md:L5621
+      wrapped as document-fields, content unmodified
+  upgraded/spectext/implicit-oauth2-example-1.json
+      from orig/oas/versions/3.2.1.md:L4647
+      wrapped as components/securitySchemes, content unmodified
+  upgraded/spectext/info-object-example-1.json
+      from orig/oas/versions/3.2.1.md:L204
+      wrapped as info, content unmodified
+  upgraded/spectext/json-1.json
+      from orig/oas/versions/3.2.1.md:L1423
+      wrapped as components/requestBodies (content), content unmodified
+  upgraded/spectext/json-2.json
+      from orig/oas/versions/3.2.1.md:L1450
+      wrapped as components/requestBodies (content), content unmodified
+  upgraded/spectext/json-data-1.json
+      from orig/oas/versions/3.2.1.md:L3073
+      wrapped as components/schemas, content unmodified
+  upgraded/spectext/json-examples-1.json
+      from orig/oas/versions/3.2.1.md:L2435
+      wrapped as components/requestBodies, content unmodified
+  upgraded/spectext/jwt-bearer-example-1.json
+      from orig/oas/versions/3.2.1.md:L4632
+      wrapped as components/securitySchemes, content unmodified
+  upgraded/spectext/license-object-example-1.json
+      from orig/oas/versions/3.2.1.md:L257
+      wrapped as info/license, content unmodified
+  upgraded/spectext/model-with-annotated-enumeration-1.json
+      from orig/oas/versions/3.2.1.md:L3363
+      wrapped as components/schemas, content unmodified
+  upgraded/spectext/model-with-example-1.json
+      from orig/oas/versions/3.2.1.md:L3375
+      wrapped as components/schemas, content unmodified
+  upgraded/spectext/model-with-mapdictionary-properties-1.json
+      from orig/oas/versions/3.2.1.md:L3347
+      wrapped as components/schemas, content unmodified
+  upgraded/spectext/model-with-mapdictionary-properties-2.json
+      from orig/oas/versions/3.2.1.md:L3355
+      wrapped as components/schemas, content unmodified
+  upgraded/spectext/modeling-link-headers-1.json
+      from orig/oas/versions/3.2.1.md:L2744
+      wrapped as document-fields, content unmodified
+  upgraded/spectext/models-with-composition-1.json
+      from orig/oas/versions/3.2.1.md:L3392
+      wrapped as document-fields, content unmodified
+  upgraded/spectext/models-with-polymorphism-support-1.json
+      from orig/oas/versions/3.2.1.md:L3422
+      wrapped as document-fields, content unmodified
+  upgraded/spectext/models-with-polymorphism-support-and-a-discriminator-object-1.json
+      from orig/oas/versions/3.2.1.md:L3472
+      wrapped as document-fields, content unmodified
+  upgraded/spectext/models-with-polymorphism-support-using-allof-and-a-discriminator-object-1.json
+      from orig/oas/versions/3.2.1.md:L3528
+      wrapped as document-fields, content unmodified
+  upgraded/spectext/mutualtls-example-1.json
+      from orig/oas/versions/3.2.1.md:L4640
+      wrapped as components/securitySchemes, content unmodified
+  upgraded/spectext/no-xml-object-1.json
+      from orig/oas/versions/3.2.1.md:L3929
+      wrapped as components/requestBodies (content), content unmodified
+  upgraded/spectext/no-xml-object-2.json
+      from orig/oas/versions/3.2.1.md:L3950
+      wrapped as components/requestBodies (content), content unmodified
+  upgraded/spectext/non-json-data-1.json
+      from orig/oas/versions/3.2.1.md:L3102
+      wrapped as components/schemas, content unmodified
+  upgraded/spectext/non-json-data-2.json
+      from orig/oas/versions/3.2.1.md:L3112
+      wrapped as components/schemas, content unmodified
+  upgraded/spectext/non-json-data-3.json
+      from orig/oas/versions/3.2.1.md:L3126
+      wrapped as document-fields, content unmodified
+  upgraded/spectext/non-oauth2-security-requirement-1.json
+      from orig/oas/versions/3.2.1.md:L4737
+      wrapped as security, content unmodified
+  upgraded/spectext/oauth-flow-object-example-1.json
+      from orig/oas/versions/3.2.1.md:L4691
+      wrapped as components/securitySchemes, content unmodified
+  upgraded/spectext/oauth2-security-requirement-1.json
+      from orig/oas/versions/3.2.1.md:L4745
+      wrapped as security, content unmodified
+  upgraded/spectext/operation-object-example-1.json
+      from orig/oas/versions/3.2.1.md:L696
+      wrapped as paths/operation, content unmodified
+  upgraded/spectext/operationref-examples-1.json
+      from orig/oas/versions/3.2.1.md:L2610
+      wrapped as components/responses (links), content unmodified
+  upgraded/spectext/operationref-examples-2.json
+      from orig/oas/versions/3.2.1.md:L2621
+      wrapped as components/responses (links), content unmodified
+  upgraded/spectext/optional-discriminating-property-1.json
+      from orig/oas/versions/3.2.1.md:L3680
+      wrapped as components/schemas (named map), content unmodified
+  upgraded/spectext/optional-oauth2-security-1.json
+      from orig/oas/versions/3.2.1.md:L4757
+      wrapped as document-fields, content unmodified
+  upgraded/spectext/ordered-elements-and-text-1.json
+      from orig/oas/versions/3.2.1.md:L4436
+      wrapped as components/requestBodies (content), content unmodified
+  upgraded/spectext/ordered-elements-and-text-2.json
+      from orig/oas/versions/3.2.1.md:L4491
+      wrapped as components/requestBodies (content), content unmodified
+  upgraded/spectext/parameter-object-examples-1.json
+      from orig/oas/versions/3.2.1.md:L953
+      wrapped as components/parameters, content unmodified
+  upgraded/spectext/parameter-object-examples-10.json
+      from orig/oas/versions/3.2.1.md:L1189
+      wrapped as components/parameters, content unmodified
+  upgraded/spectext/parameter-object-examples-2.json
+      from orig/oas/versions/3.2.1.md:L975
+      wrapped as components/parameters, content unmodified
+  upgraded/spectext/parameter-object-examples-3.json
+      from orig/oas/versions/3.2.1.md:L1001
+      wrapped as components/parameters, content unmodified
+  upgraded/spectext/parameter-object-examples-4.json
+      from orig/oas/versions/3.2.1.md:L1020
+      wrapped as components/parameters, content unmodified
+  upgraded/spectext/parameter-object-examples-5.json
+      from orig/oas/versions/3.2.1.md:L1042
+      wrapped as components/parameters, content unmodified
+  upgraded/spectext/parameter-object-examples-6.json
+      from orig/oas/versions/3.2.1.md:L1062
+      wrapped as components/parameters, content unmodified
+  upgraded/spectext/parameter-object-examples-7.json
+      from orig/oas/versions/3.2.1.md:L1080
+      wrapped as components/parameters, content unmodified
+  upgraded/spectext/parameter-object-examples-8.json
+      from orig/oas/versions/3.2.1.md:L1113
+      wrapped as components/parameters, content unmodified
+  upgraded/spectext/parameter-object-examples-9.json
+      from orig/oas/versions/3.2.1.md:L1147
+      wrapped as components/parameters, content unmodified
+  upgraded/spectext/path-item-object-example-1.json
+      from orig/oas/versions/3.2.1.md:L619
+      wrapped as paths/path-item, content unmodified
+  upgraded/spectext/paths-object-example-1.json
+      from orig/oas/versions/3.2.1.md:L574
+      wrapped as paths, content unmodified
+  upgraded/spectext/primitive-example-1.json
+      from orig/oas/versions/3.2.1.md:L3321
+      wrapped as components/schemas, content unmodified
+  upgraded/spectext/reference-object-example-1.json
+      from orig/oas/versions/3.2.1.md:L2973
+      wrapped as components/schemas, content unmodified
+  upgraded/spectext/referenced-element-with-cdata-1.json
+      from orig/oas/versions/3.2.1.md:L4329
+      wrapped as document-fields, content unmodified
+  upgraded/spectext/referenced-element-with-cdata-2.json
+      from orig/oas/versions/3.2.1.md:L4363
+      wrapped as document-fields, content unmodified
+  upgraded/spectext/relative-documents-with-embedded-schema-example-1.json
+      from orig/oas/versions/3.2.1.md:L2985
+      wrapped as components/schemas, content unmodified
+  upgraded/spectext/relative-schema-document-example-1.json
+      from orig/oas/versions/3.2.1.md:L2979
+      wrapped as components/schemas, content unmodified
+  upgraded/spectext/representing-the-set-cookie-header-1.json
+      from orig/oas/versions/3.2.1.md:L2821
+      wrapped as document-fields, content unmodified
+  upgraded/spectext/request-body-examples-1.json
+      from orig/oas/versions/3.2.1.md:L1228
+      wrapped as components/requestBodies, content unmodified
+  upgraded/spectext/resolving-relative-self-and-id-1.json
+      from orig/oas/versions/3.2.1.md:L5437
+      1x info-version-string
+  upgraded/spectext/resolving-relative-self-and-id-2.json
+      from orig/oas/versions/3.2.1.md:L5452
+      1x info-version-string
+  upgraded/spectext/response-object-examples-1.json
+      from orig/oas/versions/3.2.1.md:L2197
+      wrapped as components/responses, content unmodified
+  upgraded/spectext/response-object-examples-2.json
+      from orig/oas/versions/3.2.1.md:L2209
+      wrapped as components/responses, content unmodified
+  upgraded/spectext/response-object-examples-3.json
+      from orig/oas/versions/3.2.1.md:L2219
+      wrapped as components/responses, content unmodified
+  upgraded/spectext/response-object-examples-4.json
+      from orig/oas/versions/3.2.1.md:L2243
+      wrapped as components/responses, content unmodified
+  upgraded/spectext/responses-object-example-1.json
+      from orig/oas/versions/3.2.1.md:L2161
+      wrapped as paths/operation/responses, content unmodified
+  upgraded/spectext/rfc6570-equivalent-expansion-1.json
+      from orig/oas/versions/3.2.1.md:L4981
+      wrapped as paths/path-item (parameters), content unmodified
+  upgraded/spectext/sequential-json-1.json
+      from orig/oas/versions/3.2.1.md:L1486
+      wrapped as document-fields, content unmodified
+  upgraded/spectext/server-object-example-1.json
+      from orig/oas/versions/3.2.1.md:L309
+      wrapped as servers, content unmodified
+  upgraded/spectext/server-object-example-2.json
+      from orig/oas/versions/3.2.1.md:L317
+      wrapped as document-fields, content unmodified
+  upgraded/spectext/server-object-example-3.json
+      from orig/oas/versions/3.2.1.md:L332
+      wrapped as document-fields, content unmodified
+  upgraded/spectext/server-sent-event-streams-1.json
+      from orig/oas/versions/3.2.1.md:L1590
+      wrapped as components/requestBodies, content unmodified
+  upgraded/spectext/simple-model-1.json
+      from orig/oas/versions/3.2.1.md:L3328
+      wrapped as components/schemas, content unmodified
+  upgraded/spectext/special-considerations-for-server-sent-events-1.json
+      from orig/oas/versions/3.2.1.md:L1352
+      wrapped as components/schemas, content unmodified
+  upgraded/spectext/tag-object-example-1.json
+      from orig/oas/versions/3.2.1.md:L2932
+      wrapped as document-fields, content unmodified
+  upgraded/spectext/xml-arrays-1.json
+      from orig/oas/versions/3.2.1.md:L4060
+      wrapped as components/requestBodies (content), content unmodified
+  upgraded/spectext/xml-arrays-2.json
+      from orig/oas/versions/3.2.1.md:L4095
+      wrapped as components/requestBodies (content), content unmodified
+  upgraded/spectext/xml-arrays-3.json
+      from orig/oas/versions/3.2.1.md:L4132
+      wrapped as components/requestBodies (content), content unmodified
+  upgraded/spectext/xml-arrays-4.json
+      from orig/oas/versions/3.2.1.md:L4169
+      wrapped as components/requestBodies (content), content unmodified
+  upgraded/spectext/xml-arrays-5.json
+      from orig/oas/versions/3.2.1.md:L4208
+      wrapped as components/requestBodies (content), content unmodified
+  upgraded/spectext/xml-arrays-6.json
+      from orig/oas/versions/3.2.1.md:L4248
+      wrapped as components/requestBodies (content), content unmodified
+  upgraded/spectext/xml-attribute-prefix-and-namespace-1.json
+      from orig/oas/versions/3.2.1.md:L4018
+      wrapped as document-fields, content unmodified
+  upgraded/spectext/xml-name-replacement-1.json
+      from orig/oas/versions/3.2.1.md:L3983
+      wrapped as components/requestBodies (content), content unmodified
+  upgraded/spectext/xml-with-null-values-1.json
+      from orig/oas/versions/3.2.1.md:L4529
+      wrapped as components/requestBodies (content), content unmodified

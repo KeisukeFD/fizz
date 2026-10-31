@@ -1,0 +1,29 @@
+{
+  "components": {
+    "parameters": {
+      "Example": {
+        "examples": {
+          "false": {
+            "dataValue": false,
+            "serializedValue": "flag=false"
+          },
+          "true": {
+            "dataValue": true,
+            "serializedValue": "flag=true"
+          }
+        },
+        "in": "query",
+        "name": "flag",
+        "required": true,
+        "schema": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
+  "info": {
+    "title": "spec text boolean-query-parameter-examples-1",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

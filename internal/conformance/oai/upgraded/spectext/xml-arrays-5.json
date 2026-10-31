@@ -1,0 +1,50 @@
+{
+  "components": {
+    "requestBodies": {
+      "Example": {
+        "content": {
+          "application/xml": {
+            "examples": {
+              "pets": {
+                "dataValue": {
+                  "animals": [
+                    "dog",
+                    "cat",
+                    "hamster"
+                  ]
+                },
+                "externalValue": "./examples/pets.xml"
+              }
+            },
+            "schema": {
+              "properties": {
+                "animals": {
+                  "items": {
+                    "type": "string",
+                    "xml": {
+                      "name": "animal"
+                    }
+                  },
+                  "type": "array",
+                  "xml": {
+                    "name": "aliens",
+                    "nodeType": "element"
+                  }
+                }
+              },
+              "type": "object",
+              "xml": {
+                "name": "document"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "info": {
+    "title": "spec text xml-arrays-5",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

@@ -26,6 +26,11 @@ const (
 	BaseURL = idPrefix + "schema-base/2026-08-30"
 )
 
+// DialectURL is the $id of the OAS 3.2 base dialect, the only OAS dialect URI
+// a 3.2 document may use in jsonSchemaDialect or $schema. It is derived from
+// the same table the offline loader uses.
+var DialectURL = idPrefix + "dialect/" + schemaDates["dialect"]
+
 // schemaDates maps each vendored document kind to the dated suffix of its
 // $id. The kinds are revised independently, so the dates differ.
 var schemaDates = map[string]string{

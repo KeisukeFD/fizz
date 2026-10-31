@@ -1,0 +1,117 @@
+{
+  "components": {
+    "examples": {
+      "LogJSONPerLine": {
+        "description": "JSONL and NDJSON are identical for this example",
+        "summary": "Log entries in application/jsonl or application/x-ndjson",
+        "value": "{\"timestamp\": \"1985-04-12T23:20:50.52Z\", \"level\": 1, \"message\": \"Hi!\"}\n{\"timestamp\": \"1985-04-12T23:20:51.37Z\", \"level\": 1, \"message\": \"Bye!\"}\n"
+      },
+      "LogJSONSeq": {
+        "externalValue": "examples/log.json-seq",
+        "summary": "Log entries in application/json-seq"
+      }
+    },
+    "responses": {
+      "LogExcerpt": {
+        "content": {
+          "application/json-seq": {
+            "examples": {
+              "JSON-SEQ": {
+                "$ref": "#/components/examples/LogJSONSeq"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Log"
+            }
+          },
+          "application/jsonl": {
+            "examples": {
+              "JSONL": {
+                "$ref": "#/components/examples/LogJSONPerLine"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Log"
+            }
+          },
+          "application/x-ndjson": {
+            "examples": {
+              "NDJSON": {
+                "$ref": "#/components/examples/LogJSONPerLine"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Log"
+            }
+          }
+        },
+        "description": "A response consisting of no more than 100 log records,\ngenerally as a result of a query of the historical log,\navailable in any of the sequential JSON media types.\n"
+      },
+      "LogStream": {
+        "content": {
+          "application/json-seq": {
+            "examples": {
+              "JSON-SEQ": {
+                "$ref": "#/components/examples/LogJSONSeq"
+              }
+            },
+            "itemSchema": {
+              "$ref": "#/components/schemas/LogEntry"
+            }
+          },
+          "application/jsonl": {
+            "examples": {
+              "JSONL": {
+                "$ref": "#/components/examples/LogJSONPerLine"
+              }
+            },
+            "itemSchema": {
+              "$ref": "#/components/schemas/LogEntry"
+            }
+          },
+          "application/x-ndjson": {
+            "examples": {
+              "NDJSON": {
+                "$ref": "#/components/examples/LogJSONPerLine"
+              }
+            },
+            "itemSchema": {
+              "$ref": "#/components/schemas/LogEntry"
+            }
+          }
+        },
+        "description": "A stream of JSON-format log messages that can be read\nfor as long as the application is running, and is available\nin any of the sequential JSON media types.\n"
+      }
+    },
+    "schemas": {
+      "Log": {
+        "items": {
+          "$ref": "#/components/schemas/LogEntry"
+        },
+        "maxItems": 100,
+        "type": "array"
+      },
+      "LogEntry": {
+        "properties": {
+          "level": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "message": {
+            "type": "string"
+          },
+          "timestamp": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "title": "spec text sequential-json-1",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

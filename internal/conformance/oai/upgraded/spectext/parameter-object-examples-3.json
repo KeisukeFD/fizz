@@ -1,0 +1,25 @@
+{
+  "components": {
+    "parameters": {
+      "Example": {
+        "examples": {
+          "Greeting": {
+            "dataValue": "Hello, world!",
+            "description": "Note that in this approach, RFC6570's percent-encoding\nprocess applies, so unsafe characters are not\npre-percent-encoded.  This results in all non-URL-safe\ncharacters, rather than just the one non-cookie-safe\ncharacter, getting percent-encoded.\n",
+            "serializedValue": "greeting=Hello%2C%20world%21"
+          }
+        },
+        "in": "cookie",
+        "name": "greeting",
+        "schema": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "info": {
+    "title": "spec text parameter-object-examples-3",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

@@ -1,0 +1,52 @@
+{
+  "components": {
+    "parameters": {
+      "Example": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "New York": {
+                "dataValue": {
+                  "lat": 40.6,
+                  "long": -73.9
+                },
+                "serializedValue": "{\"lat\":40.6,\"long\":-73.9}"
+              }
+            },
+            "schema": {
+              "properties": {
+                "lat": {
+                  "type": "number"
+                },
+                "long": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "lat",
+                "long"
+              ],
+              "type": "object"
+            }
+          }
+        },
+        "examples": {
+          "New York": {
+            "dataValue": {
+              "lat": 40.6,
+              "long": -73.9
+            },
+            "serializedValue": "coordinates=%7B%22lat%22%3A40.6%2C%22long%22%3A-73.9%7D"
+          }
+        },
+        "in": "query",
+        "name": "coordinates"
+      }
+    }
+  },
+  "info": {
+    "title": "spec text parameter-object-examples-7",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

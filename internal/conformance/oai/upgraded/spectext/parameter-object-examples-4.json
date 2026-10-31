@@ -1,0 +1,34 @@
+{
+  "components": {
+    "parameters": {
+      "Example": {
+        "description": "username to fetch",
+        "examples": {
+          "Al-Khwarizmi": {
+            "dataValue": "الخوارزميّ",
+            "serializedValue": "%D8%A7%D9%84%D8%AE%D9%88%D8%A7%D8%B1%D8%B2%D9%85%D9%8A%D9%91"
+          },
+          "Diṅnāga": {
+            "dataValue": "diṅnāga",
+            "serializedValue": "di%E1%B9%85n%C4%81ga"
+          },
+          "Edsger Dijkstra": {
+            "dataValue": "edijkstra",
+            "serializedValue": "edijkstra"
+          }
+        },
+        "in": "path",
+        "name": "username",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "info": {
+    "title": "spec text parameter-object-examples-4",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

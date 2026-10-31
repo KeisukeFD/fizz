@@ -1,0 +1,17 @@
+{
+  "components": {
+    "schemas": {
+      "Example": {
+        "additionalProperties": {
+          "$ref": "#/components/schemas/ComplexModel"
+        },
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "title": "spec text model-with-mapdictionary-properties-2",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

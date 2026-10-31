@@ -1,0 +1,28 @@
+{
+  "components": {
+    "parameters": {
+      "Example": {
+        "content": {
+          "application/jsonpath": {
+            "example": "$.a.b[1:1]",
+            "schema": {
+              "type": "string"
+            }
+          }
+        },
+        "examples": {
+          "Selector": {
+            "serializedValue": "%24.a.b%5B1%3A1%5D"
+          }
+        },
+        "in": "querystring",
+        "name": "selector"
+      }
+    }
+  },
+  "info": {
+    "title": "spec text parameter-object-examples-10",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}

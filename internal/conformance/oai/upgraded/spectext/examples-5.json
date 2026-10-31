@@ -1,0 +1,34 @@
+{
+  "components": {
+    "schemas": {
+      "MyResponseType": {
+        "discriminator": {
+          "mapping": {
+            "dog": "#/components/schemas/Dog",
+            "monster": "https://gigantic-server.com/schemas/Monster/schema.json"
+          },
+          "propertyName": "petType"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/Cat"
+          },
+          {
+            "$ref": "#/components/schemas/Dog"
+          },
+          {
+            "$ref": "#/components/schemas/Lizard"
+          },
+          {
+            "$ref": "https://gigantic-server.com/schemas/Monster/schema.json"
+          }
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "spec text examples-5",
+    "version": "1.0.0"
+  },
+  "openapi": "3.2.1"
+}
