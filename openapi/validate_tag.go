@@ -88,6 +88,9 @@ func (g *Generator) applyLevel(s *Schema, t reflect.Type, l *vtag.Level, sf vfie
 			cur = g.useSite(s.AdditionalProperties)
 		}
 		g.applyElem(cur, t.Elem(), l.Dive, sf)
+		if acceptsNull(cur) {
+			cur.allowNullValue()
+		}
 		if !reflect.DeepEqual(cur, &Schema{}) && !reflect.DeepEqual(cur, s.AdditionalProperties) {
 			s.AdditionalProperties = cur
 		}
@@ -97,6 +100,9 @@ func (g *Generator) applyLevel(s *Schema, t reflect.Type, l *vtag.Level, sf vfie
 			cur = g.useSite(s.Items)
 		}
 		g.applyElem(cur, t.Elem(), l.Dive, sf)
+		if acceptsNull(cur) {
+			cur.allowNullValue()
+		}
 		if !reflect.DeepEqual(cur, &Schema{}) && !reflect.DeepEqual(cur, s.Items) {
 			s.Items = cur
 		}

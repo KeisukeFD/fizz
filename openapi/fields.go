@@ -260,6 +260,11 @@ func (g *Generator) annotatedItems(items *Schema, enum []any) *Schema {
 	}
 	c := items.clone()
 	c.Enum = enum
+	// Nullable items admit the null they accept, as a top-level
+	// nullable schema does.
+	if acceptsNull(c) {
+		c.allowNullValue()
+	}
 	return c
 }
 
