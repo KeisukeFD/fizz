@@ -1,0 +1,10 @@
+version: "2"
+linters:
+  # Default set minus the linters the current code does not satisfy.
+  # staticcheck runs as its own CI job (see staticcheck.conf). unused and
+  # errcheck are off because test fixtures intentionally declare unused
+  # types and ignore Close/Write errors. Re-enable once cleaned up.
+  disable:
+    - errcheck
+    - staticcheck
+    - unused

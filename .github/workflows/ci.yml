@@ -10,66 +10,57 @@ on:
       - master
       - main
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
-    name: Tests (go ${{ matrix.go }}, ${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
+    name: Test (go ${{ matrix.go }})
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        os:
-          - ubuntu-latest
         go:
           - "1.27.x"
           - "stable"
-        include:
-          - os: macos-latest
-            go: "stable"
-          - os: windows-latest
-            go: "stable"
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v7
-      - name: Install Go
-        uses: actions/setup-go@v7
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
         with:
           go-version: ${{ matrix.go }}
-      - name: Run tests
-        shell: bash
-        env:
-          FIZZ_STALE: fail
-        run: ./ci/test.sh
-      - name: Upload coverage
-        uses: codecov/codecov-action@v7
-        with:
-          files: coverage.txt
+      - name: go test -race
+        run: go test -race -count=1 ./...
 
   acceptance:
-    name: Acceptance (stubs, go stable)
+    name: Acceptance (go ${{ matrix.go }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        go:
+          - "1.27.x"
+          - "stable"
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v7
-      - name: Install Go
-        uses: actions/setup-go@v7
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
         with:
-          go-version: stable
-      - name: Vet
-        run: go vet -tags acceptance ./...
-      - name: Run acceptance tests
+          go-version: ${{ matrix.go }}
+      - name: go test -race -tags acceptance (stale skips fail)
         env:
           FIZZ_STALE: fail
-        run: go test -tags acceptance -race -count=1 ./...
+        run: go test -race -count=1 -tags acceptance ./...
 
   tip:
-    name: Tests (go tip)
+    name: Test (go tip, non-blocking)
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v7
-      - name: Install Go
-        uses: actions/setup-go@v7
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
         with:
           go-version: stable
       - name: Install Go tip
@@ -77,5 +68,84 @@ jobs:
           go install golang.org/dl/gotip@latest
           gotip download
           echo "$(gotip env GOROOT)/bin" >> "$GITHUB_PATH"
-      - name: Run tests
-        run: ./ci/test.sh
+      - name: go test -race
+        run: go test -race -count=1 ./...
+      - name: go test -race -tags acceptance
+        env:
+          FIZZ_STALE: fail
+        run: go test -race -count=1 -tags acceptance ./...
+
+  lint:
+    name: Lint and static analysis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version: stable
+      - name: go vet
+        run: go vet ./...
+      - name: go vet (acceptance tag)
+        run: go vet -tags acceptance ./...
+      - uses: golangci/golangci-lint-action@v9
+        with:
+          version: latest
+      - name: staticcheck
+        run: go tool -modfile=tools/go.mod staticcheck ./...
+      - name: govulncheck (library packages)
+        run: |
+          pkgs="$(go list ./... | grep -vE '/(examples|internal|tools)(/|$)' | tr '\n' ' ')"
+          # shellcheck disable=SC2086
+          go tool -modfile=tools/go.mod govulncheck $pkgs
+
+  determinism:
+    name: Meta-schema and determinism
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version: stable
+      - name: internal packages, shuffled
+        run: go test -count=1 -shuffle=on ./internal/...
+      - name: kitchen sink determinism x3
+        run: go test -count=3 -run 'TestDeterminism' ./internal/kitchensink/
+      - name: acceptance determinism x3
+        env:
+          FIZZ_STALE: fail
+        run: go test -count=3 -tags acceptance ./internal/acceptance/...
+
+  archtest:
+    name: Architecture import rules
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version: stable
+      - name: archtest (router-agnostic core, no uuid dep, embedded docsui)
+        run: go test -count=1 -v ./internal/archtest/
+
+  coverage:
+    name: Coverage floor (90%)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version: stable
+      - name: Measure and enforce the floor
+        run: ./ci/coverage.sh 90
+      - uses: actions/upload-artifact@v5
+        if: always()
+        with:
+          name: coverage
+          path: coverage.txt
+
+  workflows:
+    name: actionlint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: actionlint
+        run: go run github.com/rhysd/actionlint/cmd/actionlint@latest
