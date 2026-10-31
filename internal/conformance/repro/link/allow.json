@@ -1,0 +1,9 @@
+[
+  {
+    "pointer": "/components/links/**",
+    "kind": "missing",
+    "category": "limitation",
+    "task": "P10.9k",
+    "reason": "fizz has no Generator.RegisterLink (nor RegisterCallback or RegisterPathItem): the link components cannot be registered. Only a DocumentHook could add them, which would patch components wholesale (D23). The responses that $ref them are reproduced with fizz.CustomizeOperation, so the references dangle in the served document."
+  }
+]

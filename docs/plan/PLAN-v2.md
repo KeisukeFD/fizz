@@ -842,6 +842,13 @@ Rules for every task:
 - **P10.9n** A document with no route still emits `"paths": {}`; OAS 3.2 allows omitting it when there are components. Affects spec-text base-uri-from-the-retrieval-uri-1. Cosmetic, valid OAS. Missing feature (omit the empty object, like P10.9c).
 - **P10.9o** An operation cannot reference an external request body: `Operation.RequestBody` is a `*RequestBody` with no `$ref` form, so `requestBody: {"$ref": "shared/foo#/components/requestBodies/Foo"}` cannot be written. Affects spec-text base-uri-within-content-1, resolving-relative-self-and-id-1 (not reproduced). Missing feature.
 - **P10.9p** `Schema` has no `$id` keyword (nor `$anchor`), so a component schema cannot carry its identifier. Affects spec-text base-uri-within-content-2, resolving-relative-self-and-id-2 (not reproduced). Missing feature.
+- ~~P10.9f~~ / ~~P10.9g~~ withdrawn (Opus review). A mandatory `operationId` and at least one response are deliberate fizz design (ADR op-ID rules; tonic handlers always have a status). Allowlisted as `naming`, consistent with P10.5c.
+- **P10.9h** The description of an inline schema (anonymous struct body or response) cannot be set: the `description` tag is for fields and a `SchemaCustomizer` needs a named type, which becomes a component. Affects callback. Missing feature.
+- **P10.9i** No API for webhooks (no option, router method or `Generator` setter), so the whole `webhooks` subtree is missing. Affects webhook-example, tictactoe. Missing feature.
+- ~~P10.9j~~ merged into P10.9n (same symptom: empty `paths: {}`).
+- **P10.9k** No `Generator.RegisterLink` (nor `RegisterCallback` / `RegisterPathItem`), so `components.links` cannot be registered; the `$ref`s to them (set with `CustomizeOperation`) dangle. Affects link-example. Missing feature.
+- **P10.9l** No path-item `parameters` and no `$ref` to a component parameter on an operation: shared path parameters are repeated inline in every operation. Affects tictactoe. Missing feature.
+- **P10.9m** `ResponseWith`'s `WithExample` / `WithExamples` go under the default media type only; `WithContent` has no example, so a non-default media type (`text/html`) cannot carry one. Affects tictactoe. Missing feature.
 
 ---
 
@@ -911,7 +918,7 @@ Rules for every task:
 | P10.6 | P10.5a | internal/conformance/contract | P10.7x |
 | P10.7a–g | their red case (P10.2/P10.6) | params_option.go / params.go / fields.go / generator.go / bindhook.go | serialized on chain H when they touch generator.go/params.go |
 | P10.8 | P10.4 | tools/ or internal/conformance/x | anything |
-| P10.9a–d, P10.9n–p | P10.5a, P10.5c | responses.go / operation_options.go (a), params.go / fields.go (b, d), generator.go / spec_root.go (c, n), spec_paths.go (o), spec_schema.go (p) | serialized on chain H when they touch generator.go/params.go |
+| P10.9a–d, h, i, k–p | P10.5a/b/c | responses.go / operation_options.go (a, m), params.go / fields.go (b, d, l), generator.go / spec_root.go (c, n), components.go / router.go / spec_root.go (i, k), schema.go (h), spec_paths.go (o), spec_schema.go (p) | serialized on chain H when they touch generator.go/params.go |
 | P9.5 | cut line | tags, notes | — |
 
 ## 14. Estimates and critical path (rough; agent-days plus review)

@@ -1,0 +1,53 @@
+[
+  {
+    "pointer": "/components",
+    "kind": "extra",
+    "category": "limitation",
+    "task": "P10.9c",
+    "reason": "A document with no component still has \"components\": {}. It is valid OAS, but noise: the official document has no components key."
+  },
+  {
+    "pointer": "/paths/~1streams/post/operationId",
+    "kind": "extra",
+    "category": "naming",
+    "reason": "fizz always emits an operationId (deliberate, ADR 0001 operation-ID rules)"
+  },
+  {
+    "pointer": "/paths/~1streams/post/parameters/0/schema/description",
+    "kind": "extra",
+    "category": "limitation",
+    "task": "P10.9d",
+    "reason": "The description tag of a parameter is duplicated into its schema (description tag on a parameter is copied into schema.description); the official example has it on the parameter only."
+  },
+  {
+    "pointer": "/paths/~1streams/post/parameters/0/schema/example",
+    "kind": "missing",
+    "category": "naming",
+    "reason": "ADR 0001 (3.2 target): the example tag is emitted in its nearest 3.2 form, examples:[v]; the official example uses the deprecated singular example keyword on the schema."
+  },
+  {
+    "pointer": "/paths/~1streams/post/parameters/0/schema/examples",
+    "kind": "extra",
+    "category": "naming",
+    "reason": "Counterpart of the missing singular example: ADR 0001 writes the example tag as examples:[v]."
+  },
+  {
+    "pointer": "/paths/~1streams/post/responses/201/content/application~1json/schema/description",
+    "kind": "missing",
+    "category": "limitation",
+    "task": "P10.9h",
+    "reason": "The description of an inline schema (anonymous struct body or response) cannot be set: the description tag is for fields, and a SchemaCustomizer needs a named type, which becomes a component."
+  },
+  {
+    "pointer": "/paths/~1streams/post/responses/201/content/application~1json/schema/properties/subscriptionId/example",
+    "kind": "missing",
+    "category": "naming",
+    "reason": "ADR 0001 (3.2 target): the example tag is emitted in its nearest 3.2 form, examples:[v]; the official example uses the deprecated singular example keyword on the schema."
+  },
+  {
+    "pointer": "/paths/~1streams/post/responses/201/content/application~1json/schema/properties/subscriptionId/examples",
+    "kind": "extra",
+    "category": "naming",
+    "reason": "Counterpart of the missing singular example: ADR 0001 writes the example tag as examples:[v]."
+  }
+]

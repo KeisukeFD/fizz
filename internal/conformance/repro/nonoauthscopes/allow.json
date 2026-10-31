@@ -1,0 +1,14 @@
+[
+  {
+    "pointer": "/paths/~1users/get/operationId",
+    "kind": "extra",
+    "category": "naming",
+    "reason": "fizz always emits an operationId (deliberate, ADR 0001 operation-ID rules)"
+  },
+  {
+    "pointer": "/paths/~1users/get/responses",
+    "kind": "extra",
+    "category": "naming",
+    "reason": "fizz always documents at least one response (deliberate: tonic handlers always have a status code)"
+  }
+]

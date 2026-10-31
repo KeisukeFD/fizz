@@ -1,0 +1,80 @@
+[
+  {
+    "pointer": "/components/schemas/coordinate/example",
+    "kind": "missing",
+    "category": "naming",
+    "reason": "ADR 0001 (3.2 target): the example tag is emitted in its nearest 3.2 form, examples:[v]; the official example uses the deprecated singular example keyword on the schema."
+  },
+  {
+    "pointer": "/components/schemas/coordinate/examples",
+    "kind": "extra",
+    "category": "naming",
+    "reason": "Counterpart of the missing singular example: ADR 0001 writes the example tag as examples:[v]."
+  },
+  {
+    "pointer": "/components/schemas/mark/example",
+    "kind": "missing",
+    "category": "naming",
+    "reason": "ADR 0001 (3.2 target): the example tag is emitted in its nearest 3.2 form, examples:[v]; the official example uses the deprecated singular example keyword on the schema."
+  },
+  {
+    "pointer": "/components/schemas/mark/examples",
+    "kind": "extra",
+    "category": "naming",
+    "reason": "Counterpart of the missing singular example: ADR 0001 writes the example tag as examples:[v]."
+  },
+  {
+    "pointer": "/components/schemas/winner/example",
+    "kind": "missing",
+    "category": "naming",
+    "reason": "ADR 0001 (3.2 target): the example tag is emitted in its nearest 3.2 form, examples:[v]; the official example uses the deprecated singular example keyword on the schema."
+  },
+  {
+    "pointer": "/components/schemas/winner/examples",
+    "kind": "extra",
+    "category": "naming",
+    "reason": "Counterpart of the missing singular example: ADR 0001 writes the example tag as examples:[v]."
+  },
+  {
+    "pointer": "/paths/~1board~1{row}~1{column}/parameters",
+    "kind": "missing",
+    "category": "limitation",
+    "task": "P10.9l",
+    "reason": "fizz has no path-item parameters and no $ref to a component parameter on an operation: the path parameters row and column are written inline in each operation, and the path item has no parameters. The official document shares them as $refs on the path item."
+  },
+  {
+    "pointer": "/paths/~1board~1{row}~1{column}/get/parameters",
+    "kind": "extra",
+    "category": "limitation",
+    "task": "P10.9l",
+    "reason": "fizz has no path-item parameters and no $ref to a component parameter on an operation: the path parameters row and column are written inline in each operation, and the path item has no parameters. The official document shares them as $refs on the path item."
+  },
+  {
+    "pointer": "/paths/~1board~1{row}~1{column}/put/parameters/**",
+    "kind": "any",
+    "category": "limitation",
+    "task": "P10.9l",
+    "reason": "fizz has no path-item parameters and no $ref to a component parameter on an operation: the path parameters row and column are written inline in each operation, and the path item has no parameters. The official document shares them as $refs on the path item. The inline row and column also shift the index of the progressUrl header parameter, so every difference below the list is the same cause."
+  },
+  {
+    "pointer": "/paths/~1board~1{row}~1{column}/get/responses/400/content/text~1html/example",
+    "kind": "missing",
+    "category": "limitation",
+    "task": "P10.9m",
+    "reason": "ResponseWith puts WithExample and WithExamples under the default media type only; WithContent has no example. A text/html response cannot carry an example, and adding it would put it under application/json."
+  },
+  {
+    "pointer": "/paths/~1board~1{row}~1{column}/put/responses/400/content/text~1html/examples",
+    "kind": "missing",
+    "category": "limitation",
+    "task": "P10.9m",
+    "reason": "ResponseWith puts WithExample and WithExamples under the default media type only; WithContent has no example. A text/html response cannot carry examples, and adding them would put them under application/json."
+  },
+  {
+    "pointer": "/webhooks/**",
+    "kind": "missing",
+    "category": "limitation",
+    "task": "P10.9i",
+    "reason": "fizz has no API for webhooks (no option, router method or Generator setter; the README says fizz does not infer them). Only a DocumentHook could write the markStatus webhook, which would patch an operation wholesale (D23), so the whole webhooks subtree is a limitation."
+  }
+]
