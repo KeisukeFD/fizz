@@ -17,7 +17,7 @@ func (g *Generator) setOperationParams(op *Operation, t, parent reflect.Type, al
 	if t.Kind() != reflect.Struct {
 		return errors.New("input type is not a struct")
 	}
-	if err := g.buildParamsRecursive(op, t, parent, allowBody); err != nil {
+	if err := g.buildParams(op, t, allowBody); err != nil {
 		return err
 	}
 	// Input fields that are neither path- nor query-bound
@@ -66,49 +66,85 @@ func (g *Generator) setOperationParams(op *Operation, t, parent reflect.Type, al
 	return nil
 }
 
-func (g *Generator) buildParamsRecursive(op *Operation, t, parent reflect.Type, allowBody bool) error {
-	for i := 0; i < t.NumField(); i++ {
-		sf := t.Field(i)
-		sft := sf.Type
-
-		// Dereference pointer.
-		if sft.Kind() == reflect.Pointer {
-			sft = sft.Elem()
-		}
-		isUnexported := sf.PkgPath != ""
-
-		if sf.Anonymous {
-			if isUnexported && sft.Kind() != reflect.Struct {
-				// Ignore embedded fields of unexported non-struct types.
-				continue
-			}
-			// Do not ignore embedded fields of unexported struct
-			// types since they may have exported fields, and recursively
-			// use its fields as operations params. This allow developers
-			// to reuse input models using type composition.
-			if sft.Kind() == reflect.Struct {
-				// If the type of the embedded struct is the same as
-				// the topmost parent, skip it to avoid an infinite
-				// recursive loop.
-				if sft == parent {
-					g.error(&FieldError{
-						Message:  "recursive embedding",
-						Name:     sf.Name,
-						TypeName: g.typeName(parent),
-						Type:     parent,
-					})
-				} else if err := g.buildParamsRecursive(op, sft, parent, allowBody); err != nil {
-					return err
-				}
-			}
-			continue
-		} else if isUnexported {
-			// Ignore unexported non-embedded fields.
-			continue
-		}
-		if err := g.addStructFieldToOperation(op, t, i, allowBody); err != nil {
+// buildParams adds the parameters and the request body fields of
+// the struct type t to the operation, in two passes.
+//
+// Parameters follow tonic's binding semantics (tonic/handler.go,
+// bind): every anonymous struct field is descended into, tagged or
+// not, and a field with a location tag (path, query, header) is a
+// parameter named by that tag, whatever its json tag says.
+//
+// Body fields are the JSON members selected by typeFields that carry
+// no location tag.
+func (g *Generator) buildParams(op *Operation, t reflect.Type, allowBody bool) error {
+	if err := g.walkParams(op, t, map[reflect.Type]bool{t: true}); err != nil {
+		return err
+	}
+	if !allowBody {
+		return nil
+	}
+	for f := range g.fieldsOf(t, mediaTags[g.mediaType()]) {
+		loc, err := g.paramLocation(f.sf, t)
+		if err != nil {
 			return err
 		}
+		if loc != "" {
+			continue
+		}
+		g.addBodyField(op, t, f)
+	}
+	return nil
+}
+
+// walkParams descends into the anonymous struct fields of t, as tonic
+// does, and adds the location-tagged fields to the operation. active
+// holds the struct types being walked, so that embedding cycles end.
+func (g *Generator) walkParams(op *Operation, t reflect.Type, active map[reflect.Type]bool) error {
+	for i := range t.NumField() {
+		sf := t.Field(i)
+		if sf.Anonymous {
+			et := sf.Type
+			if et.Kind() == reflect.Pointer {
+				et = et.Elem()
+			}
+			// Embedded fields of unexported struct types may have
+			// exported fields, so they are walked too.
+			if et.Kind() != reflect.Struct || active[et] {
+				continue
+			}
+			active[et] = true
+			err := g.walkParams(op, et, active)
+			delete(active, et)
+			if err != nil {
+				return err
+			}
+			continue
+		}
+		if !sf.IsExported() {
+			continue
+		}
+		param, err := g.newParameterFromField(i, t)
+		if err != nil {
+			return err
+		}
+		if param == nil {
+			continue
+		}
+		// Check if a parameter with same name/location
+		// already exists.
+		if slices.ContainsFunc(op.Parameters, func(p *ParameterOrRef) bool {
+			return p != nil && p.Value.Name == param.Name && p.Value.In == param.In
+		}) {
+			g.error(&FieldError{
+				Message:           "duplicate parameter",
+				Name:              param.Name,
+				TypeName:          g.typeName(t),
+				Type:              t,
+				ParameterLocation: param.In,
+			})
+			continue
+		}
+		op.Parameters = append(op.Parameters, &ParameterOrRef{Value: param})
 	}
 	return nil
 }
@@ -129,103 +165,49 @@ func (g *Generator) compareParams(p1, p2 *ParameterOrRef) int {
 	)
 }
 
-// addStructFieldToOperation add the struct field of the type
-// t at index idx to the operation op. A field will be considered
-// as a parameter if it has a valid location tag key, or it will
-// be treated as part of the request body.
-func (g *Generator) addStructFieldToOperation(op *Operation, t reflect.Type, idx int, allowBody bool) error {
-	sf := t.Field(idx)
-
-	param, err := g.newParameterFromField(idx, t)
-	if err != nil {
-		return err
+// addBodyField adds the JSON member f of the root input type t to
+// the operation's request body.
+func (g *Generator) addBodyField(op *Operation, t reflect.Type, f field) {
+	// If binding is disabled for this field, don't
+	// add it to the request body. This allow using
+	// a model type as an operation input while also
+	// omitting some fields that are computed by the
+	// server.
+	if f.sf.Tag.Get("binding") == "-" {
+		return
 	}
-	if param != nil {
-		// Check if a parameter with same name/location
-		// already exists.
-		for _, p := range op.Parameters {
-			if p != nil && (p.Value.Name == param.Name) && (p.Value.In == param.In) {
-				g.error(&FieldError{
-					Message:           "duplicate parameter",
-					Name:              param.Name,
-					TypeName:          g.typeName(t),
-					Type:              t,
-					ParameterLocation: param.In,
-				})
-				return nil
-			}
+	if op.RequestBody == nil {
+		op.RequestBody = &RequestBody{
+			Content: make(map[string]*MediaType),
 		}
-		op.Parameters = append(op.Parameters, &ParameterOrRef{
-			Value: param,
-		})
-	} else {
-		if !allowBody {
-			return nil
-		}
-		// If binding is disabled for this field, don't
-		// add it to the request body. This allow using
-		// a model type as an operation input while also
-		// omitting some fields that are computed by the
-		// server.
-		if sf.Tag.Get("binding") == "-" {
-			return nil
-		}
-		// The field is not a parameter, add it to
-		// the request body.
-		if op.RequestBody == nil {
-			op.RequestBody = &RequestBody{
-				Content: make(map[string]*MediaType),
-			}
-		}
-		// Select the corresponding media type for the
-		// given field tag, or default to any type.
-		mt := g.mediaType()
-		if mt == "" {
-			mt = anyMediaType
-		}
-		var schema *Schema
-
-		// Create the media type if no fields
-		// have been added yet.
-		if _, ok := op.RequestBody.Content[mt]; !ok {
-			schema = &Schema{
+	}
+	// Select the corresponding media type for the
+	// given field tag, or default to any type.
+	mt := g.mediaType()
+	if mt == "" {
+		mt = anyMediaType
+	}
+	// Create the media type if no fields
+	// have been added yet.
+	if _, ok := op.RequestBody.Content[mt]; !ok {
+		op.RequestBody.Content[mt] = &MediaType{
+			Schema: &Schema{
 				Type:       Types("object"),
 				Properties: make(map[string]*Schema),
-			}
-			op.RequestBody.Content[mt] = &MediaType{
-				Schema: schema,
-			}
-		} else {
-			schema = op.RequestBody.Content[mt].Schema
-		}
-		fname := fieldNameFromTag(sf, mediaTags[g.mediaType()])
-
-		// Check if a field with the same name already exists.
-		if _, ok := schema.Properties[fname]; ok {
-			g.error(&FieldError{
-				Message:           "duplicate request body parameter",
-				Name:              fname,
-				TypeName:          g.typeName(t),
-				Type:              t,
-				ParameterLocation: "body",
-			})
-			return nil
-		}
-
-		var required bool
-		// The required property of a field is not part of its
-		// own schema but specified in the parent schema.
-		if fname != "" && g.isStructFieldRequired(sf) {
-			required = true
-			schema.Required = append(schema.Required, fname)
-			sort.Strings(schema.Required)
-		}
-		sfs := g.newSchemaFromStructField(sf, required, fname, t)
-		if schema != nil {
-			schema.Properties[fname] = sfs
+			},
 		}
 	}
-	return nil
+	schema := op.RequestBody.Content[mt].Schema
+
+	var required bool
+	// The required property of a field is not part of its
+	// own schema but specified in the parent schema.
+	if g.isStructFieldRequired(f.sf) {
+		required = true
+		schema.Required = append(schema.Required, f.name)
+		sort.Strings(schema.Required)
+	}
+	schema.Properties[f.name] = g.newSchemaFromField(f, required, t)
 }
 
 // newParameterFromField create a new operation parameter

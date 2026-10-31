@@ -199,9 +199,9 @@ func init() {
 			// Same cycle through the param walker (generator.go:523).
 			Name:     "fields/embedded-cycle-request",
 			Register: fieldsReq[FCycA]("cycReq"),
-			Expect:   []Fragment{{Pointer: "/components/schemas/CycReqInput/type", JSON: `"object"`}},
-			FixedBy:  "P3.1b",
-			Crashes:  true,
+			// No JSON members at all, so no request body; the point is that the walk ends.
+			Expect:  []Fragment{{Pointer: "/paths/~1cycReq/post/requestBody", Absent: true}},
+			FixedBy: "P3.1b",
 		},
 		Case{
 			// The "-" field leaks as property "" (generator.go:623-647).

@@ -36,7 +36,7 @@ func init() {
 		Case{
 			Name:     "sample/crashes",
 			Register: func(*fizz.Fizz) { panic("never run") },
-			FixedBy:  "P3.1b",
+			FixedBy:  "P7.1",
 			Crashes:  true,
 		},
 	)

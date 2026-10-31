@@ -83,22 +83,6 @@ func (*W) Type() string     { return "string" }
 func (ns) Nullable() bool   { return true }
 func (ni) Nullable() bool   { return false }
 
-// TestStructFieldName tests that the name of a
-// struct field can be correctly extracted.
-func TestStructFieldName(t *testing.T) {
-	type T struct {
-		A  string `name:"A"`
-		Ba string `name:""`
-		AB string `name:"-"`
-		B  struct{}
-	}
-	to := reflect.TypeFor[T]()
-
-	assert.Equal(t, "A", fieldNameFromTag(to.Field(0), "name"))
-	assert.Equal(t, "Ba", fieldNameFromTag(to.Field(1), "name"))
-	assert.Equal(t, "", fieldNameFromTag(to.Field(2), "name"))
-}
-
 func TestAddTag(t *testing.T) {
 	g := gen(t)
 

@@ -1,0 +1,40 @@
+{
+    "openapi": "3.2.1",
+    "info": {
+        "title": "kitchensink",
+        "version": "0"
+    },
+    "paths": {
+        "/dashReq": {
+            "post": {
+                "operationId": "dashReq",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DashReqInput"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "DashReqInput": {
+                "type": "object",
+                "properties": {
+                    "keep": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    }
+}

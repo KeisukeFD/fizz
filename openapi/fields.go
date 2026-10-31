@@ -194,26 +194,3 @@ func (g *Generator) isStructFieldRequired(sf reflect.StructField) bool {
 	}
 	return false
 }
-
-// fieldNameFromTag returns the name of a struct field extracted from a
-// serialization tag using its name. Only the param walker still uses
-// it; P3.1b replaces it with typeFields.
-func fieldNameFromTag(sf reflect.StructField, tagName string) string {
-	v, ok := sf.Tag.Lookup(tagName)
-	if !ok {
-		return sf.Name
-	}
-	parts := strings.Split(strings.TrimSpace(v), ",")
-
-	// Split return a one item slice if
-	// the input string is empty, thus we
-	// don't check the length.
-	name := parts[0]
-	if name == "" {
-		return sf.Name
-	}
-	if name == "-" {
-		return ""
-	}
-	return name
-}
