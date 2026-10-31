@@ -1,0 +1,29 @@
+{
+    "openapi": "3.2.1",
+    "info": {
+        "title": "kitchensink",
+        "version": "0"
+    },
+    "paths": {
+        "/r": {
+            "get": {
+                "operationId": "getR",
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "299": {
+                        "description": "Status 299"
+                    },
+                    "4XX": {
+                        "description": "4XX response"
+                    },
+                    "default": {
+                        "description": "Default response"
+                    }
+                }
+            }
+        }
+    },
+    "components": {}
+}

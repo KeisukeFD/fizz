@@ -56,6 +56,9 @@ func NewFromEngine(e *gin.Engine, opts ...Option) *Fizz {
 			opt(&cfg)
 		}
 	}
+	if cfg.mediaType == "" {
+		cfg.mediaType = tonic.MediaType()
+	}
 	// Create a new spec with the config
 	// based on tonic internals.
 	gen, _ := openapi.NewGenerator(
@@ -66,7 +69,7 @@ func NewFromEngine(e *gin.Engine, opts ...Option) *Fizz {
 			HeaderLocationTag: tonic.HeaderTag,
 			EnumTag:           tonic.EnumTag,
 			DefaultTag:        tonic.DefaultTag,
-			DefaultMediaType:  tonic.MediaType(),
+			DefaultMediaType:  cfg.mediaType,
 		},
 	)
 	gen.SetTagNames(cfg.tagNames)

@@ -13,6 +13,7 @@ type config struct {
 	schemaNamer      func(reflect.Type) string
 	pointersNullable bool
 	annotationStyle  openapi.AnnotationStyle
+	mediaType        string
 	noBindHook       bool // consumed by P7.2b; no effect yet
 }
 
@@ -52,4 +53,10 @@ func WithAnnotationStyle(s openapi.AnnotationStyle) Option {
 // effect.
 func WithoutBindHook() Option {
 	return func(c *config) { c.noBindHook = true }
+}
+
+// WithDefaultMediaType sets the media type used for request bodies and
+// responses. An empty string selects tonic.MediaType().
+func WithDefaultMediaType(mediaType string) Option {
+	return func(c *config) { c.mediaType = mediaType }
 }

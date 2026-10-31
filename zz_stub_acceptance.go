@@ -14,12 +14,6 @@ import (
 	"reflect"
 )
 
-// WithDefaultMediaType is a stub.
-// FixedBy: P4.4
-func WithDefaultMediaType(mediaType string) Option {
-	return func(*config) {}
-}
-
 // WithRequestBodyNamer is a stub.
 // FixedBy: P4.6
 func WithRequestBodyNamer(func(opID string, t reflect.Type) string) Option {

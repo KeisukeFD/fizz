@@ -24,6 +24,10 @@ type ResponseHeader struct {
 	Name        string
 	Description string
 	Model       any
+	Required    bool
+	Deprecated  bool
+	Example     any
+	Examples    map[string]*ExampleOrRef
 }
 
 // OperationResponse represents a single response of an

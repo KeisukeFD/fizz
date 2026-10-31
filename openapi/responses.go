@@ -7,6 +7,25 @@ import (
 	"strconv"
 )
 
+// defaultResponseDescription returns the description of a response
+// whose description the user left empty: "Default response" for
+// "default", "<code> response" for a range such as "4XX", the standard
+// status text for a known code and "Status <n>" otherwise.
+func defaultResponseDescription(code string) string {
+	if code == "default" {
+		return "Default response"
+	}
+	if isResponseCodeRange(code) {
+		return code + " response"
+	}
+	if ci, err := strconv.Atoi(code); err == nil {
+		if text := http.StatusText(ci); text != "" {
+			return text
+		}
+	}
+	return "Status " + code
+}
+
 func isResponseCodeRange(code string) bool {
 	if len(code) != 3 {
 		return false
@@ -30,7 +49,7 @@ func (g *Generator) setOperationResponse(op *Operation, where string, t reflect.
 		// A response already exists for this code.
 		return fmt.Errorf("response with code %s already exists", code)
 	}
-	if example != nil && examples != nil {
+	if example != nil && len(examples) > 0 {
 		// Cannot set both 'example' and 'examples' values
 		return fmt.Errorf("'example' and 'examples' are mutually exclusive")
 	}
@@ -48,10 +67,10 @@ func (g *Generator) setOperationResponse(op *Operation, where string, t reflect.
 			if ci < 100 || ci > 599 {
 				return fmt.Errorf("response code out of range: %s", code)
 			}
-			if desc == "" {
-				desc = http.StatusText(ci)
-			}
 		}
+	}
+	if desc == "" {
+		desc = defaultResponseDescription(code)
 	}
 	r := &Response{
 		Description: desc,
@@ -68,7 +87,7 @@ func (g *Generator) setOperationResponse(op *Operation, where string, t reflect.
 		}
 	}
 	var castedExamples map[string]*ExampleOrRef
-	if examples != nil {
+	if len(examples) > 0 {
 		castedExamples = make(map[string]*ExampleOrRef)
 		dropped := false
 		for name, val := range examples {
@@ -107,7 +126,11 @@ func (g *Generator) setOperationResponse(op *Operation, where string, t reflect.
 			}
 			r.Headers[h.Name] = &HeaderOrRef{Value: &Header{
 				Description: h.Description,
+				Required:    h.Required,
+				Deprecated:  h.Deprecated,
 				Schema:      sor,
+				Example:     h.Example,
+				Examples:    h.Examples,
 			}}
 		}
 	}
