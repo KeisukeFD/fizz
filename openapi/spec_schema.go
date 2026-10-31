@@ -158,6 +158,12 @@ type Schema struct {
 	// emitted sorted after the typed members. Use SetExtension to
 	// validate keys.
 	Extensions map[string]any `json:",embed"`
+
+	// propertiesSet records that a decoded document spelled out an
+	// empty "properties" object, which survives a round trip. The
+	// generator allocates empty Properties maps all the time and never
+	// sets it, so its output omits them as before.
+	propertiesSet bool
 }
 
 // schemaAlias has the fields of Schema but none of its methods.
@@ -167,6 +173,12 @@ type schemaAlias Schema
 func (s Schema) MarshalJSONTo(enc *jsontext.Encoder) error {
 	if s.Bool != nil {
 		return enc.WriteToken(jsontext.Bool(*s.Bool))
+	}
+	if s.propertiesSet && len(s.Properties) == 0 {
+		return encodeValue(enc, struct {
+			schemaAlias
+			Properties map[string]*Schema `json:"properties"`
+		}{schemaAlias(s), map[string]*Schema{}})
 	}
 	return encodeValue(enc, schemaAlias(s))
 }
@@ -188,6 +200,7 @@ func (s *Schema) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	if err := decodeValue(dec, &a); err != nil {
 		return err
 	}
+	a.propertiesSet = a.Properties != nil && len(a.Properties) == 0
 	*s = Schema(a)
 	return nil
 }

@@ -55,9 +55,7 @@ func TestCorpusEmptyOperationParameters(t *testing.T) {
 
 // Schema "properties": {} is dropped.
 func TestCorpusEmptySchemaProperties(t *testing.T) {
-	at.Pending(t, "P10.3e", func(tb testing.TB) {
-		exactRoundTrip[openapi.Schema](tb, `{"type":"object","properties":{}}`)
-	})
+	exactRoundTrip[openapi.Schema](t, `{"type":"object","properties":{}}`)
 }
 
 // A request body without "content" gains "content": null.
