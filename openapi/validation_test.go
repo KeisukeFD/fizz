@@ -2,11 +2,11 @@ package openapi
 
 import (
 	"encoding/json"
-	"os"
-
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/wI2L/fizz/internal/golden"
 )
 
 // TestTesters tests the testers helpers
@@ -52,16 +52,5 @@ func TestSchemaValidation(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	// see testdata/validation/len.json.
-	expected, err := os.ReadFile("../testdata/schemas/validation.json")
-	if err != nil {
-		t.Error(err)
-	}
-	m, err := diffJSON(actual, expected)
-	if err != nil {
-		t.Error(err)
-	}
-	if !m {
-		t.Error("expected json outputs to be equal")
-	}
+	golden.Assert(t, "../testdata/schemas/validation.json", actual)
 }

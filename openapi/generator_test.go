@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
-	"os"
 	"reflect"
 	"strconv"
 	"testing"
@@ -13,6 +12,8 @@ import (
 	"github.com/Pallinder/go-randomdata"
 	"github.com/loopfz/gadgeto/tonic"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/wI2L/fizz/internal/golden"
 )
 
 var genConfig = &SpecGenConfig{
@@ -212,18 +213,7 @@ func TestSchemaFromComplex(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	// see testdata/X.json.
-	expected, err := os.ReadFile("../testdata/schemas/X.json")
-	if err != nil {
-		t.Error(err)
-	}
-	m, err := diffJSON(actual, expected)
-	if err != nil {
-		t.Error(err)
-	}
-	if !m {
-		t.Error("expected json outputs to be equal")
-	}
+	golden.Assert(t, "../testdata/schemas/X.json", actual)
 
 	sor = g.API().Components.Schemas["Y"]
 	schema = g.resolveSchema(sor)
@@ -233,18 +223,7 @@ func TestSchemaFromComplex(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	// see testdata/Y.json.
-	expected, err = os.ReadFile("../testdata/schemas/Y.json")
-	if err != nil {
-		t.Error(err)
-	}
-	m, err = diffJSON(actual, expected)
-	if err != nil {
-		t.Error(err)
-	}
-	if !m {
-		t.Error("expected json outputs to be equal")
-	}
+	golden.Assert(t, "../testdata/schemas/Y.json", actual)
 }
 
 // TestNewSchemaFromStructErrors tests the errors
@@ -441,17 +420,6 @@ func TestNewSchemaFromEnumField(t *testing.T) {
 	}
 }
 
-func diffJSON(a, b []byte) (bool, error) {
-	var j, j2 any
-	if err := json.Unmarshal(a, &j); err != nil {
-		return false, err
-	}
-	if err := json.Unmarshal(b, &j2); err != nil {
-		return false, err
-	}
-	return reflect.DeepEqual(j2, j), nil
-}
-
 // TestAddOperation tests that an operation can be added
 // and generates the according specification.
 func TestAddOperation(t *testing.T) {
@@ -549,18 +517,7 @@ func TestAddOperation(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	// see testdata/schemas/path-item.json.
-	expected, err := os.ReadFile("../testdata/schemas/path-item.json")
-	if err != nil {
-		t.Error(err)
-	}
-	m, err := diffJSON(actual, expected)
-	if err != nil {
-		t.Error(err)
-	}
-	if !m {
-		t.Error("expected json outputs to be equal")
-	}
+	golden.Assert(t, "../testdata/schemas/path-item.json", actual)
 	// Try to add the operation again with the same
 	// identifier. Expected to fail.
 	_, err = g.AddOperation(path, "POST", "Test", reflect.TypeFor[*In](), reflect.TypeFor[Z](), infos)

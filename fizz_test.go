@@ -1,7 +1,6 @@
 package fizz
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -19,6 +18,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v2"
 
+	"github.com/wI2L/fizz/internal/golden"
 	"github.com/wI2L/fizz/openapi"
 )
 
@@ -405,18 +405,7 @@ func TestSpecHandler(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	// see testdata/spec.json.
-	expectedJSON, err := os.ReadFile("testdata/spec.json")
-	if err != nil {
-		t.Error(err)
-	}
-	m, err := diffJSON(specJSON, expectedJSON)
-	if err != nil {
-		t.Error(err)
-	}
-	if !m {
-		t.Error("invalid JSON spec")
-	}
+	golden.Assert(t, "testdata/spec.json", specJSON)
 
 	respYAML, err := c.Get(srv.URL + "/openapi.yaml")
 	if err != nil {
@@ -435,7 +424,7 @@ func TestSpecHandler(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	m, err = diffYAML(specYAML, expectedYAML)
+	m, err := diffYAML(specYAML, expectedYAML)
 	if err != nil {
 		t.Error(err)
 	}
@@ -558,17 +547,6 @@ func TestOperationContext(t *testing.T) {
 			status, http.StatusOK,
 		)
 	}
-}
-
-func diffJSON(a, b []byte) (bool, error) {
-	var j1, j2 any
-	if err := json.Unmarshal(a, &j1); err != nil {
-		return false, err
-	}
-	if err := json.Unmarshal(b, &j2); err != nil {
-		return false, err
-	}
-	return reflect.DeepEqual(j2, j1), nil
 }
 
 func diffYAML(a, b []byte) (bool, error) {
