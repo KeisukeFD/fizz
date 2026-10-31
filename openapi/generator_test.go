@@ -103,7 +103,9 @@ func TestAddTag(t *testing.T) {
 
 	// Update tag description.
 	g.AddTag("Test", "Routes test")
-	assert.Equal(t, tag.Description, "Routes test")
+	// API returns a deep copy: the earlier one is unchanged.
+	assert.Equal(t, "Test routes", tag.Description)
+	assert.Equal(t, "Routes test", g.API().Tags[1].Description)
 
 	// Add other tag, check sort order.
 	g.AddTag("A", "")

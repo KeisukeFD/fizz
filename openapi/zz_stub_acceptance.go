@@ -10,12 +10,6 @@ import (
 	"reflect"
 )
 
-// Clone is a stub.
-// FixedBy: P5.1
-func (o *OpenAPI) Clone() (*OpenAPI, error) {
-	return nil, errors.New("stub: P5.1")
-}
-
 // SchemaContext is a stub type.
 // FixedBy: P6.4
 type SchemaContext struct {

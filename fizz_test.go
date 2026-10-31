@@ -358,7 +358,7 @@ func TestSpecHandler(t *testing.T) {
 	}
 	fizz.Generator().SetSecurityRequirement(security)
 
-	fizz.Generator().API().Components.SecuritySchemes = map[string]*openapi.SecuritySchemeOrRef{
+	fizz.Generator().SetSecuritySchemes(map[string]*openapi.SecuritySchemeOrRef{
 		"api_key": {
 			Value: &openapi.SecurityScheme{
 				Type: "apiKey",
@@ -380,7 +380,7 @@ func TestSpecHandler(t *testing.T) {
 				},
 			},
 		},
-	}
+	})
 
 	fizz.GET("/openapi.json", nil, fizz.OpenAPI(infos, "")) // default is JSON
 	fizz.GET("/openapi.yaml", nil, fizz.OpenAPI(infos, "yaml"))

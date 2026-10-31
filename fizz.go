@@ -3,6 +3,7 @@ package fizz
 import (
 	"errors"
 	"net/http"
+	"sync/atomic"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -10,7 +11,9 @@ import (
 	"github.com/wI2L/fizz/openapi"
 )
 
-const ctxOpenAPIOperation = "_ctx_openapi_operation"
+// ctxOperationKey is the key of the request context value that holds the
+// frozen snapshot of the operation of a route.
+type ctxOperationKey struct{}
 
 // Primitive type helpers.
 var (
@@ -32,6 +35,8 @@ type Fizz struct {
 	gen    *openapi.Generator
 	engine *gin.Engine
 	*RouterGroup
+
+	specCache atomic.Pointer[specEntry] // serialized document, see spec
 }
 
 // RouterGroup is an abstraction of a Gin router group.

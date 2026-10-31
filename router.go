@@ -154,11 +154,18 @@ func (g *RouterGroup) Handle(path, method string, infos []OperationOption, handl
 		// wrap the Tonic-wrapped handled with a closure
 		// to inject it into the Gin context.
 		if err == nil && operation != nil {
+			// The handlers get a frozen copy of the operation, in
+			// the request context (not in c.Keys): the live one
+			// belongs to the document.
+			snap, cerr := operation.Clone()
+			if cerr != nil {
+				g.gen.RecordError(&openapi.OperationError{Method: method, Path: openAPIPath(operationPath), ID: oi.ID, Err: cerr})
+			}
 			for i, h := range handlers {
-				if funcEqual(h, wrapped[0].h) {
+				if cerr == nil && funcEqual(h, wrapped[0].h) {
 					orig := h // copy the original func
 					handlers[i] = func(c *gin.Context) {
-						c.Set(ctxOpenAPIOperation, operation)
+						c.Request = c.Request.WithContext(withOperation(c.Request.Context(), snap))
 						orig(c)
 					}
 				}
@@ -171,16 +178,35 @@ func (g *RouterGroup) Handle(path, method string, infos []OperationOption, handl
 	return g
 }
 
-// OperationFromContext returns the OpenAPI operation from
-// the given Gin context or an error if none is found.
+// withOperation returns a context that holds the frozen operation op.
+func withOperation(ctx context.Context, op *openapi.Operation) context.Context {
+	return context.WithValue(ctx, ctxOperationKey{}, op)
+}
+
+// OperationFromContext returns the OpenAPI operation of the route
+// that is handling the request, or an error if none is found. ctx is
+// the request context (c.Request.Context()) or a *gin.Context, which
+// is read through its request even if gin's ContextWithFallback is off.
+//
+// The operation is a deep copy of the one documented when the route was
+// registered: each call returns a new one, and changing it affects
+// neither the other callers nor the specification.
 func OperationFromContext(ctx context.Context) (*openapi.Operation, error) {
-	if v := ctx.Value(ctxOpenAPIOperation); v != nil {
-		if op, ok := v.(*openapi.Operation); ok {
-			return op, nil
+	if c, ok := ctx.(*gin.Context); ok {
+		if c.Request == nil {
+			return nil, errors.New("operation not found")
 		}
+		ctx = c.Request.Context()
+	}
+	v := ctx.Value(ctxOperationKey{})
+	if v == nil {
+		return nil, errors.New("operation not found")
+	}
+	op, ok := v.(*openapi.Operation)
+	if !ok {
 		return nil, errors.New("invalid type: not an operation")
 	}
-	return nil, errors.New("operation not found")
+	return op.Clone()
 }
 
 func joinPaths(abs, rel string) string {

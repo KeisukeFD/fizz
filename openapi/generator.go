@@ -10,6 +10,8 @@ import (
 	"slices"
 	"sort"
 	"strconv"
+	"sync"
+	"sync/atomic"
 )
 
 // Version is the OpenAPI Specification version of the generated documents.
@@ -32,7 +34,18 @@ var mediaTags = map[string]string{
 }
 
 // Generator is an OpenAPI 3 generator.
+//
+// A Generator is safe for concurrent use. The methods that change the
+// document or the way it is generated hold mu and bump gen; the
+// readers (API, Errors, OperationIDUsed, Snapshot) take mu too, or
+// read gen atomically. The fields below are guarded by mu.
 type Generator struct {
+	mu  sync.Mutex
+	gen atomic.Uint64 // generation of the document, bumped by every mutator
+	// cloneErrGen is 1 + the generation for which a clone failure has
+	// been recorded in errors, 0 if none, so that it is recorded once.
+	cloneErrGen uint64
+
 	api           *OpenAPI
 	config        *SpecGenConfig
 	schemaTypes   map[reflect.Type]struct{}
@@ -148,18 +161,21 @@ func (g *Generator) mediaType() string {
 // SetInfo uses the given OpenAPI info for the
 // current specification.
 func (g *Generator) SetInfo(info *Info) {
+	defer g.mutate()()
 	g.api.Info = info
 }
 
 // SetServers sets the server list for the
 // current specification.
 func (g *Generator) SetServers(servers []*Server) {
+	defer g.mutate()()
 	g.api.Servers = servers
 }
 
 // SetSecurityRequirement sets the security options for the
 // current specification.
 func (g *Generator) SetSecurityRequirement(security []*SecurityRequirement) {
+	defer g.mutate()()
 	g.api.Security = security
 }
 
@@ -168,6 +184,7 @@ func (g *Generator) SetSecurityRequirement(security []*SecurityRequirement) {
 // neither a $ref nor a value cannot be emitted: it is dropped and an
 // error wrapping ErrNilOrRef that names the scheme is recorded.
 func (g *Generator) SetSecuritySchemes(security map[string]*SecuritySchemeOrRef) {
+	defer g.mutate()()
 	valid := make(map[string]*SecuritySchemeOrRef, len(security))
 	for _, name := range slices.Sorted(maps.Keys(security)) {
 		s := security[name]
@@ -180,10 +197,50 @@ func (g *Generator) SetSecuritySchemes(security map[string]*SecuritySchemeOrRef)
 	g.api.Components.SecuritySchemes = valid
 }
 
-// API returns a copy of the internal OpenAPI object.
+// API returns a deep copy of the internal OpenAPI object: changing it
+// affects neither the generator nor the served document. If the copy
+// fails (see OpenAPI.Clone) API returns nil and records the error, once
+// per generation of the document.
 func (g *Generator) API() *OpenAPI {
-	cpy := *g.api
-	return &cpy
+	api, _, err := g.Snapshot()
+	if err != nil {
+		return nil
+	}
+	return api
+}
+
+// Generation returns the generation of the document: a counter that
+// every change to the generator (the document or the way it is
+// generated) increments. Recording an error does not change it.
+func (g *Generator) Generation() uint64 { return g.gen.Load() }
+
+// Snapshot returns a deep copy of the document taken under the lock of
+// the generator, and the generation it was taken at. A failure to copy
+// it is returned, and recorded in Errors once per generation.
+func (g *Generator) Snapshot() (*OpenAPI, uint64, error) {
+	g.mu.Lock()
+	defer g.mu.Unlock()
+	gen := g.gen.Load()
+	api, err := g.api.Clone()
+	if err != nil {
+		err = fmt.Errorf("copying the document: %w", err)
+		if g.cloneErrGen != gen+1 {
+			g.cloneErrGen = gen + 1
+			g.error(err)
+		}
+		return nil, gen, err
+	}
+	return api, gen, nil
+}
+
+// mutate locks the generator for a change. The returned function bumps
+// the generation and unlocks: defer g.mutate()().
+func (g *Generator) mutate() func() {
+	g.mu.Lock()
+	return func() {
+		g.gen.Add(1)
+		g.mu.Unlock()
+	}
 }
 
 // Errors returns a copy of the errors and warnings recorded during the
@@ -191,6 +248,8 @@ func (g *Generator) API() *OpenAPI {
 // operation is being added, the errors other than warnings are wrapped
 // in an *OperationError that names it.
 func (g *Generator) Errors() []error {
+	g.mu.Lock()
+	defer g.mu.Unlock()
 	return slices.Clone(g.errors)
 }
 
@@ -200,11 +259,13 @@ func (g *Generator) Errors() []error {
 // do so. A nil err is ignored.
 func (g *Generator) RecordError(err error) {
 	if err != nil {
+		g.mu.Lock()
+		defer g.mu.Unlock()
 		g.error(err)
 	}
 }
 
-// error records err. While an operation is being added, an error that
+// error records err; the caller holds mu. While an operation is being added, an error that
 // is neither a *Warning (which carries its own context) nor already an
 // *OperationError is wrapped in one, so that every error identifies its
 // operation and errors.As still finds the cause.
@@ -249,6 +310,7 @@ func jsonEncodable(v any) error {
 // names are used across all the packages of the application.
 // Default to true.
 func (g *Generator) UseFullSchemaNames(b bool) {
+	defer g.mutate()()
 	g.fullNames = b
 }
 
@@ -256,6 +318,7 @@ func (g *Generator) UseFullSchemaNames(b bool) {
 // sort the parameters of an operation by location and
 // name in ascending order.
 func (g *Generator) SetSortParams(b bool) {
+	defer g.mutate()()
 	g.sortParams = b
 }
 
@@ -263,6 +326,7 @@ func (g *Generator) SetSortParams(b bool) {
 // schema nullable. The Nullable interface applies regardless.
 // Default to true.
 func (g *Generator) SetPointersAreNullable(b bool) {
+	defer g.mutate()()
 	g.pointersNullable = b
 }
 
@@ -285,12 +349,14 @@ const (
 // SetAnnotationStyle selects the style of use-site annotations on
 // references. Default to SiblingAnnotations.
 func (g *Generator) SetAnnotationStyle(s AnnotationStyle) {
+	defer g.mutate()()
 	g.annotationStyle = s
 }
 
 // SetSortTags controls whether the generator should
 // sort the global tags sections.
 func (g *Generator) SetSortTags(b bool) {
+	defer g.mutate()()
 	g.sortTags = b
 }
 
@@ -299,6 +365,7 @@ func (g *Generator) SetSortTags(b bool) {
 // and have precedence over types that implements
 // the Typer interface.
 func (g *Generator) OverrideTypeName(t reflect.Type, name string) error {
+	defer g.mutate()()
 	if name == "" {
 		return errors.New("type name is empty")
 	}
@@ -320,6 +387,7 @@ func (g *Generator) OverrideTypeName(t reflect.Type, name string) error {
 // format for the given type that will overrided the
 // default generation.
 func (g *Generator) OverrideDataType(t reflect.Type, typ, format string) error {
+	defer g.mutate()()
 	if typ == "" {
 		return errors.New("type is mandatory")
 	}
@@ -347,6 +415,7 @@ func (g *Generator) datatype(t reflect.Type) DataType {
 // If a tag already exists with the same name, it is
 // overwritten.
 func (g *Generator) AddTag(name, desc string) {
+	defer g.mutate()()
 	if name == "" {
 		return
 	}
@@ -390,6 +459,7 @@ func (g *Generator) AddOperation(path, method, tag string, in, out reflect.Type,
 	if info == nil {
 		info = &OperationInfo{}
 	}
+	defer g.mutate()()
 	g.cur = &opContext{method: method, path: path, id: info.ID}
 	defer func() { g.cur = nil }()
 
@@ -419,6 +489,8 @@ func (g *Generator) AddOperation(path, method, tag string, in, out reflect.Type,
 // operation. The router uses it to choose among the candidate default
 // IDs of an operation.
 func (g *Generator) OperationIDUsed(id string) bool {
+	g.mu.Lock()
+	defer g.mu.Unlock()
 	_, ok := g.operationsIDS[id]
 	return ok
 }
@@ -515,7 +587,7 @@ func (g *Generator) snapshot() snapshot {
 }
 
 // restore puts the generator back in the state of s. The schema map is
-// restored in place, because API copies share it.
+// restored in place.
 func (s snapshot) restore(g *Generator) {
 	clear(g.api.Components.Schemas)
 	maps.Copy(g.api.Components.Schemas, s.schemas)
@@ -552,5 +624,6 @@ func setOperationBymethod(item *PathItem, op *Operation, method string) {
 // input type. Nil selects the default, the operation ID with its first
 // letter upper-cased, followed by "Input".
 func (g *Generator) SetRequestBodyNamer(fn func(opID string, t reflect.Type) string) {
+	defer g.mutate()()
 	g.bodyNamer = fn
 }

@@ -84,11 +84,13 @@ func tagLookup(sf reflect.StructField, name string) (string, bool) {
 // SetTagNames sets the names of the fizz-owned struct tags. Zero
 // fields keep the default name; "-" disables the tag.
 func (g *Generator) SetTagNames(n TagNames) {
+	defer g.mutate()()
 	g.tags = n.resolved()
 }
 
 // SetSchemaNamer sets the function that names component schemas from
 // their type. Nil selects the default naming.
 func (g *Generator) SetSchemaNamer(fn func(reflect.Type) string) {
+	defer g.mutate()()
 	g.schemaNamer = fn
 }

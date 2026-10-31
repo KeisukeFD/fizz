@@ -10,19 +10,12 @@ import (
 	"github.com/loopfz/gadgeto/tonic"
 	"github.com/wI2L/fizz/docsui"
 	"github.com/wI2L/fizz/openapi"
-	"net/http"
 )
 
 // WithHooks is a stub.
 // FixedBy: P6.4
 func WithHooks(openapi.Hooks) Option {
 	return func(*config) {}
-}
-
-// SpecHandler is a stub.
-// FixedBy: P5.1
-func (f *Fizz) SpecHandler(format string) http.Handler {
-	return http.NotFoundHandler()
 }
 
 // Document is a stub.

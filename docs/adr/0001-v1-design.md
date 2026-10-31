@@ -169,6 +169,8 @@ Each row is a stub until its task lands. Signatures are binding. A task that nee
 | `type OperationError struct{ Method, Path, ID string; Err error }`, `Error()`, `Unwrap()` | P4.8 |
 | `(*Generator).RecordError(err error)` (lets the router and `OpenAPI` record errors that do not come from `AddOperation`) | P4.8 |
 | `(*OpenAPI).Clone() (*OpenAPI, error)` | P5.1 |
+| `(*Operation).Clone() (*Operation, error)` (the router freezes the operation it injects into the request context) | P5.1 |
+| `(*Generator).Generation() uint64`, `(*Generator).Snapshot() (*OpenAPI, uint64, error)` (the cache key of the served document, and a deep copy of it taken under the generator lock) | P5.1 |
 | `(*Generator).SetTagNames(TagNames)` | P6.1 |
 | `(*Generator).SetSchemaNamer(func(reflect.Type) string)` (consumed by P4.5) | P6.1 |
 | `type TagNames struct{ Description, Example, Format, Deprecated, Title, Pattern, ReadOnly, WriteOnly, Nullable, MultipleOf, AdditionalProperties, Inline, Style, AllowReserved, Cookie string }` (zero = default, `"-"` disables) | P6.1 |
