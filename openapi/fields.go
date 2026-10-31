@@ -70,7 +70,7 @@ func (g *Generator) fieldSchema(sf reflect.StructField, required bool, fname str
 				// validation, so the parameter is not required.
 				g.warn(fmt.Sprintf("parameter %q has a default value: it is not required", fname))
 			}
-			if v, err := vf.convert(d, sf.Type); err != nil {
+			if v, err := g.convertDefault(d, sf, vf); err != nil {
 				g.error(&FieldError{
 					Message:  fmt.Sprintf("default value %s cannot be converted to field type: %s", d, err),
 					Name:     fname,
@@ -159,6 +159,42 @@ func (g *Generator) fieldSchema(sf reflect.StructField, required bool, fname str
 	}
 
 	return g.finishAnnotations(sor, schema)
+}
+
+// convertDefault converts the default tag value d of field sf. Tonic
+// splits the default of a slice or array on commas and binds each element
+// with the element type, so the default of an array field is an array.
+// With explode:"false" on a parameter the whole value is one element.
+func (g *Generator) convertDefault(d string, sf reflect.StructField, vf valueForm) (any, error) {
+	if !isArrayLike(sf.Type) {
+		return vf.convert(d, sf.Type)
+	}
+	t := sf.Type
+	for t.Kind() == reflect.Pointer {
+		t = t.Elem()
+	}
+	parts := []string{d}
+	if ev, ok := sf.Tag.Lookup(BinderTags.Explode); !vf.param || !ok || !isFalse(ev) {
+		parts = strings.Split(d, ",")
+	}
+	if t.Kind() == reflect.Array && t.Len() != len(parts) {
+		return nil, fmt.Errorf("%d values for an array of length %d", len(parts), t.Len())
+	}
+	items := make([]any, 0, len(parts))
+	for _, p := range parts {
+		v, err := vf.convert(p, t.Elem())
+		if err != nil {
+			return nil, err
+		}
+		items = append(items, v)
+	}
+	return items, nil
+}
+
+// isFalse reports whether s is a false boolean, as strconv.ParseBool reads it.
+func isFalse(s string) bool {
+	b, err := strconv.ParseBool(s)
+	return err == nil && !b
 }
 
 // quoteValue returns v in its ",string" wire form if vf asks for it.
