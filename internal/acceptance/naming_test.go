@@ -286,6 +286,22 @@ func TestBEExplicitIDCollision(t *testing.T) {
 	})
 }
 
+type bECreateIn struct {
+	A string `json:"a"`
+	B string `json:"b"`
+}
+
+func bECreate(*gin.Context, *bECreateIn) error { return nil }
+
+// E08.
+func TestBERequestBodyNamer(t *testing.T) {
+	f := fizz.New(fizz.WithRequestBodyNamer(func(opID string, _ reflect.Type) string { return opID + "Body" }))
+	f.POST("/create", []fizz.OperationOption{fizz.ID("create")}, tonic.Handler(bECreate, 201))
+	doc := at.Spec(t, f)
+	at.Frag(t, doc, "/paths/~1create/post/requestBody/content/application~1json/schema/$ref", `"#/components/schemas/createBody"`)
+	at.Frag(t, doc, "/components/schemas/createBody/properties/b", `{"type":"string"}`)
+}
+
 // E03.
 func TestSchemaNamerOption(t *testing.T) {
 	at.Pending(t, "P4.5+P6.1", func(tb testing.TB) {

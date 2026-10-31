@@ -1,0 +1,64 @@
+{
+    "openapi": "3.2.1",
+    "info": {
+        "title": "kitchensink",
+        "version": "0"
+    },
+    "paths": {
+        "/a": {
+            "post": {
+                "operationId": "createUser",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateUserInput"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    }
+                }
+            }
+        },
+        "/b": {
+            "post": {
+                "operationId": "CreateUser",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "b": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "CreateUserInput": {
+                "type": "object",
+                "properties": {
+                    "a": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    }
+}

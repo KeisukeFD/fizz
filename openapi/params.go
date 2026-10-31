@@ -21,22 +21,9 @@ func (g *Generator) setOperationParams(op *Operation, t, parent reflect.Type, al
 		return err
 	}
 	// Input fields that are neither path- nor query-bound
-	// have been extracted into the operation's RequestBody
-	// If the RequestBody is not nil, give it a name and
-	// move it to the openapi spec's components/schemas section
-	// Replace the RequestBody's schema with a reference
-	// to the named schema in components/schemas
+	// have been extracted into the operation's RequestBody.
 	if op.RequestBody != nil {
-		mt := g.mediaType()
-		if mt == "" {
-			mt = anyMediaType
-		}
-		sch := op.RequestBody.Content[mt].Schema
-		if sch != nil {
-			name := strings.Title(op.ID) + "Input"
-			g.api.Components.Schemas[name] = sch
-			op.RequestBody.Content[mt].Schema = &Schema{Ref: componentsSchemaPath + name}
-		}
+		g.nameRequestBody(op, t)
 	}
 	// Extract all the path parameter names.
 	matches := paramsInPathRe.FindAllStringSubmatch(path, -1)
@@ -392,4 +379,100 @@ func (g *Generator) isScalar(t reflect.Type) bool {
 		return true
 	}
 	return false
+}
+
+// requestBodyName returns the component name of the synthesized request
+// body of operation opID with input type t: the RequestBodyNamer result,
+// or upperFirst(opID)+"Input", sanitized.
+func (g *Generator) requestBodyName(opID string, t reflect.Type) string {
+	if g.bodyNamer != nil {
+		if name := sanitizeName(g.bodyNamer(opID, t)); name != "" {
+			return name
+		}
+	}
+	return sanitizeName(upperFirst(opID) + "Input")
+}
+
+// nameRequestBody moves the schema of the operation's request body to a
+// component and replaces it with a reference.
+//
+// The required flag is set if any body field is required. When the
+// input has no parameters and is, or only embeds, a single named struct,
+// the body references that struct's component. Otherwise the body is
+// registered as a component named by the RequestBodyNamer. The name is
+// claimed in the registry for the input type t: if another type owns it,
+// a *CollisionError is recorded and the schema stays inline.
+func (g *Generator) nameRequestBody(op *Operation, t reflect.Type) {
+	mt := g.mediaType()
+	if mt == "" {
+		mt = anyMediaType
+	}
+	media := op.RequestBody.Content[mt]
+	if media == nil || media.Schema == nil {
+		return
+	}
+	sch := media.Schema
+	if len(sch.Required) > 0 {
+		op.RequestBody.Required = true
+	}
+	if len(op.Parameters) == 0 {
+		if st, ok := g.singleBodyStruct(t); ok {
+			if ref := g.newSchemaFromType(st); ref != nil {
+				media.Schema = ref
+				return
+			}
+		}
+	}
+	name := g.requestBodyName(op.ID, t)
+	kept, mine := g.registry.claim(name, t)
+	if !mine {
+		g.error(&CollisionError{Name: name, Kept: kept, Rejected: t})
+		return
+	}
+	if _, exists := g.api.Components.Schemas[name]; !exists {
+		g.api.Components.Schemas[name] = sch
+	}
+	media.Schema = &Schema{Ref: componentsSchemaPath + name}
+}
+
+// singleBodyStruct returns the named struct type that is the whole body
+// of input type t: the type embedded, without a json name, as its only
+// field. All the fields of that type must be body fields.
+func (g *Generator) singleBodyStruct(t reflect.Type) (reflect.Type, bool) {
+	if t.NumField() == 1 {
+		sf := t.Field(0)
+		et := sf.Type
+		if et.Kind() == reflect.Pointer {
+			et = et.Elem()
+		}
+		if sf.Anonymous && et.Kind() == reflect.Struct &&
+			g.typeName(et) != "" && jsonName(sf) == "" {
+			if n, ok := g.bodyFields(et); ok && n > 0 {
+				return et, true
+			}
+			return nil, false
+		}
+	}
+	return nil, false
+}
+
+// jsonName returns the name part of the json tag of sf.
+func jsonName(sf reflect.StructField) string {
+	name, _, _ := strings.Cut(sf.Tag.Get("json"), ",")
+	return name
+}
+
+// bodyFields returns the number of fields of t selected for the body,
+// and whether they are all body fields, with no location tag and no
+// binding:"-".
+func (g *Generator) bodyFields(t reflect.Type) (int, bool) {
+	n := 0
+	for f := range g.fieldsOf(t, mediaTags[g.mediaType()]) {
+		loc, err := g.paramLocation(f.sf, t)
+		if err != nil || loc != "" || f.sf.Tag.Get("binding") == "-" {
+			return 0, false
+		}
+		n++
+	}
+	return n, true
 }

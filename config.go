@@ -11,6 +11,7 @@ import (
 type config struct {
 	tagNames         openapi.TagNames
 	schemaNamer      func(reflect.Type) string
+	bodyNamer        func(opID string, t reflect.Type) string
 	pointersNullable bool
 	annotationStyle  openapi.AnnotationStyle
 	mediaType        string
@@ -33,6 +34,14 @@ func WithTagNames(n openapi.TagNames) Option {
 // of a type. A nil function selects the default naming.
 func WithSchemaNamer(fn func(reflect.Type) string) Option {
 	return func(c *config) { c.schemaNamer = fn }
+}
+
+// WithRequestBodyNamer sets the function that names the component
+// schema of a request body from the operation ID and the input type.
+// A nil function, or an empty name, selects the default: the operation
+// ID with its first letter upper-cased, followed by "Input".
+func WithRequestBodyNamer(fn func(opID string, t reflect.Type) string) Option {
+	return func(c *config) { c.bodyNamer = fn }
 }
 
 // WithPointersAreNullable controls whether a pointer type also accepts

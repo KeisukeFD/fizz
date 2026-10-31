@@ -51,6 +51,7 @@ type Generator struct {
 	annotationStyle  AnnotationStyle
 	tags             TagNames
 	schemaNamer      func(reflect.Type) string
+	bodyNamer        func(opID string, t reflect.Type) string
 	registry         registry
 	inlining         map[reflect.Type]bool // collision losers being inlined
 }
@@ -377,11 +378,10 @@ func (g *Generator) AddOperation(path, method, tag string, in, out reflect.Type,
 	g.cur = &opContext{method: method, path: path, id: op.ID}
 	defer func() { g.cur = nil }()
 
-	// Operations with methods GET/HEAD/DELETE cannot have a body.
-	// Non parameters fields will be ignored.
+	// Operations with methods GET/HEAD cannot have a body (DELETE
+	// can, D13). Non parameters fields will be ignored.
 	allowBody := method != http.MethodGet &&
-		method != http.MethodHead &&
-		method != http.MethodDelete
+		method != http.MethodHead
 
 	if in != nil {
 		if in.Kind() == reflect.Pointer {
@@ -448,4 +448,12 @@ func setOperationBymethod(item *PathItem, op *Operation, method string) {
 	case "DELETE":
 		item.DELETE = op
 	}
+}
+
+// SetRequestBodyNamer sets the function that names the component
+// schema of a synthesized request body from the operation ID and the
+// input type. Nil selects the default, the operation ID with its first
+// letter upper-cased, followed by "Input".
+func (g *Generator) SetRequestBodyNamer(fn func(opID string, t reflect.Type) string) {
+	g.bodyNamer = fn
 }

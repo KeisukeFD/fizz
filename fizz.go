@@ -76,6 +76,7 @@ func NewFromEngine(e *gin.Engine, opts ...Option) *Fizz {
 	if cfg.schemaNamer != nil {
 		gen.SetSchemaNamer(cfg.schemaNamer)
 	}
+	gen.SetRequestBodyNamer(cfg.bodyNamer)
 	gen.SetPointersAreNullable(cfg.pointersNullable)
 	gen.SetAnnotationStyle(cfg.annotationStyle)
 	return &Fizz{

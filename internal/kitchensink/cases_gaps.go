@@ -80,6 +80,9 @@ type (
 	KPet struct {
 		Name string `json:"name"`
 	}
+	KPetEmbedIn struct {
+		KPet
+	}
 	KReqBody struct {
 		Name string `json:"name" validate:"required"`
 	}
@@ -283,7 +286,7 @@ func init() {
 		Case{
 			Name: "ops/body-single-struct-direct-ref",
 			Register: func(f *fizz.Fizz) {
-				f.POST("/pets", opts(fizz.ID("createPet")), tonic.Handler(kPostBody[KPet], 201))
+				f.POST("/pets", opts(fizz.ID("createPet")), tonic.Handler(kPostBody[KPetEmbedIn], 201))
 			},
 			Expect: []Fragment{
 				{Pointer: "/paths/~1pets/post/requestBody/content/" + ctJSON + "/schema", JSON: `{"$ref":"#/components/schemas/KitchensinkKPet"}`},

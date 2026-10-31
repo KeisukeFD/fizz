@@ -163,6 +163,7 @@ Each row is a stub until its task lands. Signatures are binding. A task that nee
 | `type AnnotationStyle int`, `const SiblingAnnotations, AllOfWrap` | P3.4 |
 | `FieldError` gains `Field string`, `Err error` and `Unwrap()`. It already exists in openapi/errors.go, so this is a shape change: task-owned, not stubbed. | P4.2 |
 | `type CollisionError struct{ Name string; Kept, Rejected reflect.Type }`, `Error()` | P4.5 |
+| `(*Generator).SetRequestBodyNamer(func(opID string, t reflect.Type) string)` | P4.6 |
 | `type OperationError struct{ Method, Path, ID string; Err error }`, `Error()`, `Unwrap()` | P4.8 |
 | `(*OpenAPI).Clone() (*OpenAPI, error)` | P5.1 |
 | `(*Generator).SetTagNames(TagNames)` | P6.1 |

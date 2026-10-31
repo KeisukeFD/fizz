@@ -11,14 +11,7 @@ import (
 	"github.com/wI2L/fizz/docsui"
 	"github.com/wI2L/fizz/openapi"
 	"net/http"
-	"reflect"
 )
-
-// WithRequestBodyNamer is a stub.
-// FixedBy: P4.6
-func WithRequestBodyNamer(func(opID string, t reflect.Type) string) Option {
-	return func(*config) {}
-}
 
 // WithOperationIDNamer is a stub.
 // FixedBy: P4.7
