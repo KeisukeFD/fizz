@@ -114,10 +114,13 @@ type Schema struct {
 	PrefixItems          []*Schema          `json:"prefixItems,omitempty"`
 	Properties           map[string]*Schema `json:"properties,omitempty"`
 	AdditionalProperties *Schema            `json:"additionalProperties,omitzero"`
-	PropertyNames        *Schema            `json:"propertyNames,omitzero"`
-	Description          string             `json:"description,omitempty"`
-	Format               string             `json:"format,omitempty"`
-	Default              any                `json:"default,omitzero"`
+	// UnevaluatedProperties restricts the properties that no keyword
+	// of the schema or of its $ref/allOf/anyOf branches evaluated.
+	UnevaluatedProperties *Schema `json:"unevaluatedProperties,omitzero"`
+	PropertyNames         *Schema `json:"propertyNames,omitzero"`
+	Description           string  `json:"description,omitempty"`
+	Format                string  `json:"format,omitempty"`
+	Default               any     `json:"default,omitzero"`
 
 	// Const holds the "const" keyword. It cannot express
 	// "const": null yet, since a nil value is omitted.

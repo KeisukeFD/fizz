@@ -1,0 +1,48 @@
+{
+    "openapi": "3.2.1",
+    "info": {
+        "title": "kitchensink",
+        "version": "0"
+    },
+    "paths": {
+        "/tagRW": {
+            "post": {
+                "operationId": "tagRW",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TagRWInput"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "TagRWInput": {
+                "type": "object",
+                "properties": {
+                    "both": {
+                        "type": "string"
+                    },
+                    "ro": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "wo": {
+                        "type": "string",
+                        "writeOnly": true
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,9 +1,12 @@
 package openapi
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/wI2L/fizz/openapi/internal/vtag"
+	"math"
 	"reflect"
+	"regexp"
 	"slices"
 	"sort"
 	"strconv"
@@ -43,6 +46,9 @@ func (g *Generator) fieldSchema(sf reflect.StructField, required bool, fname str
 	if sor == nil {
 		return nil
 	}
+	// The inline and nullable tags change the form of the schema
+	// itself, before any annotation lands on it. Both work on copies.
+	sor = g.useSiteForm(sor, sf, fname, parent)
 	// The annotations of the field are use-site annotations: they
 	// never touch the shared component a $ref points to. A reference
 	// carries them as siblings, or in an allOf wrapper, an inline
@@ -110,6 +116,10 @@ func (g *Generator) fieldSchema(sf reflect.StructField, required bool, fname str
 	if t, ok := tagLookup(sf, g.tags.Format); ok {
 		schema.Format = t
 	}
+
+	// Keywords of the title, pattern, multipleOf, readOnly, writeOnly
+	// and additionalProperties tags.
+	g.applyTagKeywords(schema, sf, fname, parent)
 
 	// Set example value from tag to schema
 	ex, _ := tagLookup(sf, g.tags.Example)
@@ -308,4 +318,182 @@ func (g *Generator) isStructFieldRequired(sf reflect.StructField) bool {
 		}
 	}
 	return false
+}
+
+// tagError records a FieldError about the tag named tag of sf.
+func (g *Generator) tagError(sf reflect.StructField, fname string, parent reflect.Type, tag, format string, args ...any) {
+	g.error(&FieldError{
+		Message:  fmt.Sprintf("invalid %q tag: ", tag) + fmt.Sprintf(format, args...),
+		Name:     fname,
+		Field:    sf.Name,
+		Type:     sf.Type,
+		TypeName: g.typeName(sf.Type),
+		Parent:   parent,
+	})
+}
+
+// boolTag reads the boolean tag named tag of sf. It reports false if
+// the tag is absent, disabled, empty or not a boolean; the last case is
+// recorded as a FieldError.
+func (g *Generator) boolTag(sf reflect.StructField, fname string, parent reflect.Type, tag string) (value, ok bool) {
+	v, found := tagLookup(sf, tag)
+	if !found || v == "" {
+		return false, false
+	}
+	b, err := strconv.ParseBool(v)
+	if err != nil {
+		g.tagError(sf, fname, parent, tag, "%q is not a boolean", v)
+		return false, false
+	}
+	return b, true
+}
+
+// useSiteForm applies the inline (O12) and nullable (D6) tags of sf
+// to sor. It returns sor itself, or a modified copy: the component
+// behind a reference is never touched.
+func (g *Generator) useSiteForm(sor *Schema, sf reflect.StructField, fname string, parent reflect.Type) *Schema {
+	if b, ok := g.boolTag(sf, fname, parent, g.tags.Inline); ok && b {
+		sor = g.inlineComponent(sor, sf, fname, parent)
+	}
+	if b, ok := g.boolTag(sf, fname, parent, g.tags.Nullable); ok {
+		if b {
+			sor = sor.clone()
+			sor.MakeNullable()
+		} else {
+			sor = withoutNull(sor)
+		}
+	}
+	return sor
+}
+
+// inlineComponent returns a copy of the component that sor references,
+// to be emitted in place of the reference (O12). A nullable reference
+// stays nullable. A schema that is already inline is returned as is.
+func (g *Generator) inlineComponent(sor *Schema, sf reflect.StructField, fname string, parent reflect.Type) *Schema {
+	t := sf.Type
+	for t.Kind() == reflect.Pointer {
+		t = t.Elem()
+	}
+	if t.Kind() != reflect.Struct {
+		g.tagError(sf, fname, parent, g.tags.Inline, "only a struct field can be inlined")
+		return sor
+	}
+	ref, nullable := sor.Ref, false
+	if ref == "" && len(sor.AnyOf) == 2 && sor.AnyOf[0] != nil && sor.AnyOf[0].Ref != "" && isNullSchema(sor.AnyOf[1]) {
+		ref, nullable = sor.AnyOf[0].Ref, true
+	}
+	if ref == "" {
+		return sor
+	}
+	comp, ok := g.api.Components.Schemas[strings.TrimPrefix(ref, componentsSchemaPath)]
+	if !ok || comp == nil {
+		g.tagError(sf, fname, parent, g.tags.Inline, "a recursive type cannot be inlined")
+		return sor
+	}
+	c := comp.clone()
+	if nullable {
+		c.MakeNullable()
+	}
+	return c
+}
+
+// isNullSchema reports whether s is {"type":"null"}.
+func isNullSchema(s *Schema) bool {
+	return s != nil && s.Ref == "" && slices.Equal(s.Type, Types("null"))
+}
+
+// withoutNull returns a copy of s that does not accept null: the
+// inverse of Schema.MakeNullable. s is returned if it is not nullable.
+func withoutNull(s *Schema) *Schema {
+	if slices.Contains(s.Type, "null") {
+		c := s.clone()
+		c.Type = slices.DeleteFunc(slices.Clone(s.Type), func(t string) bool { return t == "null" })
+		return c
+	}
+	if len(s.Type) == 0 && len(s.AnyOf) == 2 && isNullSchema(s.AnyOf[1]) && s.AnyOf[0] != nil {
+		first := s.AnyOf[0]
+		c := s.clone()
+		c.AnyOf, c.Ref = first.AnyOf, first.Ref
+		return c
+	}
+	return s
+}
+
+// applyTagKeywords applies the title, pattern, multipleOf, readOnly,
+// writeOnly and additionalProperties tags of sf to schema, a use-site
+// target. An invalid value is recorded and dropped.
+func (g *Generator) applyTagKeywords(schema *Schema, sf reflect.StructField, fname string, parent reflect.Type) {
+	if v, ok := tagLookup(sf, g.tags.Title); ok && v != "" {
+		schema.Title = v
+	}
+	if v, ok := tagLookup(sf, g.tags.Pattern); ok && v != "" {
+		if _, err := regexp.Compile(v); err != nil {
+			g.tagError(sf, fname, parent, g.tags.Pattern, "%q is not a valid regular expression: %s", v, err)
+		} else {
+			schema.Pattern = v
+		}
+	}
+	if v, ok := tagLookup(sf, g.tags.MultipleOf); ok && v != "" {
+		v = strings.TrimSpace(v)
+		if f, err := strconv.ParseFloat(v, 64); err != nil || f <= 0 || math.IsInf(f, 0) || math.IsNaN(f) {
+			g.tagError(sf, fname, parent, g.tags.MultipleOf, "%q is not a positive number", v)
+		} else if json.Valid([]byte(v)) {
+			schema.MultipleOf = json.Number(v)
+		} else {
+			// Go syntax that is not JSON ("1e", "+1", ".5", hex).
+			schema.MultipleOf = json.Number(strconv.FormatFloat(f, 'g', -1, 64))
+		}
+	}
+	ro, roSet := g.boolTag(sf, fname, parent, g.tags.ReadOnly)
+	wo, woSet := g.boolTag(sf, fname, parent, g.tags.WriteOnly)
+	switch {
+	case ro && wo:
+		g.warn(fmt.Sprintf("field %q is both %s and %s: both are dropped", fname, g.tags.ReadOnly, g.tags.WriteOnly))
+	default:
+		if roSet {
+			schema.ReadOnly = ro
+		}
+		if woSet {
+			schema.WriteOnly = wo
+		}
+	}
+	if v, ok := tagLookup(sf, g.tags.AdditionalProperties); ok && v != "" {
+		g.closeObject(schema, v, sf, fname, parent)
+	}
+}
+
+// closeObject applies the additionalProperties tag (O11). Only "false"
+// is supported. On a reference a sibling additionalProperties:false
+// would reject every property, so unevaluatedProperties:false is used.
+func (g *Generator) closeObject(schema *Schema, v string, sf reflect.StructField, fname string, parent reflect.Type) {
+	tag := g.tags.AdditionalProperties
+	if v != "false" {
+		g.tagError(sf, fname, parent, tag, "%q is not supported, only \"false\"", v)
+		return
+	}
+	no := &Schema{Bool: new(false)}
+	ref := schema.Ref
+	if ref == "" && len(schema.AllOf) == 1 && schema.AllOf[0] != nil {
+		ref = schema.AllOf[0].Ref
+	}
+	if ref == "" && len(schema.AnyOf) > 0 && schema.AnyOf[0] != nil {
+		ref = schema.AnyOf[0].Ref
+	}
+	if ref != "" {
+		if comp, ok := g.api.Components.Schemas[strings.TrimPrefix(ref, componentsSchemaPath)]; ok && comp != nil &&
+			len(comp.Type) > 0 && !slices.Contains(comp.Type, "object") {
+			g.tagError(sf, fname, parent, tag, "the field is not an object")
+			return
+		}
+		schema.UnevaluatedProperties = no
+		return
+	}
+	switch {
+	case !slices.Contains(schema.Type, "object"):
+		g.tagError(sf, fname, parent, tag, "the field is not an object")
+	case schema.AdditionalProperties != nil:
+		g.tagError(sf, fname, parent, tag, "a map already declares additionalProperties")
+	default:
+		schema.AdditionalProperties = no
+	}
 }

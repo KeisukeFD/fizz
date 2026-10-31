@@ -312,7 +312,57 @@ func (g *Generator) newParameterFromField(idx int, t reflect.Type) (*Parameter, 
 			}
 		}
 	}
+	g.applyStyleTags(p, field, location, fieldErr)
 	return p, nil
+}
+
+// paramStyles lists the OAS 3.2 styles a parameter location accepts.
+// deepObject is valid for the query but not generated yet (P7.1).
+var paramStyles = map[string][]string{
+	"query":        {"form", "spaceDelimited", "pipeDelimited", "deepObject"},
+	"header":       {"simple"},
+	"path":         {"simple", "label", "matrix"},
+	cookieLocation: {"form", "cookie"},
+}
+
+// applyStyleTags applies the style and allowReserved tags of field to
+// p. An invalid value is recorded and dropped.
+func (g *Generator) applyStyleTags(p *Parameter, field reflect.StructField, location string, fieldErr func(msg, name string, typ reflect.Type, cause error) *FieldError) {
+	if v, ok := tagLookup(field, g.tags.Style); ok && v != "" {
+		allowed := paramStyles[location]
+		switch {
+		case !slices.Contains(allowed, v):
+			g.error(fieldErr(fmt.Sprintf("invalid %q tag: style %q is not allowed in %s (want one of %s)",
+				g.tags.Style, v, location, strings.Join(allowed, ", ")), p.Name, field.Type, nil))
+		case v == "deepObject":
+			// Valid, but its generation (explode, object schema and
+			// the errors of the unsupported options) is P7.1. Until
+			// then it is left out, with no error, so that the P7.1
+			// tests stay red.
+		case (v == "spaceDelimited" || v == "pipeDelimited") && !isArrayLike(field.Type):
+			g.error(fieldErr(fmt.Sprintf("invalid %q tag: style %s needs a slice or array", g.tags.Style, v), p.Name, field.Type, nil))
+		default:
+			p.Style = v
+			// An exploded delimited array is serialized as with
+			// form: only the unexploded one uses the delimiter.
+			if v == "spaceDelimited" || v == "pipeDelimited" {
+				if _, set := field.Tag.Lookup(BinderTags.Explode); !set {
+					p.Explode = new(false)
+				}
+			}
+		}
+	}
+	if v, ok := tagLookup(field, g.tags.AllowReserved); ok && v != "" {
+		b, err := strconv.ParseBool(v)
+		switch {
+		case err != nil:
+			g.error(fieldErr(fmt.Sprintf("invalid %q tag: %q is not a boolean", g.tags.AllowReserved, v), p.Name, field.Type, err))
+		case b && location != BinderTags.Query:
+			g.error(fieldErr(fmt.Sprintf("invalid %q tag: allowed on query parameters only, not %s", g.tags.AllowReserved, location), p.Name, field.Type, nil))
+		default:
+			p.AllowReserved = b
+		}
+	}
 }
 
 // paramLocation parses the tags of the struct field to extract

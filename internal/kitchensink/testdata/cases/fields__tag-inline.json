@@ -1,0 +1,56 @@
+{
+    "openapi": "3.2.1",
+    "info": {
+        "title": "kitchensink",
+        "version": "0"
+    },
+    "paths": {
+        "/tagInline": {
+            "post": {
+                "operationId": "tagInline",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TagInlineInput"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "KitchensinkFShared": {
+                "type": "object",
+                "properties": {
+                    "v": {
+                        "type": "string"
+                    }
+                }
+            },
+            "TagInlineInput": {
+                "type": "object",
+                "properties": {
+                    "home": {
+                        "type": "object",
+                        "properties": {
+                            "v": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "other": {
+                        "$ref": "#/components/schemas/KitchensinkFShared"
+                    }
+                }
+            }
+        }
+    }
+}

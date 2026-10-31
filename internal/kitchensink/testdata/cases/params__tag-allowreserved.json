@@ -1,0 +1,37 @@
+{
+    "openapi": "3.2.1",
+    "info": {
+        "title": "kitchensink",
+        "version": "0"
+    },
+    "paths": {
+        "/tagReserved": {
+            "get": {
+                "operationId": "tagReserved",
+                "parameters": [
+                    {
+                        "name": "u",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "allowReserved": true
+                    },
+                    {
+                        "name": "X-H",
+                        "in": "header",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        }
+    },
+    "components": {}
+}

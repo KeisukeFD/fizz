@@ -1,0 +1,41 @@
+{
+    "openapi": "3.2.1",
+    "info": {
+        "title": "kitchensink",
+        "version": "0"
+    },
+    "paths": {
+        "/tagStyle": {
+            "get": {
+                "operationId": "tagStyle",
+                "parameters": [
+                    {
+                        "name": "ids",
+                        "in": "query",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "style": "pipeDelimited",
+                        "explode": false
+                    },
+                    {
+                        "name": "m",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        }
+    },
+    "components": {}
+}

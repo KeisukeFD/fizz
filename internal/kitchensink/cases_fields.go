@@ -270,3 +270,155 @@ func init() {
 		},
 	)
 }
+
+// New struct tags (P6.2): one case per tag.
+type (
+	FTagTitle struct {
+		Name string `json:"name" title:"Pet name"`
+	}
+	FTagPattern struct {
+		Slug string `json:"slug" pattern:"^[a-z]+$"`
+		Bad  string `json:"bad" pattern:"[a-"`
+	}
+	FTagMultipleOf struct {
+		Price float64 `json:"price" multipleOf:"0.01"`
+		Zero  float64 `json:"zero" multipleOf:"0"`
+		Bad   float64 `json:"bad" multipleOf:"x"`
+	}
+	FTagRW struct {
+		RO   string `json:"ro" readOnly:"true"`
+		WO   string `json:"wo" writeOnly:"true"`
+		Both string `json:"both" readOnly:"true" writeOnly:"true"`
+	}
+	FTagNullable struct {
+		P *string  `json:"p" nullable:"false"`
+		S string   `json:"s" nullable:"true"`
+		R *FShared `json:"r" nullable:"false"`
+		N FShared  `json:"n" nullable:"true"`
+	}
+	FTagClosed struct {
+		Anon struct {
+			X int `json:"x"`
+		} `json:"anon" additionalProperties:"false"`
+		Named FShared `json:"named" additionalProperties:"false"`
+		N     int     `json:"n" additionalProperties:"false"`
+	}
+	FTagInline struct {
+		Home  FShared `json:"home" inline:"true"`
+		Other FShared `json:"other"`
+	}
+	FTagStyleQuery struct {
+		IDs []string `query:"ids" style:"pipeDelimited"`
+		M   string   `query:"m" style:"matrix"`
+	}
+	FTagReservedQuery struct {
+		U string `query:"u" allowReserved:"true"`
+		H string `header:"X-H" allowReserved:"true"`
+	}
+)
+
+const fTagBase = "/components/schemas/KitchensinkFTag"
+
+// fieldsQuery registers GET /id (operation id) with T as the input.
+func fieldsQuery[T any](id string) func(*fizz.Fizz) {
+	return func(f *fizz.Fizz) {
+		f.GET("/"+id, []fizz.OperationOption{fizz.ID(id)}, tonic.Handler(func(*gin.Context, *T) error { return nil }, 200))
+	}
+}
+
+func init() {
+	register(
+		Case{
+			Name:     "fields/tag-title",
+			Register: fieldsReq[FTagTitle]("tagTitle"),
+			Expect:   []Fragment{{Pointer: "/components/schemas/TagTitleInput/properties/name/title", JSON: `"Pet name"`}},
+			FixedBy:  "P6.2",
+		},
+		Case{
+			Name:     "fields/tag-pattern",
+			Register: fieldsReq[FTagPattern]("tagPattern"),
+			Expect: []Fragment{
+				{Pointer: "/components/schemas/TagPatternInput/properties/slug/pattern", JSON: `"^[a-z]+$"`},
+				{Pointer: "/components/schemas/TagPatternInput/properties/bad/pattern", Absent: true},
+			},
+			Errors:  []string{"pattern"},
+			FixedBy: "P6.2",
+		},
+		Case{
+			Name:     "fields/tag-multipleof",
+			Register: fieldsReq[FTagMultipleOf]("tagMultipleOf"),
+			Expect: []Fragment{
+				{Pointer: "/components/schemas/TagMultipleOfInput/properties/price/multipleOf", JSON: `0.01`},
+				{Pointer: "/components/schemas/TagMultipleOfInput/properties/zero/multipleOf", Absent: true},
+				{Pointer: "/components/schemas/TagMultipleOfInput/properties/bad/multipleOf", Absent: true},
+			},
+			Errors:  []string{"multipleOf"},
+			FixedBy: "P6.2",
+		},
+		Case{
+			Name:     "fields/tag-readonly-writeonly",
+			Register: fieldsReq[FTagRW]("tagRW"),
+			Expect: []Fragment{
+				{Pointer: "/components/schemas/TagRWInput/properties/ro/readOnly", JSON: `true`},
+				{Pointer: "/components/schemas/TagRWInput/properties/wo/writeOnly", JSON: `true`},
+				{Pointer: "/components/schemas/TagRWInput/properties/both", JSON: `{"type":"string"}`},
+			},
+			Warnings: []string{"both"},
+			FixedBy:  "P6.2",
+		},
+		Case{
+			Name:     "fields/tag-nullable",
+			Register: fieldsReq[FTagNullable]("tagNullable"),
+			Expect: []Fragment{
+				{Pointer: "/components/schemas/TagNullableInput/properties/p", JSON: `{"type":"string"}`},
+				{Pointer: "/components/schemas/TagNullableInput/properties/s", JSON: `{"type":["string","null"]}`},
+				{Pointer: "/components/schemas/TagNullableInput/properties/r", JSON: `{"$ref":"` + fSharedRef + `"}`},
+				{Pointer: "/components/schemas/TagNullableInput/properties/n", JSON: `{"anyOf":[{"$ref":"` + fSharedRef + `"},{"type":"null"}]}`},
+			},
+			FixedBy: "P6.2",
+		},
+		Case{
+			Name:     "fields/tag-additionalproperties-false",
+			Register: fieldsReq[FTagClosed]("tagClosed"),
+			Expect: []Fragment{
+				{Pointer: "/components/schemas/TagClosedInput/properties/anon/additionalProperties", JSON: `false`},
+				{Pointer: "/components/schemas/TagClosedInput/properties/named", JSON: `{"$ref":"` + fSharedRef + `","unevaluatedProperties":false}`},
+				{Pointer: "/components/schemas/TagClosedInput/properties/n", JSON: `{"type":"integer","format":"int64"}`},
+			},
+			Errors:  []string{"additionalProperties"},
+			FixedBy: "P6.2",
+		},
+		Case{
+			Name:     "fields/tag-inline",
+			Register: fieldsReq[FTagInline]("tagInline"),
+			Expect: []Fragment{
+				{Pointer: "/components/schemas/TagInlineInput/properties/home/$ref", Absent: true},
+				{Pointer: "/components/schemas/TagInlineInput/properties/home/type", JSON: `"object"`},
+				{Pointer: "/components/schemas/TagInlineInput/properties/other", JSON: `{"$ref":"` + fSharedRef + `"}`},
+				{Pointer: "/components/schemas/KitchensinkFShared/type", JSON: `"object"`},
+			},
+			FixedBy: "P6.2",
+		},
+		Case{
+			Name:     "params/tag-style",
+			Register: fieldsQuery[FTagStyleQuery]("tagStyle"),
+			Expect: []Fragment{
+				{Pointer: "/paths/~1tagStyle/get/parameters/0/style", JSON: `"pipeDelimited"`},
+				{Pointer: "/paths/~1tagStyle/get/parameters/0/explode", JSON: `false`},
+				{Pointer: "/paths/~1tagStyle/get/parameters/1/style", Absent: true},
+			},
+			Errors:  []string{"style"},
+			FixedBy: "P6.2",
+		},
+		Case{
+			Name:     "params/tag-allowreserved",
+			Register: fieldsQuery[FTagReservedQuery]("tagReserved"),
+			Expect: []Fragment{
+				{Pointer: "/paths/~1tagReserved/get/parameters/0/allowReserved", JSON: `true`},
+				{Pointer: "/paths/~1tagReserved/get/parameters/1/allowReserved", Absent: true},
+			},
+			Errors:  []string{"allowReserved"},
+			FixedBy: "P6.2",
+		},
+	)
+}

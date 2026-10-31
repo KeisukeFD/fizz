@@ -1,0 +1,50 @@
+{
+    "openapi": "3.2.1",
+    "info": {
+        "title": "kitchensink",
+        "version": "0"
+    },
+    "paths": {
+        "/tagMultipleOf": {
+            "post": {
+                "operationId": "tagMultipleOf",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TagMultipleOfInput"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "TagMultipleOfInput": {
+                "type": "object",
+                "properties": {
+                    "bad": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "price": {
+                        "type": "number",
+                        "format": "double",
+                        "multipleOf": 0.01
+                    },
+                    "zero": {
+                        "type": "number",
+                        "format": "double"
+                    }
+                }
+            }
+        }
+    }
+}

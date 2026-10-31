@@ -1,0 +1,44 @@
+{
+    "openapi": "3.2.1",
+    "info": {
+        "title": "kitchensink",
+        "version": "0"
+    },
+    "paths": {
+        "/tagPattern": {
+            "post": {
+                "operationId": "tagPattern",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TagPatternInput"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "TagPatternInput": {
+                "type": "object",
+                "properties": {
+                    "bad": {
+                        "type": "string"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "pattern": "^[a-z]+$"
+                    }
+                }
+            }
+        }
+    }
+}
