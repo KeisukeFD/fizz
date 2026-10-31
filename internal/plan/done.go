@@ -13,7 +13,9 @@ import (
 // Done lists the plan tasks that are merged ("P2.6", "P4.1b", ...).
 // A task PR adds its own ID here and nothing else; the harness then
 // fails every skipped test that names the task in FixedBy.
-var Done = map[string]bool{}
+var Done = map[string]bool{
+	"P1.0": true,
+}
 
 // IsDone reports whether task is in the done ledger. A composite ID
 // such as "P3.3+P4.8" is done only when every "+"-joined part is.

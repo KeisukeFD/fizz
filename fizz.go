@@ -50,13 +50,19 @@ type RouterGroup struct {
 
 // New creates a new Fizz wrapper for
 // a default Gin engine.
-func New() *Fizz {
-	return NewFromEngine(gin.New())
+func New(opts ...Option) *Fizz {
+	return NewFromEngine(gin.New(), opts...)
 }
 
 // NewFromEngine creates a new Fizz wrapper
 // from an existing Gin engine.
-func NewFromEngine(e *gin.Engine) *Fizz {
+func NewFromEngine(e *gin.Engine, opts ...Option) *Fizz {
+	var cfg config
+	for _, opt := range opts {
+		if opt != nil {
+			opt(&cfg)
+		}
+	}
 	// Create a new spec with the config
 	// based on tonic internals.
 	gen, _ := openapi.NewGenerator(

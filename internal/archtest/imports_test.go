@@ -174,24 +174,22 @@ func TestNoUUIDDep(t *testing.T) {
 
 // A06: the embedded docs UI lives in the main module.
 func TestDocsUIEmbeddedSameModule(t *testing.T) {
-	at.Pending(t, "P8.3", func(tb testing.TB) {
-		root := bARoot(tb)
-		if st, err := os.Stat(filepath.Join(root, "docsui", "embedded")); err != nil || !st.IsDir() {
-			tb.Fatal("docsui/embedded does not exist")
+	root := bARoot(t)
+	if st, err := os.Stat(filepath.Join(root, "docsui", "embedded")); err != nil || !st.IsDir() {
+		t.Fatal("docsui/embedded does not exist")
+	}
+	err := filepath.WalkDir(filepath.Join(root, "docsui"), func(p string, d os.DirEntry, err error) error {
+		if err == nil && !d.IsDir() && d.Name() == "go.mod" {
+			t.Errorf("nested module: %s", p)
 		}
-		err := filepath.WalkDir(filepath.Join(root, "docsui"), func(p string, d os.DirEntry, err error) error {
-			if err == nil && !d.IsDir() && d.Name() == "go.mod" {
-				tb.Errorf("nested module: %s", p)
-			}
-			return err
-		})
-		if err != nil {
-			tb.Fatal(err)
-		}
-		mod := strings.TrimSpace(bAGo(tb, "list", "-m"))
-		got := strings.TrimSpace(bAGo(tb, "list", "-f", "{{.Module.Path}}", "./docsui/embedded"))
-		if got != mod {
-			tb.Fatalf("docsui/embedded module = %q, want %q", got, mod)
-		}
+		return err
 	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	mod := strings.TrimSpace(bAGo(t, "list", "-m"))
+	got := strings.TrimSpace(bAGo(t, "list", "-f", "{{.Module.Path}}", "./docsui/embedded"))
+	if got != mod {
+		t.Fatalf("docsui/embedded module = %q, want %q", got, mod)
+	}
 }

@@ -44,6 +44,23 @@ jobs:
         with:
           files: coverage.txt
 
+  acceptance:
+    name: Acceptance (stubs, go stable)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+      - name: Install Go
+        uses: actions/setup-go@v7
+        with:
+          go-version: stable
+      - name: Vet
+        run: go vet -tags acceptance ./...
+      - name: Run acceptance tests
+        env:
+          FIZZ_STALE: fail
+        run: go test -tags acceptance -race -count=1 ./...
+
   tip:
     name: Tests (go tip)
     runs-on: ubuntu-latest
