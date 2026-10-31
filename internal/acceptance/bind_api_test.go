@@ -2,6 +2,7 @@ package acceptance
 
 import (
 	"errors"
+	"net/http"
 	"net/http/httptest"
 	"reflect"
 	"strings"
@@ -135,4 +136,62 @@ func TestBBQueryMaxKeys(t *testing.T) {
 			tb.Fatalf("got %v", err)
 		}
 	})
+}
+
+// B35: bind.Cookies on a plain *http.Request, with the rows of B19-B24.
+func TestBBCookiesDecodeTable(t *testing.T) {
+	type ptrIn struct {
+		N *int    `cookie:"n"`
+		S *string `cookie:"s" default:"d"`
+	}
+	type badDefault struct {
+		N int `cookie:"n" default:"x"`
+	}
+	rows := []struct {
+		name    string
+		cookies []http.Cookie
+		dst     any
+		want    any    // expected *dst, or nil when an error is expected
+		errIs   string // substring of the error
+	}{
+		{"present", []http.Cookie{{Name: "session", Value: "abc"}, {Name: "n", Value: "5"}}, &bBCookieIn{},
+			&bBCookieIn{Session: "abc", Lang: "en", N: 5}, ""},
+		{"default when absent", nil, &bBCookieIn{}, &bBCookieIn{Lang: "en"}, ""},
+		{"overrides default", []http.Cookie{{Name: "lang", Value: "fr"}}, &bBCookieIn{}, &bBCookieIn{Lang: "fr"}, ""},
+		{"absent required is left to validation", nil, &bBCookieReq{}, &bBCookieReq{}, ""},
+		{"bad type", []http.Cookie{{Name: "n", Value: "abc"}}, &bBCookieIn{}, nil, `cookie "n"`},
+		{"empty keeps empty", []http.Cookie{{Name: "lang", Value: ""}}, &bBCookieIn{}, &bBCookieIn{}, ""},
+		{"empty to int is an error", []http.Cookie{{Name: "n", Value: ""}}, &bBCookieIn{}, nil, `cookie "n"`},
+		{"raw value", []http.Cookie{{Name: "session", Value: "a%20b"}}, &bBCookieIn{}, &bBCookieIn{Session: "a%20b", Lang: "en"}, ""},
+		{"pointers", []http.Cookie{{Name: "n", Value: "7"}}, &ptrIn{}, &ptrIn{N: new(7), S: new("d")}, ""},
+		{"pointer absent stays nil", nil, &ptrIn{}, &ptrIn{S: new("d")}, ""},
+		{"bad default", nil, &badDefault{}, nil, `cookie "n"`},
+	}
+	for _, r := range rows {
+		t.Run(r.name, func(t *testing.T) {
+			at.Pending(t, "P7.2c", func(tb testing.TB) {
+				p, err := bind.PlanFor(reflect.TypeOf(r.dst).Elem(), bBTags)
+				if err != nil {
+					tb.Fatal(err)
+				}
+				req := httptest.NewRequest("GET", "/", nil)
+				for _, c := range r.cookies {
+					req.AddCookie(&c)
+				}
+				err = bind.Cookies(req, r.dst, p)
+				if r.want == nil {
+					if err == nil || !strings.Contains(err.Error(), r.errIs) {
+						tb.Fatalf("want error containing %q, got %v", r.errIs, err)
+					}
+					return
+				}
+				if err != nil {
+					tb.Fatal(err)
+				}
+				if !reflect.DeepEqual(r.dst, r.want) {
+					tb.Fatalf("got %+v, want %+v", r.dst, r.want)
+				}
+			})
+		})
+	}
 }

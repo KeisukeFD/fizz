@@ -7,6 +7,7 @@ import (
 	"go/parser"
 	"go/token"
 	"io/fs"
+	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -86,7 +87,11 @@ func TestStubsBelongToOpenTasks(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if files == 0 {
-		t.Fatal("no zz_stub_acceptance.go found")
+	// files == 0 is fine: P7.2c deleted the last stub, so every symbol the
+	// plan promised now exists. The walk keeps guarding against a new stub
+	// that names a task that is already done; make sure it walked the
+	// module and not some other directory.
+	if _, err := os.Stat(filepath.Join(root, "go.mod")); err != nil && files == 0 {
+		t.Fatalf("no stub file and no go.mod under %s: wrong root", root)
 	}
 }

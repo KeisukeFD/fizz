@@ -169,7 +169,7 @@ func setValue(v reflect.Value, rt route) error {
 		s := reflect.MakeSlice(v.Type(), 0, len(rt.vals))
 		for _, str := range rt.vals {
 			e := reflect.New(v.Type().Elem()).Elem()
-			if err := setScalar(e, str, rt.raw); err != nil {
+			if err := setScalar(e, str, "query parameter", rt.raw); err != nil {
 				return err
 			}
 			s = reflect.Append(s, e)
@@ -180,16 +180,16 @@ func setValue(v reflect.Value, rt route) error {
 	if len(rt.vals) != 1 {
 		return fmt.Errorf("bind: query parameter %q: got %d values for a scalar, want 1", rt.raw, len(rt.vals))
 	}
-	return setScalar(v, rt.vals[0], rt.raw)
+	return setScalar(v, rt.vals[0], "query parameter", rt.raw)
 }
 
 func implementsText(t reflect.Type) bool {
 	return reflect.PointerTo(t).Implements(textUnmarshaler)
 }
 
-func setScalar(v reflect.Value, s, raw string) error {
+func setScalar(v reflect.Value, s, what, name string) error {
 	fail := func(err error) error {
-		return fmt.Errorf("bind: query parameter %q: cannot convert %q to %s: %w", raw, s, v.Type(), err)
+		return fmt.Errorf("bind: %s %q: cannot convert %q to %s: %w", what, name, s, v.Type(), err)
 	}
 	if v.CanAddr() && implementsText(v.Type()) {
 		if err := v.Addr().Interface().(encoding.TextUnmarshaler).UnmarshalText([]byte(s)); err != nil {

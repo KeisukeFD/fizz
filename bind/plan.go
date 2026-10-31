@@ -20,6 +20,8 @@ type Tags struct {
 type Plan struct {
 	t      reflect.Type // the struct type, never a pointer
 	fields []planField  // deepObject query fields, in declaration order
+	// cookies are the cookie fields, in declaration order.
+	cookies []cookieField
 }
 
 type planKind int
@@ -40,6 +42,16 @@ type planField struct {
 	members map[string]member
 }
 
+// cookieField is one scalar cookie parameter.
+type cookieField struct {
+	name   string       // cookie name
+	index  []int        // path to the field (through embedded structs)
+	ptr    bool         // the field is a pointer to the scalar
+	typ    reflect.Type // the scalar type (pointer stripped)
+	def    string       // the default tag value, when hasDef
+	hasDef bool
+}
+
 type member struct {
 	index int
 	typ   reflect.Type
@@ -58,10 +70,12 @@ type planEntry struct {
 var planCache sync.Map // planKey -> planEntry
 
 // PlanFor returns the decoding plan for t, which must be a struct or a
-// pointer to one. Only exported fields whose Tags.Query tag names a
-// parameter and whose Tags.Style tag is exactly "deepObject" are planned;
-// every other field is left to the router's own binder. Results are cached
-// per (t, tags), so repeated calls return the same *Plan.
+// pointer to one. Only exported fields are planned: those whose
+// Tags.Query tag names a parameter and whose Tags.Style tag is exactly
+// "deepObject", and scalar fields (or pointers to scalars) with a
+// Tags.Cookie tag. Every other field is left to the router's own binder.
+// Results are cached per (t, tags), so repeated calls return the same
+// *Plan.
 func PlanFor(t reflect.Type, tags Tags) (*Plan, error) {
 	if t == nil {
 		return nil, fmt.Errorf("bind: PlanFor: nil type")
@@ -77,9 +91,9 @@ func PlanFor(t reflect.Type, tags Tags) (*Plan, error) {
 	return e.plan, e.err
 }
 
-// Empty reports whether p plans no parameter, so that Query would leave
-// every field alone. A nil Plan is empty.
-func (p *Plan) Empty() bool { return p == nil || len(p.fields) == 0 }
+// Empty reports whether p plans no parameter, so that Query and Cookies
+// would leave every field alone. A nil Plan is empty.
+func (p *Plan) Empty() bool { return p == nil || len(p.fields) == 0 && len(p.cookies) == 0 }
 
 func buildPlan(t reflect.Type, tags Tags) (*Plan, error) {
 	st := t
@@ -90,9 +104,6 @@ func buildPlan(t reflect.Type, tags Tags) (*Plan, error) {
 		return nil, fmt.Errorf("bind: PlanFor: %s is not a struct or pointer to struct", t)
 	}
 	p := &Plan{t: st}
-	if tags.Query == "" || tags.Style == "" {
-		return p, nil
-	}
 	if err := p.collect(st, nil, tags); err != nil {
 		return nil, err
 	}
@@ -105,6 +116,12 @@ func (p *Plan) collect(st reflect.Type, prefix []int, tags Tags) error {
 		index := append(append([]int(nil), prefix...), i)
 		if !f.IsExported() {
 			continue
+		}
+		if tags.Cookie != "" {
+			if v, ok := f.Tag.Lookup(tags.Cookie); ok {
+				p.addCookie(f, v, index, tags)
+				continue
+			}
 		}
 		if f.Tag.Get(tags.Style) != "deepObject" {
 			// Embedded structs without a query tag have promoted fields.
@@ -127,6 +144,27 @@ func (p *Plan) collect(st reflect.Type, prefix []int, tags Tags) error {
 		p.fields = append(p.fields, pf)
 	}
 	return nil
+}
+
+// addCookie plans a cookie field. The generator rejects a cookie parameter
+// that is not a scalar, so such a field is left alone here.
+func (p *Plan) addCookie(f reflect.StructField, tag string, index []int, tags Tags) {
+	name, _, _ := strings.Cut(tag, ",")
+	if name == "" || name == "-" {
+		return
+	}
+	cf := cookieField{name: name, index: index, typ: f.Type}
+	if cf.typ.Kind() == reflect.Pointer {
+		cf.ptr = true
+		cf.typ = cf.typ.Elem()
+	}
+	if !isScalar(cf.typ) {
+		return
+	}
+	if tags.Default != "" {
+		cf.def, cf.hasDef = f.Tag.Lookup(tags.Default)
+	}
+	p.cookies = append(p.cookies, cf)
 }
 
 func planDeepObject(f reflect.StructField, name string) (planField, error) {

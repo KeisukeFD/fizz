@@ -3,6 +3,7 @@ package fizz_test
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"net/http/httptest"
 
 	"github.com/gin-gonic/gin"
@@ -111,6 +112,28 @@ func ExampleCustomizeOperation() {
 	fmt.Println(doc.Paths["/pets"].GET.Summary)
 	// Output:
 	// List pets (beta)
+}
+
+type cookieIn struct {
+	Session string `cookie:"session"`
+	Lang    string `cookie:"lang" default:"en"`
+}
+
+// This example binds cookie parameters. A cookie that is absent takes the
+// default tag value; New installs the tonic bind hook that does it.
+func Example_cookie() {
+	f := fizz.New()
+	f.GET("/me", []fizz.OperationOption{fizz.ID("getMe")},
+		tonic.Handler(func(c *gin.Context, in *cookieIn) error {
+			fmt.Printf("session=%s lang=%s\n", in.Session, in.Lang)
+			return nil
+		}, 204))
+
+	req := httptest.NewRequest("GET", "/me", nil)
+	req.AddCookie(&http.Cookie{Name: "session", Value: "abc"})
+	f.ServeHTTP(httptest.NewRecorder(), req)
+	// Output:
+	// session=abc lang=en
 }
 
 type deepObjectIn struct {

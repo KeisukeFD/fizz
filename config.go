@@ -60,8 +60,8 @@ func WithAnnotationStyle(s openapi.AnnotationStyle) Option {
 
 // WithoutBindHook stops New and NewFromEngine from calling
 // InstallBindHook, which wraps the process-global tonic bind hook to
-// bind deepObject query parameters. Without the hook those parameters
-// are documented but not bound, unless you install it yourself with
+// bind deepObject query parameters and cookie parameters. Without the
+// hook those parameters are documented but not bound, unless you install it yourself with
 // InstallBindHook or tonic.SetBindHook(fizz.BindHook(next)). It does
 // not remove a hook that an earlier New already installed.
 func WithoutBindHook() Option {

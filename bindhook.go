@@ -25,17 +25,21 @@ type bindState struct {
 	ran  bool       // fizz's hook step has run for this request
 }
 
-// BindHook returns a tonic bind hook that calls next, then binds the
-// deepObject query parameters of the route (those tagged
-// style:"deepObject"), which tonic does not understand. If next fails, its
-// error is returned unchanged. A binding error is returned as is: tonic
-// wraps it in a tonic.BindError and passes it to the error hook, which
-// answers 400 by default. A nil next stands for tonic.DefaultBindingHook.
+// BindHook returns a tonic bind hook that calls next, then binds what tonic
+// does not understand: the deepObject query parameters of the route (those
+// tagged style:"deepObject") and its cookie parameters (scalar fields with
+// a cookie tag). A cookie that is absent takes the field's default tag
+// value; one that is present, even empty, keeps its raw value, which is
+// not URL-decoded. Whether a cookie is required is left to
+// validate:"required". If next fails, its error is returned unchanged. A
+// binding error is returned as is: tonic wraps it in a tonic.BindError and
+// passes it to the error hook, which answers 400 by default. A nil next
+// stands for tonic.DefaultBindingHook.
 //
 // New installs it around the current hook (see InstallBindHook), so
 // calling BindHook yourself is only needed when you set a hook after New:
 //
-//	tonic.SetBindHook(myHook)                // replaces fizz's step: deepObject stops binding
+//	tonic.SetBindHook(myHook)                // replaces fizz's step: deepObject and cookies stop binding
 //	tonic.SetBindHook(fizz.BindHook(myHook)) // composes with it
 //
 // The hook does nothing for a request that is not served by a route
@@ -63,7 +67,10 @@ func BindHook(next tonic.BindHook) tonic.BindHook {
 			return nil
 		}
 		st.ran = true
-		return bind.Query(c.Request, i, st.plan)
+		if err := bind.Query(c.Request, i, st.plan); err != nil {
+			return err
+		}
+		return bind.Cookies(c.Request, i, st.plan)
 	}
 }
 
@@ -106,7 +113,7 @@ func InstallBindHook() {
 
 // bindPlan returns the plan to attach to a route, or nil if the route has
 // nothing for the hook to bind. A problem that makes the route's
-// deepObject parameters unbindable is recorded as a warning.
+// deepObject or cookie parameters unbindable is recorded as a warning.
 func (g *RouterGroup) bindPlan(method, path, id string, hfunc *tonic.Route, inputModel any) *bind.Plan {
 	it := hfunc.InputType()
 	if it == nil {
@@ -116,12 +123,12 @@ func (g *RouterGroup) bindPlan(method, path, id string, hfunc *tonic.Route, inpu
 		g.gen.RecordError(&openapi.Warning{Method: method, Path: path, ID: id, Msg: msg})
 	}
 	if inputModel != nil && deref(reflect.TypeOf(inputModel)) != deref(it) {
-		warn(fmt.Sprintf("InputModel %s differs from the handler input %s: deepObject parameters are not bound", reflect.TypeOf(inputModel), it))
+		warn(fmt.Sprintf("InputModel %s differs from the handler input %s: deepObject and cookie parameters are not bound", reflect.TypeOf(inputModel), it))
 		return nil
 	}
 	p, err := bind.PlanFor(it, g.bindTags)
 	if err != nil {
-		warn(fmt.Sprintf("deepObject parameters are not bound: %v", err))
+		warn(fmt.Sprintf("deepObject and cookie parameters are not bound: %v", err))
 		return nil
 	}
 	if p.Empty() {
@@ -161,6 +168,6 @@ func bindTagsOf(n openapi.TagNames) bind.Tags {
 // run for a route that has a plan: another hook replaced it.
 func warnBindHookNotRun(opID string) {
 	if gin.IsDebugging() {
-		fmt.Fprintf(gin.DefaultWriter, "[FIZZ-debug] WARNING: the tonic bind hook was replaced after fizz.New, so the deepObject parameters of operation %q are not bound; set it with tonic.SetBindHook(fizz.BindHook(next))\n", opID)
+		fmt.Fprintf(gin.DefaultWriter, "[FIZZ-debug] WARNING: the tonic bind hook was replaced after fizz.New, so the deepObject and cookie parameters of operation %q are not bound; set it with tonic.SetBindHook(fizz.BindHook(next))\n", opID)
 	}
 }
