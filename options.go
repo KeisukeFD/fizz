@@ -148,3 +148,80 @@ func XInternal() func(*openapi.OperationInfo) {
 		o.XInternal = true
 	}
 }
+
+// ContentOption describes one media type of a request body: see Content.
+type ContentOption func(*contentSpec)
+
+// contentSpec is the state a ContentOption fills in.
+type contentSpec struct {
+	mediaType string
+	model     any
+	encodings []*openapi.EncodingInfo
+}
+
+// EncodingOption sets the encoding of a property of a Content.
+type EncodingOption func(*encodingSpec)
+
+// encodingSpec is the state an EncodingOption fills in.
+type encodingSpec struct {
+	property    string
+	contentType string
+}
+
+// RequestBody adjusts the request body of the operation, over what the
+// input type and the tags give (and under the OperationHook). desc is
+// its description; required overrides the inferred required flag, in
+// both directions. If contents are given they replace the inferred
+// content entirely; a media type given twice is an error and the first
+// is kept. Without contents the inferred content is kept, and it is an
+// error if there is none. A request body is an error on GET and HEAD
+// operations; DELETE may have one.
+func RequestBody(desc string, required bool, contents ...ContentOption) OperationOption {
+	return func(o *openapi.OperationInfo) {
+		rb := &openapi.RequestBodyInfo{Description: desc, Required: required}
+		for _, c := range contents {
+			if c == nil {
+				continue
+			}
+			var s contentSpec
+			c(&s)
+			rb.Contents = append(rb.Contents, &openapi.ContentInfo{
+				MediaType: s.mediaType,
+				Model:     s.model,
+				Encodings: s.encodings,
+			})
+		}
+		o.RequestBody = rb
+	}
+}
+
+// Content describes the media type of a request body, whose schema is
+// the one of model, as for any other type: a named struct is a
+// component. A nil model gives a media type without a schema.
+func Content(mediaType string, model any, encs ...EncodingOption) ContentOption {
+	return func(s *contentSpec) {
+		s.mediaType = mediaType
+		s.model = model
+		for _, e := range encs {
+			if e == nil {
+				continue
+			}
+			var es encodingSpec
+			e(&es)
+			s.encodings = append(s.encodings, &openapi.EncodingInfo{
+				Property:    es.property,
+				ContentType: es.contentType,
+			})
+		}
+	}
+}
+
+// Encoding sets the content type of a property of the schema of a
+// Content (the "encoding" of a media type). A property that the schema
+// does not have is reported as a warning.
+func Encoding(property, contentType string) EncodingOption {
+	return func(s *encodingSpec) {
+		s.property = property
+		s.contentType = contentType
+	}
+}

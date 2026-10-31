@@ -535,6 +535,10 @@ func (g *Generator) buildOperation(path, method, tag string, in, out reflect.Typ
 	allowBody := method != http.MethodGet &&
 		method != http.MethodHead
 
+	// The contents of the RequestBody option replace the inferred body,
+	// which is then not built, so that it leaves no component behind.
+	hasContents := info.RequestBody != nil && len(info.RequestBody.Contents) > 0
+
 	if in != nil {
 		if in.Kind() == reflect.Pointer {
 			in = in.Elem()
@@ -542,7 +546,7 @@ func (g *Generator) buildOperation(path, method, tag string, in, out reflect.Typ
 		if in.Kind() != reflect.Struct {
 			return nil, errors.New("input type is not a struct")
 		}
-		if err := g.setOperationParams(op, in, in, allowBody); err != nil {
+		if err := g.setOperationParams(op, in, in, allowBody && !hasContents); err != nil {
 			return nil, err
 		}
 	}
@@ -571,6 +575,7 @@ func (g *Generator) buildOperation(path, method, tag string, in, out reflect.Typ
 			}
 		}
 	}
+	g.applyRequestBody(op, method, info.RequestBody)
 	return g.operationHook(op, method, path), nil
 }
 

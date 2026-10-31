@@ -4,6 +4,7 @@ import (
 	"cmp"
 	"errors"
 	"fmt"
+	"net/http"
 	"reflect"
 	"slices"
 	"sort"
@@ -26,6 +27,84 @@ func (g *Generator) setOperationParams(op *Operation, t, parent reflect.Type, al
 		g.nameRequestBody(op, t)
 	}
 	return nil
+}
+
+// applyRequestBody applies the RequestBody option rb to op, whose
+// inferred request body, if any, is already built (unless rb has
+// contents, which replace it: it is then not inferred at all). Problems
+// are recorded and leave the operation without the part that is invalid.
+func (g *Generator) applyRequestBody(op *Operation, method string, rb *RequestBodyInfo) {
+	if rb == nil {
+		return
+	}
+	if method == http.MethodGet || method == http.MethodHead {
+		g.error(fmt.Errorf("RequestBody: %s operations cannot have a request body", method))
+		return
+	}
+	if len(rb.Contents) == 0 {
+		if op.RequestBody == nil {
+			g.error(errors.New("RequestBody: the operation has no request body to describe"))
+			return
+		}
+	} else {
+		op.RequestBody = &RequestBody{Content: g.contentsFromInfo(rb.Contents)}
+	}
+	op.RequestBody.Description = rb.Description
+	op.RequestBody.Required = rb.Required
+}
+
+// contentsFromInfo builds the content map of a request body. A media
+// type given twice keeps its first definition and records an error.
+func (g *Generator) contentsFromInfo(contents []*ContentInfo) map[string]*MediaType {
+	m := make(map[string]*MediaType, len(contents))
+	for _, c := range contents {
+		if c == nil {
+			continue
+		}
+		if c.MediaType == "" {
+			g.error(errors.New("RequestBody: a content has no media type"))
+			continue
+		}
+		if _, dup := m[c.MediaType]; dup {
+			g.error(fmt.Errorf("RequestBody: media type %q is given more than once: the first is kept", c.MediaType))
+			continue
+		}
+		mt := &MediaType{}
+		if c.Model != nil {
+			mt.Schema = g.newSchemaFromModel(reflect.TypeOf(c.Model))
+		}
+		for _, e := range c.Encodings {
+			if e == nil {
+				continue
+			}
+			if !g.hasProperty(mt.Schema, e.Property) {
+				g.warn(fmt.Sprintf("RequestBody: encoding of %q: the schema of %q has no such property", e.Property, c.MediaType))
+			}
+			if mt.Encoding == nil {
+				mt.Encoding = make(map[string]*Encoding)
+			}
+			mt.Encoding[e.Property] = &Encoding{ContentType: e.ContentType}
+		}
+		m[c.MediaType] = mt
+	}
+	return m
+}
+
+// hasProperty reports whether the schema s, resolving a reference to a
+// component, has the property name. A composed schema is not inspected
+// and is assumed to have it.
+func (g *Generator) hasProperty(s *Schema, name string) bool {
+	if s != nil && s.Ref != "" {
+		s = g.api.Components.Schemas[strings.TrimPrefix(s.Ref, componentsSchemaPath)]
+	}
+	if s == nil {
+		return false
+	}
+	if len(s.AllOf)+len(s.AnyOf)+len(s.OneOf) > 0 {
+		return true
+	}
+	_, ok := s.Properties[name]
+	return ok
 }
 
 // wildcardNote is appended to the description of a path parameter that

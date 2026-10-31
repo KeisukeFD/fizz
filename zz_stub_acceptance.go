@@ -34,40 +34,6 @@ func BindHook(next tonic.BindHook) tonic.BindHook {
 func InstallBindHook() {
 }
 
-// ContentOption is a stub type.
-// FixedBy: P6.6a
-type ContentOption func(*contentSpec)
-
-// contentSpec is a stub type.
-// FixedBy: P6.6a
-type contentSpec struct{}
-
-// EncodingOption is a stub type.
-// FixedBy: P6.6a
-type EncodingOption func(*encodingSpec)
-
-// encodingSpec is a stub type.
-// FixedBy: P6.6a
-type encodingSpec struct{}
-
-// RequestBody is a stub.
-// FixedBy: P6.6a
-func RequestBody(desc string, required bool, contents ...ContentOption) OperationOption {
-	return func(*openapi.OperationInfo) {}
-}
-
-// Content is a stub.
-// FixedBy: P6.6a
-func Content(mediaType string, model any, encs ...EncodingOption) ContentOption {
-	return func(*contentSpec) {}
-}
-
-// Encoding is a stub.
-// FixedBy: P6.6a
-func Encoding(property, contentType string) EncodingOption {
-	return func(*encodingSpec) {}
-}
-
 // Parameter is a stub.
 // FixedBy: P6.6b
 func Parameter(p *openapi.Parameter) OperationOption {
