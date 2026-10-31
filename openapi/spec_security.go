@@ -8,30 +8,34 @@ type SecuritySchemeOrRef = OrRef[SecurityScheme]
 
 // SecurityScheme represents a security scheme that can be used by an operation.
 type SecurityScheme struct {
-	Type             string      `json:"type,omitempty" yaml:"type,omitempty"`
-	Scheme           string      `json:"scheme,omitempty" yaml:"scheme,omitempty"`
-	BearerFormat     string      `json:"bearerFormat,omitempty" yaml:"bearerFormat,omitempty"`
-	Description      string      `json:"description,omitempty" yaml:"description,omitempty"`
-	In               string      `json:"in,omitempty" yaml:"in,omitempty"`
-	Name             string      `json:"name,omitempty" yaml:"name,omitempty"`
-	OpenIDConnectURL string      `json:"openIdConnectUrl,omitempty" yaml:"openIdConnectUrl,omitempty"`
-	Flows            *OAuthFlows `json:"flows,omitempty" yaml:"flows,omitempty"`
+	Type              string      `json:"type,omitempty" yaml:"type,omitempty"`
+	Scheme            string      `json:"scheme,omitempty" yaml:"scheme,omitempty"`
+	BearerFormat      string      `json:"bearerFormat,omitempty" yaml:"bearerFormat,omitempty"`
+	Description       string      `json:"description,omitempty" yaml:"description,omitempty"`
+	Deprecated        bool        `json:"deprecated,omitzero" yaml:"deprecated,omitempty"`
+	In                string      `json:"in,omitempty" yaml:"in,omitempty"`
+	Name              string      `json:"name,omitempty" yaml:"name,omitempty"`
+	OpenIDConnectURL  string      `json:"openIdConnectUrl,omitempty" yaml:"openIdConnectUrl,omitempty"`
+	Flows             *OAuthFlows `json:"flows,omitempty" yaml:"flows,omitempty"`
+	OAuth2MetadataURL string      `json:"oauth2MetadataUrl,omitempty" yaml:"oauth2MetadataUrl,omitempty"`
 }
 
 // OAuthFlows represents all the supported OAuth flows.
 type OAuthFlows struct {
-	Implicit          *OAuthFlow `json:"implicit,omitempty" yaml:"implicit,omitempty"`
-	Password          *OAuthFlow `json:"password,omitempty" yaml:"password,omitempty"`
-	ClientCredentials *OAuthFlow `json:"clientCredentials,omitempty" yaml:"clientCredentials,omitempty"`
-	AuthorizationCode *OAuthFlow `json:"authorizationCode,omitempty" yaml:"authorizationCode,omitempty"`
+	Implicit            *OAuthFlow `json:"implicit,omitempty" yaml:"implicit,omitempty"`
+	Password            *OAuthFlow `json:"password,omitempty" yaml:"password,omitempty"`
+	ClientCredentials   *OAuthFlow `json:"clientCredentials,omitempty" yaml:"clientCredentials,omitempty"`
+	AuthorizationCode   *OAuthFlow `json:"authorizationCode,omitempty" yaml:"authorizationCode,omitempty"`
+	DeviceAuthorization *OAuthFlow `json:"deviceAuthorization,omitempty" yaml:"deviceAuthorization,omitempty"`
 }
 
 // OAuthFlow represents an OAuth security scheme.
 type OAuthFlow struct {
-	AuthorizationURL string            `json:"authorizationUrl,omitempty" yaml:"authorizationUrl,omitempty"`
-	TokenURL         string            `json:"tokenUrl,omitempty" yaml:"tokenUrl,omitempty"`
-	RefreshURL       string            `json:"refreshUrl,omitempty" yaml:"refreshUrl,omitempty"`
-	Scopes           map[string]string `json:"scopes,omitempty" yaml:"scopes,omitempty"`
+	AuthorizationURL       string            `json:"authorizationUrl,omitempty" yaml:"authorizationUrl,omitempty"`
+	DeviceAuthorizationURL string            `json:"deviceAuthorizationUrl,omitempty" yaml:"deviceAuthorizationUrl,omitempty"`
+	TokenURL               string            `json:"tokenUrl,omitempty" yaml:"tokenUrl,omitempty"`
+	RefreshURL             string            `json:"refreshUrl,omitempty" yaml:"refreshUrl,omitempty"`
+	Scopes                 map[string]string `json:"scopes,omitempty" yaml:"scopes,omitempty"`
 }
 
 // MarshalYAML implements yaml.Marshaler for OAuthFlow.
