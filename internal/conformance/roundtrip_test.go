@@ -21,8 +21,6 @@ import (
 // task is a spec-model bug listed in docs/plan/PLAN-v2.md (P10.3a...), and
 // once the task is in plan.Done its documents must pass.
 var roundTripFixedBy = map[string]string{
-	// operation "parameters": [] dropped.
-	"oas/tests/schema/pass/mega": "P10.3d",
 	// schema "properties": {} dropped.
 	"spectext/example-url-encoded-form-with-json-values-1": "P10.3e",
 	// request body without "content" gains "content": null.

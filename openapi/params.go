@@ -127,6 +127,11 @@ func (g *Generator) finishPathParams(op *Operation, path string, wildcards []str
 		g.error(fmt.Errorf("path parameter %q is not in the path template %q: dropped", v.Name, path))
 		return true
 	})
+	// Parameters is omitted when nil but written as [] when empty, so
+	// an emptied list goes back to nil.
+	if len(op.Parameters) == 0 {
+		op.Parameters = nil
+	}
 	for _, m := range paramsInPathRe.FindAllStringSubmatch(path, -1) {
 		name := m[1]
 		var p *Parameter
@@ -214,6 +219,9 @@ func (g *Generator) walkParams(op *Operation, t reflect.Type, active map[reflect
 			// the binder leaves its fields alone: they are not documented.
 			if sf.Type.Kind() == reflect.Pointer && !sf.IsExported() && len(op.Parameters) > n {
 				op.Parameters = op.Parameters[:n]
+				if n == 0 {
+					op.Parameters = nil
+				}
 				g.error(&FieldError{
 					Message:  "parameters promoted through an unexported embedded pointer cannot be bound; embed the struct by value or export the type",
 					Name:     sf.Name,

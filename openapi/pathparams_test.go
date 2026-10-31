@@ -162,3 +162,21 @@ func TestWarningsOnlyIsNotAnError(t *testing.T) {
 		}
 	}
 }
+
+type ppOnlyOrphan struct {
+	ID string `path:"id"`
+}
+
+// TestEmptiedParametersIsNil guards the omitzero tag of
+// Operation.Parameters: dropping the only parameter must leave nil, which
+// is omitted, not an empty slice, which is written as "parameters": [].
+func TestEmptiedParametersIsNil(t *testing.T) {
+	g := gen(t)
+	op, err := g.AddOperation("/a", "GET", "", reflect.TypeFor[ppOnlyOrphan](), nil, &OperationInfo{ID: "op", StatusCode: 200})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if op.Parameters != nil {
+		t.Errorf("Parameters = %#v, want nil", op.Parameters)
+	}
+}

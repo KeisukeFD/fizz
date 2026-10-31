@@ -50,9 +50,7 @@ func TestCorpusEmptyComponentsPathItems(t *testing.T) {
 
 // Operation "parameters": [] is dropped.
 func TestCorpusEmptyOperationParameters(t *testing.T) {
-	at.Pending(t, "P10.3d", func(tb testing.TB) {
-		exactRoundTrip[openapi.Operation](tb, `{"parameters":[],"responses":{"200":{"description":"ok"}}}`)
-	})
+	exactRoundTrip[openapi.Operation](t, `{"parameters":[],"responses":{"200":{"description":"ok"}}}`)
 }
 
 // Schema "properties": {} is dropped.

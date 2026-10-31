@@ -62,7 +62,7 @@ type Operation struct {
 	Description  string                    `json:"description,omitempty"`
 	ExternalDocs *ExternalDocs             `json:"externalDocs,omitempty"`
 	ID           string                    `json:"operationId,omitempty"`
-	Parameters   []*ParameterOrRef         `json:"parameters,omitempty"`
+	Parameters   []*ParameterOrRef         `json:"parameters,omitzero"`
 	RequestBody  *RequestBody              `json:"requestBody,omitzero"`
 	Responses    Responses                 `json:"responses,omitempty"`
 	Callbacks    map[string]*CallbackOrRef `json:"callbacks,omitempty"`
