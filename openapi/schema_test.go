@@ -41,7 +41,7 @@ func TestSchemaForElements(t *testing.T) {
 		{"slice of override", reflect.TypeFor[[]SchOv](), `{"type":"array","items":{"type":"string","format":"ov"}}`},
 		{"map of override", reflect.TypeFor[map[string]SchOv](), `{"type":"object","additionalProperties":{"type":"string","format":"ov"}}`},
 		{"slice of pointer", reflect.TypeFor[[]*string](), `{"type":"array","items":{"type":["string","null"]}}`},
-		{"array", reflect.TypeFor[[2]int](), `{"type":"array","items":{"type":"integer","format":"int32"},"minItems":2,"maxItems":2}`},
+		{"array", reflect.TypeFor[[2]int](), `{"type":"array","items":{"type":"integer","format":"int64"},"minItems":2,"maxItems":2}`},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -166,7 +166,7 @@ func TestSchemaFromUnsupportedType(t *testing.T) {
 func TestSchemaFromMapWithUnsupportedKeys(t *testing.T) {
 	g := gen(t)
 
-	schema := g.newSchemaFromType(rt(map[int]string{}))
+	schema := g.newSchemaFromType(rt(map[float64]string{}))
 	assert.Nil(t, schema)
 	assert.Len(t, g.Errors(), 1)
 	assert.Implements(t, (*error)(nil), g.Errors()[0])

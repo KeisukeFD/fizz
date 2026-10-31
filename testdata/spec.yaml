@@ -89,7 +89,7 @@ paths:
           required: true
           schema:
             type: integer
-            format: int32
+            format: int64
         - name: q
           in: query
           schema:
@@ -135,7 +135,7 @@ components:
         y:
           type: integer
           description: This is Y
-          format: int32
+          format: int64
         z:
           $ref: '#/components/schemas/FizzCustomTime'
     PostTestInput:

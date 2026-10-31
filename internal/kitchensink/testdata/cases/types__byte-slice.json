@@ -40,13 +40,7 @@
                         "type": "string",
                         "contentEncoding": "base64"
                     },
-                    "raw": {
-                        "type": "array",
-                        "items": {
-                            "type": "integer",
-                            "format": "int32"
-                        }
-                    }
+                    "raw": {}
                 }
             }
         }

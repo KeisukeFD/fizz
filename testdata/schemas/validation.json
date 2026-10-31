@@ -8,7 +8,7 @@
         },
         "B": {
             "type": "integer",
-            "format": "int32",
+            "format": "int64",
             "maximum": 100,
             "minimum": 5
         },
@@ -41,7 +41,7 @@
         },
         "H": {
             "type": "integer",
-            "format": "int32"
+            "format": "int64"
         },
         "I": {
             "type": "array",

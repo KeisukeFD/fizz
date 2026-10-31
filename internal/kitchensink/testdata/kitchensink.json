@@ -54,7 +54,7 @@
                         "schema": {
                             "type": "integer",
                             "description": "Page size",
-                            "format": "int32",
+                            "format": "int64",
                             "default": 20,
                             "maximum": 100,
                             "minimum": 1
@@ -85,7 +85,7 @@
                                 "description": "Requests left",
                                 "schema": {
                                     "type": "integer",
-                                    "format": "int32"
+                                    "format": "int64"
                                 }
                             }
                         },
@@ -172,7 +172,7 @@
                         "schema": {
                             "type": "integer",
                             "description": "Pet ID",
-                            "format": "int32"
+                            "format": "int64"
                         }
                     }
                 ],
@@ -206,7 +206,7 @@
                         "schema": {
                             "type": "integer",
                             "description": "Pet ID",
-                            "format": "int32"
+                            "format": "int64"
                         }
                     }
                 ],
@@ -240,7 +240,7 @@
                     },
                     "total": {
                         "type": "integer",
-                        "format": "int32"
+                        "format": "int64"
                     }
                 }
             },
@@ -269,7 +269,7 @@
                     "id": {
                         "type": "integer",
                         "description": "Unique ID",
-                        "format": "int32"
+                        "format": "int64"
                     },
                     "kind": {
                         "type": "string",
@@ -321,7 +321,7 @@
                 "properties": {
                     "id": {
                         "type": "integer",
-                        "format": "int32"
+                        "format": "int64"
                     },
                     "name": {
                         "type": "string"

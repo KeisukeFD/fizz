@@ -1,0 +1,58 @@
+{
+    "openapi": "3.2.1",
+    "info": {
+        "title": "kitchensink",
+        "version": "0"
+    },
+    "paths": {
+        "/t": {
+            "get": {
+                "operationId": "t",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/KitchensinkTInts"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "KitchensinkTInts": {
+                "type": "object",
+                "properties": {
+                    "i": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "i32": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "u": {
+                        "type": "integer",
+                        "format": "uint64",
+                        "minimum": 0
+                    },
+                    "u32": {
+                        "type": "integer",
+                        "format": "uint32",
+                        "minimum": 0
+                    },
+                    "u64": {
+                        "type": "integer",
+                        "format": "uint64",
+                        "minimum": 0
+                    }
+                }
+            }
+        }
+    }
+}

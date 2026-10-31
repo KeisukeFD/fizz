@@ -33,6 +33,18 @@
                         "additionalProperties": {
                             "type": "string"
                         }
+                    },
+                    "int": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string"
+                        }
+                    },
+                    "text": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string"
+                        }
                     }
                 }
             }

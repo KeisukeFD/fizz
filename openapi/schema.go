@@ -1,6 +1,7 @@
 package openapi
 
 import (
+	"fmt"
 	"reflect"
 	"strings"
 )
@@ -36,6 +37,8 @@ func (g *Generator) schemaFor(t reflect.Type) *Schema {
 	// resolved by datatype.
 	dt := g.datatype(t)
 
+	g.checkJSONMarshaler(t)
+
 	switch dt {
 	case TypeUnsupported:
 		g.error(&TypeError{
@@ -60,6 +63,9 @@ func (g *Generator) schemaFor(t reflect.Type) *Schema {
 	if dt == TypeByte {
 		schema.Format = ""
 		schema.ContentEncoding = "base64"
+	}
+	if isUnsigned(dt) {
+		schema.Minimum = Num(0)
 	}
 	if nullable {
 		schema.MakeNullable()
@@ -99,13 +105,18 @@ func (g *Generator) composite(t reflect.Type) *Schema {
 		// and declares its value type in additionalProperties.
 		schema.Type = Types("object")
 
-		// JSON Schema allow only strings as object key.
-		if t.Key().Kind() != reflect.String {
+		// JSON object keys are strings: the key type must be
+		// encodable as one.
+		pattern, ok := mapKeyPattern(t.Key())
+		if !ok {
 			g.error(&TypeError{
 				Message: "encountered type Map with keys of unsupported type",
 				Type:    t,
 			})
 			return nil
+		}
+		if pattern != "" {
+			schema.PropertyNames = &Schema{Pattern: pattern}
 		}
 		schema.AdditionalProperties = g.schemaFor(t.Elem())
 	} else {
@@ -126,6 +137,55 @@ func (g *Generator) composite(t reflect.Type) *Schema {
 		return &Schema{Ref: componentsSchemaPath + name}
 	}
 	return schema
+}
+
+const (
+	intKeyPattern  = "^-?[0-9]+$"
+	uintKeyPattern = "^[0-9]+$"
+)
+
+// mapKeyPattern reports whether encoding/json can encode a map key of
+// type k, following its resolution order: string kinds, then
+// encoding.TextMarshaler, then integer kinds. For integer keys it also
+// returns the pattern of the encoded key.
+func mapKeyPattern(k reflect.Type) (pattern string, ok bool) {
+	if k.Kind() == reflect.String {
+		return "", true
+	}
+	if isTextMarshaler(k) {
+		return "", true
+	}
+	switch k.Kind() {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return intKeyPattern, true
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+		return uintKeyPattern, true
+	}
+	return "", false
+}
+
+// checkJSONMarshaler applies the D14 policy to a type that implements
+// json.Marshaler without encoding.TextMarshaler: its schema is derived
+// from its kind, which may not match the encoded value, so a warning is
+// recorded (once per type). Types with an explicit schema (DataType,
+// override, known type) are exempt.
+func (g *Generator) checkJSONMarshaler(t reflect.Type) {
+	if !isJSONMarshaler(t) || isTextMarshaler(t) || implementsAny(t, tofDataType) {
+		return
+	}
+	if _, ok := g.dataTypes[t]; ok {
+		return
+	}
+	if _, ok := knownTypes[t]; ok {
+		return
+	}
+	if g.warned[t] {
+		return
+	}
+	g.warned[t] = true
+	g.warn(fmt.Sprintf("type %s implements json.Marshaler but not encoding.TextMarshaler: "+
+		"its schema is derived from its kind and may not match its JSON encoding, "+
+		"implement SchemaProvider to describe it", t))
 }
 
 // structSchema returns an OpenAPI schema that describe

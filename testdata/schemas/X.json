@@ -9,7 +9,7 @@
                 "integer",
                 "null"
             ],
-            "format": "int32"
+            "format": "int64"
         },
         "C": {
             "type": "boolean",
@@ -35,6 +35,15 @@
         "G": {
             "$ref": "#/components/schemas/Y"
         },
+        "H": {
+            "type": "object",
+            "additionalProperties": {
+                "$ref": "#/components/schemas/Y"
+            },
+            "propertyNames": {
+                "pattern": "^-?[0-9]+$"
+            }
+        },
         "I": {
             "type": "string",
             "format": "date"
@@ -44,7 +53,8 @@
                 "integer",
                 "null"
             ],
-            "format": "int32"
+            "format": "uint8",
+            "minimum": 0
         },
         "K": {
             "type": "object",
@@ -62,8 +72,8 @@
                     "type": "string"
                 },
                 "Nc": {
-                    "type": "string",
-                    "format": "duration"
+                    "type": "integer",
+                    "format": "int64"
                 }
             }
         },
@@ -72,7 +82,7 @@
                 "integer",
                 "null"
             ],
-            "format": "int32"
+            "format": "int64"
         },
         "NS": {
             "type": [
@@ -82,7 +92,7 @@
         },
         "S": {
             "type": "integer",
-            "format": "int32"
+            "format": "int64"
         },
         "data": {
             "$ref": "#/components/schemas/V"

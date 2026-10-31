@@ -10,24 +10,6 @@ import (
 	"reflect"
 )
 
-// Warning is a stub type.
-// FixedBy: P3.3
-type Warning struct {
-	Method, Path, ID, Msg string
-}
-
-// Error is a stub.
-// FixedBy: P3.3
-func (w *Warning) Error() string {
-	return ""
-}
-
-// IsWarning is a stub.
-// FixedBy: P3.3
-func (w *Warning) IsWarning() bool {
-	return false
-}
-
 // AnnotationStyle is a stub type.
 // FixedBy: P3.4
 type AnnotationStyle int

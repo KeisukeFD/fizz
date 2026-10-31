@@ -1,0 +1,79 @@
+{
+    "openapi": "3.2.1",
+    "info": {
+        "title": "kitchensink",
+        "version": "0"
+    },
+    "paths": {
+        "/t": {
+            "get": {
+                "operationId": "t",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/KitchensinkTStd"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "KitchensinkTStd": {
+                "type": "object",
+                "properties": {
+                    "u": {
+                        "$ref": "#/components/schemas/UrlURL"
+                    }
+                }
+            },
+            "UrlURL": {
+                "type": "object",
+                "properties": {
+                    "ForceQuery": {
+                        "type": "boolean"
+                    },
+                    "Fragment": {
+                        "type": "string"
+                    },
+                    "Host": {
+                        "type": "string"
+                    },
+                    "OmitHost": {
+                        "type": "boolean"
+                    },
+                    "Opaque": {
+                        "type": "string"
+                    },
+                    "Path": {
+                        "type": "string"
+                    },
+                    "RawFragment": {
+                        "type": "string"
+                    },
+                    "RawPath": {
+                        "type": "string"
+                    },
+                    "RawQuery": {
+                        "type": "string"
+                    },
+                    "Scheme": {
+                        "type": "string"
+                    },
+                    "User": {
+                        "$ref": "#/components/schemas/UrlUserinfo"
+                    }
+                }
+            },
+            "UrlUserinfo": {
+                "type": "object"
+            }
+        }
+    }
+}

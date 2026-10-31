@@ -29,16 +29,12 @@
                 "type": "object",
                 "properties": {
                     "addr": {
-                        "$ref": "#/components/schemas/NetipAddr"
+                        "type": "string"
                     },
                     "ip": {
-                        "type": "string",
-                        "format": "ip"
+                        "type": "string"
                     }
                 }
-            },
-            "NetipAddr": {
-                "type": "object"
             }
         }
     }

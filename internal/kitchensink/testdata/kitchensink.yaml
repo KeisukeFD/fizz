@@ -36,7 +36,7 @@ paths:
           schema:
             type: integer
             description: Page size
-            format: int32
+            format: int64
             default: 20
             maximum: 100
             minimum: 1
@@ -58,7 +58,7 @@ paths:
               description: Requests left
               schema:
                 type: integer
-                format: int32
+                format: int64
           content:
             application/json:
               schema:
@@ -109,7 +109,7 @@ paths:
           schema:
             type: integer
             description: Pet ID
-            format: int32
+            format: int64
       responses:
         "200":
           description: OK
@@ -131,7 +131,7 @@ paths:
           schema:
             type: integer
             description: Pet ID
-            format: int32
+            format: int64
       responses:
         "204":
           description: No Content
@@ -152,7 +152,7 @@ components:
             $ref: '#/components/schemas/KitchensinkLegacyPet'
         total:
           type: integer
-          format: int32
+          format: int64
     KitchensinkLegacyAddress:
       type: object
       properties:
@@ -172,7 +172,7 @@ components:
         id:
           type: integer
           description: Unique ID
-          format: int32
+          format: int64
         kind:
           type: string
           default: dog
@@ -209,7 +209,7 @@ components:
       properties:
         id:
           type: integer
-          format: int32
+          format: int64
         name:
           type: string
       required:

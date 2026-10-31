@@ -44,6 +44,8 @@ type Generator struct {
 	stack         []reflect.Type        // named composites being built, outermost first
 	promoted      map[reflect.Type]bool // named composites promoted to components
 	errors        []error
+	warned        map[reflect.Type]bool // types already warned about
+	cur           *opContext            // operation being added, if any
 	fullNames     bool
 	sortParams    bool
 	sortTags      bool
@@ -70,6 +72,7 @@ func NewGenerator(conf *SpecGenConfig) (*Generator, error) {
 		},
 		schemaTypes:   make(map[reflect.Type]struct{}),
 		promoted:      make(map[reflect.Type]bool),
+		warned:        make(map[reflect.Type]bool),
 		typeNames:     make(map[reflect.Type]string),
 		dataTypes:     make(map[reflect.Type]*OverridedDataType),
 		operationsIDS: make(map[string]struct{}),
@@ -142,6 +145,19 @@ func (g *Generator) Errors() []error {
 
 func (g *Generator) error(err error) {
 	g.errors = append(g.errors, err)
+}
+
+// opContext identifies the operation being added to the generator.
+type opContext struct{ method, path, id string }
+
+// warn records a *Warning in the error list. It carries the method,
+// path and ID of the operation being added, if any.
+func (g *Generator) warn(msg string) {
+	w := &Warning{Msg: msg}
+	if g.cur != nil {
+		w.Method, w.Path, w.ID = g.cur.method, g.cur.path, g.cur.id
+	}
+	g.error(w)
 }
 
 // jsonEncodable reports whether v encodes as JSON with the options of
@@ -291,6 +307,9 @@ func (g *Generator) AddOperation(path, method, tag string, in, out reflect.Type,
 	if tag != "" {
 		op.Tags = append(op.Tags, tag)
 	}
+	g.cur = &opContext{method: method, path: path, id: op.ID}
+	defer func() { g.cur = nil }()
+
 	// Operations with methods GET/HEAD/DELETE cannot have a body.
 	// Non parameters fields will be ignored.
 	allowBody := method != http.MethodGet &&

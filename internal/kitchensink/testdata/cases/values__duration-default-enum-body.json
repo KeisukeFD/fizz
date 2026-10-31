@@ -29,8 +29,8 @@
                 "type": "object",
                 "properties": {
                     "d": {
-                        "type": "string",
-                        "format": "duration",
+                        "type": "integer",
+                        "format": "int64",
                         "default": 1000000000,
                         "enum": [
                             1000000000,

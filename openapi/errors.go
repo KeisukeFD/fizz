@@ -32,3 +32,32 @@ type TypeError struct {
 func (te *TypeError) Error() string {
 	return fmt.Sprintf("%s: type=%s, kind=%s", te.Message, te.Type, te.Type.Kind())
 }
+
+// Warning is a non-fatal diagnostic recorded in Generator.Errors. The
+// document is still generated. Method, Path and ID identify the
+// operation being added when the warning arose; they are empty for
+// warnings that do not belong to an operation.
+type Warning struct {
+	Method, Path, ID, Msg string
+}
+
+// Error implements the builtin error interface for Warning.
+func (w *Warning) Error() string {
+	var where string
+	if w.Method != "" || w.Path != "" {
+		where = w.Method + " " + w.Path
+	}
+	if w.ID != "" {
+		if where != "" {
+			where += " "
+		}
+		where += "(" + w.ID + ")"
+	}
+	if where == "" {
+		return "warning: " + w.Msg
+	}
+	return "warning: " + where + ": " + w.Msg
+}
+
+// IsWarning reports that w is a warning rather than a failure.
+func (w *Warning) IsWarning() bool { return true }

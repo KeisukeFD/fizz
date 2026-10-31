@@ -1,9 +1,12 @@
 package openapi
 
 import (
+	"encoding"
+	"encoding/json"
 	"fmt"
+	"math/big"
 	"net"
-	"net/url"
+	"net/netip"
 	"reflect"
 	"strconv"
 	"time"
@@ -17,10 +20,39 @@ var (
 	tofTime           = reflect.TypeFor[time.Time]()
 	tofDuration       = reflect.TypeFor[time.Duration]()
 	tofByteSlice      = reflect.TypeFor[[]byte]()
-	tofNetIP          = reflect.TypeFor[net.IP]()
-	tofNetURL         = reflect.TypeFor[url.URL]()
 	tofEmptyInterface = reflect.TypeFor[any]()
+
+	tofTextMarshaler = reflect.TypeFor[encoding.TextMarshaler]()
+	tofJSONMarshaler = reflect.TypeFor[json.Marshaler]()
 )
+
+// knownTypes maps the types that have a fixed schema, whatever their
+// kind or the methods they implement, to their data type. It is
+// consulted before the Marshaler policy and the kind-derived mapping.
+// url.URL is deliberately absent: it is documented as an object.
+var knownTypes = map[reflect.Type]DataType{
+	tofTime:                            TypeDateTime,
+	tofDuration:                        TypeDuration,
+	reflect.TypeFor[json.RawMessage](): TypeAny,
+	reflect.TypeFor[net.IP]():          TypeIP,
+	reflect.TypeFor[netip.Addr]():      TypeIP,
+	reflect.TypeFor[netip.Prefix]():    TypeIP,
+	reflect.TypeFor[big.Int]():         &OverridedDataType{typ: "integer"},
+	reflect.TypeFor[big.Float]():       &OverridedDataType{typ: "string"},
+	reflect.TypeFor[big.Rat]():         &OverridedDataType{typ: "string"},
+}
+
+// implementsAny reports whether t or *t implements the interface iface,
+// so that pointer-receiver methods are honoured.
+func implementsAny(t, iface reflect.Type) bool {
+	return t.Implements(iface) || reflect.PointerTo(t).Implements(iface)
+}
+
+// isTextMarshaler reports whether t or *t implements encoding.TextMarshaler.
+func isTextMarshaler(t reflect.Type) bool { return implementsAny(t, tofTextMarshaler) }
+
+// isJSONMarshaler reports whether t or *t implements json.Marshaler.
+func isJSONMarshaler(t reflect.Type) bool { return implementsAny(t, tofJSONMarshaler) }
 
 // importedUUIDs holds the "PkgPath.Name" of the known UUID types.
 // They are matched by name so that the openapi package imports none
@@ -101,6 +133,14 @@ const (
 	// Imported data types.
 	TypeUUID
 
+	// Sized integers. Unsigned types carry a minimum of 0.
+	TypeInt8
+	TypeInt16
+	TypeUint8
+	TypeUint16
+	TypeUint32
+	TypeUint64
+
 	TypeUnsupported
 )
 
@@ -129,31 +169,29 @@ func (dt InternalDataType) Format() string {
 }
 
 // DataTypeFromType returns a DataType for the given type.
+//
+// The order is: types that describe themselves (DataType, on the value
+// or the pointer receiver), the known types, UUIDs, the Marshaler policy
+// (a TextMarshaler is a string), then the kind of the type.
 func DataTypeFromType(t reflect.Type) DataType {
 	// If the type implement the DataType interface,
 	// return a new instance of the type.
-	if t.Implements(tofDataType) {
-		if t.Kind() == reflect.Pointer {
-			t = t.Elem()
-		}
-		return reflect.New(t).Interface().(DataType)
-	}
-	// Dereference any pointer.
 	if t.Kind() == reflect.Pointer {
+		if t.Implements(tofDataType) {
+			return reflect.New(t.Elem()).Interface().(DataType)
+		}
+		// Dereference any pointer.
 		return DataTypeFromType(t.Elem())
 	}
-	// Switch over Golang types.
+	if implementsAny(t, tofDataType) {
+		return reflect.New(t).Interface().(DataType)
+	}
+	if dt, ok := knownTypes[t]; ok {
+		return dt
+	}
 	switch t {
-	case tofTime:
-		return TypeDateTime
-	case tofDuration:
-		return TypeDuration
 	case tofByteSlice:
 		return TypeByte
-	case tofNetIP:
-		return TypeIP
-	case tofNetURL:
-		return TypeURL
 	case tofEmptyInterface:
 		return TypeAny
 	}
@@ -161,14 +199,29 @@ func DataTypeFromType(t reflect.Type) DataType {
 	if dt := isImportedType(t); dt != nil {
 		return dt
 	}
+	// Marshaler policy: MarshalText (with or without MarshalJSON)
+	// makes the type a string.
+	if isTextMarshaler(t) {
+		return TypeString
+	}
 	// Switch over primitive types.
 	switch t.Kind() {
-	case reflect.Int64, reflect.Uint64:
+	case reflect.Int64, reflect.Int:
 		return TypeLong
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32:
+	case reflect.Int32:
 		return TypeInteger
-	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32:
-		return TypeInteger
+	case reflect.Int16:
+		return TypeInt16
+	case reflect.Int8:
+		return TypeInt8
+	case reflect.Uint, reflect.Uint64:
+		return TypeUint64
+	case reflect.Uint32:
+		return TypeUint32
+	case reflect.Uint16:
+		return TypeUint16
+	case reflect.Uint8:
+		return TypeUint8
 	case reflect.Float32:
 		return TypeFloat
 	case reflect.Float64:
@@ -184,6 +237,15 @@ func DataTypeFromType(t reflect.Type) DataType {
 		// reflect.Interface, reflect.Complex64, reflect.Complex128, ...
 		return TypeUnsupported
 	}
+}
+
+// isUnsigned reports whether dt is one of the unsigned integer types.
+func isUnsigned(dt DataType) bool {
+	switch dt {
+	case TypeUint8, TypeUint16, TypeUint32, TypeUint64:
+		return true
+	}
+	return false
 }
 
 func isImportedType(t reflect.Type) DataType {
@@ -204,6 +266,11 @@ func stringToType(val string, t reflect.Type) (any, error) {
 		return time.Parse(time.RFC3339, val)
 	}
 	if t.AssignableTo(tofDuration) {
+		// A Duration is documented as an integer number of
+		// nanoseconds, so a plain integer is accepted first.
+		if ns, err := strconv.ParseInt(val, 10, 64); err == nil {
+			return time.Duration(ns), nil
+		}
 		return time.ParseDuration(val)
 	}
 	switch t.Kind() {
@@ -244,6 +311,12 @@ var datatypes = [...]string{
 	TypeUnsupported: "Unsupported",
 	TypeComplex:     "Complex",
 	TypeUUID:        "UUID",
+	TypeInt8:        "Int8",
+	TypeInt16:       "Int16",
+	TypeUint8:       "Uint8",
+	TypeUint16:      "Uint16",
+	TypeUint32:      "Uint32",
+	TypeUint64:      "Uint64",
 }
 
 var types = [...]string{
@@ -257,12 +330,18 @@ var types = [...]string{
 	TypeBoolean:  "boolean",
 	TypeDate:     "string",
 	TypeDateTime: "string",
-	TypeDuration: "string",
+	TypeDuration: "integer",
 	TypeIP:       "string",
 	TypeURL:      "string",
 	TypePassword: "string",
 	TypeComplex:  "string",
 	TypeUUID:     "string",
+	TypeInt8:     "integer",
+	TypeInt16:    "integer",
+	TypeUint8:    "integer",
+	TypeUint16:   "integer",
+	TypeUint32:   "integer",
+	TypeUint64:   "integer",
 }
 
 var formats = [...]string{
@@ -276,10 +355,16 @@ var formats = [...]string{
 	TypeBoolean:  "",
 	TypeDate:     "date",
 	TypeDateTime: "date-time",
-	TypeDuration: "duration",
-	TypeIP:       "ip",
+	TypeDuration: "int64",
+	TypeIP:       "",
 	TypeURL:      "url",
 	TypePassword: "password",
 	TypeComplex:  "",
 	TypeUUID:     "uuid",
+	TypeInt8:     "int8",
+	TypeInt16:    "int16",
+	TypeUint8:    "uint8",
+	TypeUint16:   "uint16",
+	TypeUint32:   "uint32",
+	TypeUint64:   "uint64",
 }

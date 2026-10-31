@@ -27,7 +27,7 @@
                 "schema": {
                     "type": "integer",
                     "description": "This is A",
-                    "format": "int32"
+                    "format": "int64"
                 }
             },
             {
@@ -77,7 +77,7 @@
                 "in": "query",
                 "schema": {
                     "type": "integer",
-                    "format": "int32",
+                    "format": "int64",
                     "default": 1,
                     "enum": [
                         1,
