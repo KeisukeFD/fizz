@@ -3,6 +3,7 @@ package fizz_test
 import (
 	"encoding/json"
 	"fmt"
+	"net/http/httptest"
 
 	"github.com/gin-gonic/gin"
 	"github.com/loopfz/gadgeto/tonic"
@@ -110,4 +111,24 @@ func ExampleCustomizeOperation() {
 	fmt.Println(doc.Paths["/pets"].GET.Summary)
 	// Output:
 	// List pets (beta)
+}
+
+type deepObjectIn struct {
+	Filter map[string]string `query:"filter" style:"deepObject"`
+}
+
+// This example binds a deepObject query parameter: ?filter[color]=red
+// fills the map. New installs the tonic bind hook that does it.
+func Example_deepObject() {
+	f := fizz.New()
+	f.GET("/pets", []fizz.OperationOption{fizz.ID("listPets")},
+		tonic.Handler(func(c *gin.Context, in *deepObjectIn) error {
+			fmt.Println(in.Filter)
+			return nil
+		}, 204))
+
+	req := httptest.NewRequest("GET", "/pets?filter[color]=red", nil)
+	f.ServeHTTP(httptest.NewRecorder(), req)
+	// Output:
+	// map[color:red]
 }

@@ -16,7 +16,7 @@ type config struct {
 	annotationStyle  openapi.AnnotationStyle
 	mediaType        string
 	idNamer          func(method, path, handlerName string) string
-	noBindHook       bool // consumed by P7.2b; no effect yet
+	noBindHook       bool
 	hooks            openapi.Hooks
 }
 
@@ -58,10 +58,12 @@ func WithAnnotationStyle(s openapi.AnnotationStyle) Option {
 	return func(c *config) { c.annotationStyle = s }
 }
 
-// WithoutBindHook opts out of the process-global tonic bind hook that
-// fizz installs to bind deepObject query and cookie parameters. The
-// hook itself is not implemented yet, so this option currently has no
-// effect.
+// WithoutBindHook stops New and NewFromEngine from calling
+// InstallBindHook, which wraps the process-global tonic bind hook to
+// bind deepObject query parameters. Without the hook those parameters
+// are documented but not bound, unless you install it yourself with
+// InstallBindHook or tonic.SetBindHook(fizz.BindHook(next)). It does
+// not remove a hook that an earlier New already installed.
 func WithoutBindHook() Option {
 	return func(c *config) { c.noBindHook = true }
 }

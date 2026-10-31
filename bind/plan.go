@@ -77,6 +77,10 @@ func PlanFor(t reflect.Type, tags Tags) (*Plan, error) {
 	return e.plan, e.err
 }
 
+// Empty reports whether p plans no parameter, so that Query would leave
+// every field alone. A nil Plan is empty.
+func (p *Plan) Empty() bool { return p == nil || len(p.fields) == 0 }
+
 func buildPlan(t reflect.Type, tags Tags) (*Plan, error) {
 	st := t
 	if st.Kind() == reflect.Pointer {

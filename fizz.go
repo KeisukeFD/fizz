@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/loopfz/gadgeto/tonic"
+	"github.com/wI2L/fizz/bind"
 	"github.com/wI2L/fizz/openapi"
 )
 
@@ -47,12 +48,21 @@ type RouterGroup struct {
 	group       *gin.RouterGroup
 	gen         *openapi.Generator
 	idNamer     func(method, path, handlerName string) string
+	bindTags    bind.Tags // struct tags the deepObject planner reads
+	noBindHook  bool      // WithoutBindHook: no warning if the hook is absent
 	Name        string
 	Description string
 }
 
 // New creates a new Fizz wrapper for
 // a default Gin engine.
+//
+// Unless WithoutBindHook is passed, New calls InstallBindHook, which
+// wraps the process-global tonic bind hook so that deepObject query
+// parameters bind. This mutates global tonic state: every call re-wraps
+// the current hook if it is not already fizz's, so a hook set before New
+// is kept and composed. A hook set after New replaces fizz's; compose it
+// with fizz.BindHook(next).
 func New(opts ...Option) *Fizz {
 	return NewFromEngine(gin.New(), opts...)
 }
@@ -90,13 +100,18 @@ func NewFromEngine(e *gin.Engine, opts ...Option) *Fizz {
 	gen.SetPointersAreNullable(cfg.pointersNullable)
 	gen.SetAnnotationStyle(cfg.annotationStyle)
 	gen.SetHooks(cfg.hooks)
+	if !cfg.noBindHook {
+		InstallBindHook()
+	}
 	return &Fizz{
 		engine: e,
 		gen:    gen,
 		RouterGroup: &RouterGroup{
-			group:   &e.RouterGroup,
-			gen:     gen,
-			idNamer: cfg.idNamer,
+			group:      &e.RouterGroup,
+			gen:        gen,
+			idNamer:    cfg.idNamer,
+			bindTags:   bindTagsOf(cfg.tagNames),
+			noBindHook: cfg.noBindHook,
 		},
 	}
 }

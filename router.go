@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"runtime"
 	"slices"
+	"sync"
 
 	"github.com/gin-gonic/gin"
 	"github.com/loopfz/gadgeto/tonic"
@@ -22,6 +23,8 @@ func (g *RouterGroup) Group(path, name, description string, handlers ...gin.Hand
 	return &RouterGroup{
 		gen:         g.gen,
 		idNamer:     g.idNamer,
+		bindTags:    g.bindTags,
+		noBindHook:  g.noBindHook,
 		group:       g.group.Group(path, handlers...),
 		Name:        name,
 		Description: description,
@@ -161,12 +164,24 @@ func (g *RouterGroup) Handle(path, method string, infos []OperationOption, handl
 			if cerr != nil {
 				g.gen.RecordError(&openapi.OperationError{Method: method, Path: openAPIPath(operationPath), ID: oi.ID, Err: cerr})
 			}
+			plan := g.bindPlan(method, openAPIPath(operationPath), oi.ID, hfunc, oi.InputModel)
+			var warnOnce sync.Once
+			opID, quiet := oi.ID, g.noBindHook
 			for i, h := range handlers {
 				if cerr == nil && funcEqual(h, wrapped[0].h) {
 					orig := h // copy the original func
 					handlers[i] = func(c *gin.Context) {
-						c.Request = c.Request.WithContext(withOperation(c.Request.Context(), snap))
+						ctx := withOperation(c.Request.Context(), snap)
+						var st *bindState
+						if plan != nil {
+							st = &bindState{plan: plan}
+							ctx = context.WithValue(ctx, ctxBindStateKey{}, st)
+						}
+						c.Request = c.Request.WithContext(ctx)
 						orig(c)
+						if st != nil && !st.ran && !quiet {
+							warnOnce.Do(func() { warnBindHookNotRun(opID) })
+						}
 					}
 				}
 			}
