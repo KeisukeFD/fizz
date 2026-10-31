@@ -156,7 +156,7 @@ func TestSchemaFromInterface(t *testing.T) {
 	assert.NotNil(t, schema)
 	assert.Empty(t, schema.Type)
 	assert.Empty(t, schema.Format)
-	assert.NotEmpty(t, schema.Description)
+	assert.Empty(t, schema.Description)
 }
 
 // TestSchemaFromUnsupportedType tests that a schema

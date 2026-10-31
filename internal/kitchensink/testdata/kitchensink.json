@@ -1,5 +1,5 @@
 {
-    "openapi": "3.0.1",
+    "openapi": "3.2.1",
     "info": {
         "title": "kitchensink",
         "version": "0"
@@ -123,7 +123,6 @@
                     {
                         "name": "dry_run",
                         "in": "query",
-                        "allowEmptyValue": true,
                         "schema": {
                             "type": "boolean"
                         }

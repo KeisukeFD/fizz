@@ -1,5 +1,5 @@
 {
-    "openapi": "3.0.1",
+    "openapi": "3.2.1",
     "info": {
         "title": "Test Server",
         "description": "This is a test server.",

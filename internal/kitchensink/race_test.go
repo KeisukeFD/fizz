@@ -30,6 +30,12 @@ func TestConcurrentServeAndRegister(t *testing.T) {
 	})
 }
 
+type raceGetIn struct {
+	ID int `path:"id"`
+}
+
+func raceGet(*gin.Context, *raceGetIn) error { return nil }
+
 func concurrentServeAndRegister(t *testing.T) {
 
 	const (
@@ -38,7 +44,7 @@ func concurrentServeAndRegister(t *testing.T) {
 	)
 	gin.SetMode(gin.TestMode)
 
-	f := newLegacyFizz(t)
+	f := NewWholeFizz()
 	r := gin.New()
 	r.GET("/openapi.json", f.OpenAPI(&openapi.Info{Title: "race", Version: "0"}, "json"))
 	r.GET("/openapi.yaml", f.OpenAPI(&openapi.Info{Title: "race", Version: "0"}, "yaml"))
@@ -47,7 +53,7 @@ func concurrentServeAndRegister(t *testing.T) {
 	// is created before any goroutine starts.
 	handlers := make([]gin.HandlerFunc, routes)
 	for i := range handlers {
-		handlers[i] = tonic.Handler(legacyGet, 200)
+		handlers[i] = tonic.Handler(raceGet, 200)
 	}
 
 	ctx := t.Context()

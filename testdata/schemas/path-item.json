@@ -18,7 +18,8 @@
         "summary": "ABC",
         "description": "XYZ",
         "operationId": "CreateTest",
-        "parameters": [{
+        "parameters": [
+            {
                 "name": "a",
                 "in": "path",
                 "description": "This is A",
@@ -43,7 +44,6 @@
             {
                 "name": "e",
                 "in": "query",
-                "allowEmptyValue": true,
                 "schema": {
                     "type": "boolean"
                 }
@@ -69,8 +69,8 @@
                         ]
                     }
                 },
-                "explode": true,
-                "style": "form"
+                "style": "form",
+                "explode": true
             },
             {
                 "name": "xd",

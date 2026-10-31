@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/wI2L/fizz/internal/acceptance/at"
 	"github.com/wI2L/fizz/internal/specvalidate"
+	"github.com/wI2L/fizz/openapi"
 )
 
 const minimalDoc = `{
@@ -76,40 +76,27 @@ func TestLintAllowsNullInValueSubtrees(t *testing.T) {
 }
 
 func TestVersionPattern(t *testing.T) {
-	at.Pending(t, "P2.6", func(t testing.TB) {
-		raw, err := os.ReadFile("schemas/3.2/schema-2026-08-30.json")
-		if err != nil {
-			t.Fatal(err)
-		}
-		var s struct {
-			Properties struct {
-				OpenAPI struct {
-					Pattern string `json:"pattern"`
-				} `json:"openapi"`
-			} `json:"properties"`
-		}
-		if err := json.Unmarshal(raw, &s); err != nil {
-			t.Fatal(err)
-		}
-		re, err := regexp.Compile(s.Properties.OpenAPI.Pattern)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		// The version is currently the unexported const in openapi/generator.go;
-		// read it from source until an exported openapi.Version exists.
-		src, err := os.ReadFile("../../openapi/generator.go")
-		if err != nil {
-			t.Fatal(err)
-		}
-		m := regexp.MustCompile(`(?m)^\s*version\s*=\s*"([^"]+)"`).FindSubmatch(src)
-		if m == nil {
-			t.Fatal("version constant not found in openapi/generator.go")
-		}
-		if v := string(m[1]); !re.MatchString(v) {
-			t.Errorf("version %q does not match %s", v, re)
-		}
-	})
+	raw, err := os.ReadFile("schemas/3.2/schema-2026-08-30.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var s struct {
+		Properties struct {
+			OpenAPI struct {
+				Pattern string `json:"pattern"`
+			} `json:"openapi"`
+		} `json:"properties"`
+	}
+	if err := json.Unmarshal(raw, &s); err != nil {
+		t.Fatal(err)
+	}
+	re, err := regexp.Compile(s.Properties.OpenAPI.Pattern)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !re.MatchString(openapi.Version) {
+		t.Errorf("version %q does not match %s", openapi.Version, re)
+	}
 }
 
 func TestLintNoNullable(t *testing.T) {

@@ -270,7 +270,7 @@ func init() {
 		tcase("raw-message", tget[TRaw], "P3.3",
 			Fragment{Pointer: tprop("TRaw", "raw"), JSON: `{}`},
 		),
-		tcase("byte-slice", tget[TRaw], "P3.3",
+		tcase("byte-slice", tget[TRaw], "P2.6",
 			Fragment{Pointer: tprop("TRaw", "bytes"), JSON: `{"type":"string","contentEncoding":"base64"}`},
 		),
 		tcase("array", tget[TRaw], "",

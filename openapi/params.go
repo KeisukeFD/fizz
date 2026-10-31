@@ -1,9 +1,11 @@
 package openapi
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
 	"reflect"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -59,10 +61,7 @@ func (g *Generator) setOperationParams(op *Operation, t, parent reflect.Type, al
 	// Sort operations parameters by location and name
 	// in ascending order.
 	if g.sortParams {
-		paramsOrderedBy(
-			g.paramyByLocation,
-			g.paramyByName,
-		).Sort(op.Parameters)
+		slices.SortStableFunc(op.Parameters, g.compareParams)
 	}
 	return nil
 }
@@ -114,12 +113,20 @@ func (g *Generator) buildParamsRecursive(op *Operation, t, parent reflect.Type, 
 	return nil
 }
 
-func (g *Generator) paramyByName(p1, p2 *ParameterOrRef) bool {
-	return g.resolveParameter(p1).Name < g.resolveParameter(p2).Name
+var locationsOrder = map[string]int{
+	"path":   0,
+	"query":  1,
+	"header": 2,
+	"cookie": 3,
 }
 
-func (g *Generator) paramyByLocation(p1, p2 *ParameterOrRef) bool {
-	return locationsOrder[g.resolveParameter(p1).In] < locationsOrder[g.resolveParameter(p2).In]
+// compareParams orders parameters by location, then by name.
+func (g *Generator) compareParams(p1, p2 *ParameterOrRef) int {
+	a, b := g.resolveParameter(p1), g.resolveParameter(p2)
+	return cmp.Or(
+		cmp.Compare(locationsOrder[a.In], locationsOrder[b.In]),
+		cmp.Compare(a.Name, b.Name),
+	)
 }
 
 // addStructFieldToOperation add the struct field of the type
@@ -256,9 +263,6 @@ func (g *Generator) newParameterFromField(idx int, t reflect.Type) (*Parameter, 
 		Required:    required,
 		Deprecated:  deprecated,
 		Schema:      g.newSchemaFromStructField(field, required, name, t),
-	}
-	if field.Type.Kind() == reflect.Bool && location == g.config.QueryLocationTag {
-		p.AllowEmptyValue = true
 	}
 	// Style.
 	if location == g.config.QueryLocationTag {

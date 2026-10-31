@@ -8,52 +8,10 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"github.com/loopfz/gadgeto/tonic"
 
 	"github.com/wI2L/fizz"
-	"github.com/wI2L/fizz/internal/kitchensink/generic"
 	"github.com/wI2L/fizz/openapi"
 )
-
-// newLegacyFizz registers the same routes as TestLegacyGolden on a fresh
-// instance. It is a copy because the golden test registers inline and
-// must stay untouched. Operation IDs are fixed with fizz.ID.
-func newLegacyFizz(t *testing.T) *fizz.Fizz {
-	t.Helper()
-	f := fizz.New()
-
-	g := f.Group("/pets", "Pets", "Pet operations")
-	g.GET("", []fizz.OperationOption{
-		fizz.ID("listPets"), fizz.Summary("List pets"),
-		fizz.Header("X-Rate-Limit", "Requests left", 0),
-		fizz.ResponseWithExamples("400", "Bad request", nil, nil, map[string]any{
-			"empty": generic.Page[legacyPet]{},
-		}),
-	}, tonic.Handler(legacyList, 200))
-	g.GET("/:id", []fizz.OperationOption{
-		fizz.ID("getPet"), fizz.Description("Fetch one pet."),
-		fizz.Response("404", "Not found", nil, nil, nil),
-	}, tonic.Handler(legacyGet, 200))
-	g.POST("", []fizz.OperationOption{
-		fizz.ID("createPet"), fizz.StatusDescription("Created"),
-		fizz.Security(&openapi.SecurityRequirement{"api_key": []string{}}),
-	}, tonic.Handler(legacyCreate, 201))
-	g.DELETE("/:id", []fizz.OperationOption{
-		fizz.ID("deletePet"), fizz.Deprecated(true),
-	}, tonic.Handler(legacyDelete, 204))
-	f.GET("/items", []fizz.OperationOption{fizz.ID("getItem")}, tonic.Handler(legacyItem, 200))
-
-	gen := f.Generator()
-	gen.SetServers([]*openapi.Server{{URL: "https://api.example.com/v1", Description: "production"}})
-	gen.SetSecurityRequirement([]*openapi.SecurityRequirement{{"api_key": []string{}}})
-	gen.SetSecuritySchemes(map[string]*openapi.SecuritySchemeOrRef{
-		"api_key": {Value: &openapi.SecurityScheme{Type: "apiKey", Name: "api_key", In: "header"}},
-	})
-	if errs := f.Errors(); len(errs) != 0 {
-		t.Fatalf("registration errors: %v", errs)
-	}
-	return f
-}
 
 // serveSpec returns the body served by the OpenAPI handler for ct.
 func serveSpec(t *testing.T, f *fizz.Fizz, ct string) []byte {
@@ -79,11 +37,11 @@ func TestDeterminism(t *testing.T) {
 
 			var wantJSON, wantYAML []byte
 			for i := range runs {
-				gotJSON, err := BuildSpec(newLegacyFizz(t))
+				gotJSON, err := BuildSpec(NewWholeFizz())
 				if err != nil {
 					t.Fatal(err)
 				}
-				gotYAML := serveSpec(t, newLegacyFizz(t), "yaml")
+				gotYAML := serveSpec(t, NewWholeFizz(), "yaml")
 				if i == 0 {
 					wantJSON, wantYAML = gotJSON, bytes.Clone(gotYAML)
 					continue

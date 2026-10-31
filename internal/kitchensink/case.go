@@ -9,12 +9,14 @@ package kitchensink
 
 import (
 	"fmt"
+	"path/filepath"
 	"slices"
 	"strconv"
 	"strings"
 	"testing"
 
 	"github.com/wI2L/fizz"
+	"github.com/wI2L/fizz/internal/golden"
 	"github.com/wI2L/fizz/internal/plan"
 )
 
@@ -74,8 +76,32 @@ func (c Case) newFizz() *fizz.Fizz {
 	return fizz.New()
 }
 
+// caseGoldenDir holds one golden document per passing case.
+const caseGoldenDir = "testdata/cases"
+
+// caseGoldenPath returns the golden file of the case named name: the
+// name with "/" replaced by "__".
+func caseGoldenPath(name string) string {
+	return filepath.Join(caseGoldenDir, strings.ReplaceAll(name, "/", "__")+".json")
+}
+
+// assertCaseGolden compares the whole document of a passing case with
+// its golden file. Cases that expect a panic produce no document and
+// have no golden; skipped cases have none either.
+func assertCaseGolden(t *testing.T, c Case, doc []byte) {
+	t.Helper()
+	if doc == nil {
+		return
+	}
+	golden.Assert(t, caseGoldenPath(c.Name), doc)
+}
+
 // Run executes cs, one subtest each, on a fresh fizz.New() per case
 // (or c.New()).
+//
+// Every passing case also asserts its whole document against
+// testdata/cases/<name>.json ("/" in the name becomes "__"); run the
+// tests with -update to create or refresh these goldens.
 //
 // A panic in Register is a failure unless the case sets Panics. Cases
 // with FixedBy still register and are checked, but are then skipped
@@ -100,13 +126,14 @@ func Run(t *testing.T, cs []Case) {
 				byTask[c.FixedBy]++
 				t.Skip("fixed by " + c.FixedBy + " (crashes, not run)")
 			}
-			problems := runCase(c)
+			doc, problems := checkCase(c)
 			if c.FixedBy == "" {
 				for _, p := range problems {
 					t.Error(p)
 				}
 				if len(problems) == 0 {
 					passed++
+					assertCaseGolden(t, c, doc)
 				}
 				return
 			}
@@ -122,6 +149,7 @@ func Run(t *testing.T, cs []Case) {
 					skipped--
 					byTask[c.FixedBy]--
 					passed++
+					assertCaseGolden(t, c, doc)
 					return
 				}
 				stale++
@@ -147,33 +175,40 @@ func Run(t *testing.T, cs []Case) {
 }
 
 // runCase registers and checks one case, returning its problems.
-func runCase(c Case) (problems []string) {
+func runCase(c Case) []string {
+	_, problems := checkCase(c)
+	return problems
+}
+
+// checkCase registers and checks one case. It returns the generated
+// document (nil when the case expects a panic) and the problems found.
+func checkCase(c Case) (doc []byte, problems []string) {
 	f := c.newFizz()
 	panicMsg, panicked := safeRegister(c, f)
 	switch {
 	case c.Panics != "":
 		if !panicked {
-			return []string{"Register must panic with " + strconv.Quote(c.Panics)}
+			return nil, []string{"Register must panic with " + strconv.Quote(c.Panics)}
 		}
 		if !strings.Contains(panicMsg, c.Panics) {
-			return []string{fmt.Sprintf("panic %q does not contain %q", panicMsg, c.Panics)}
+			return nil, []string{fmt.Sprintf("panic %q does not contain %q", panicMsg, c.Panics)}
 		}
-		return nil
+		return nil, nil
 	case panicked:
-		return []string{"Register panicked: " + panicMsg}
+		return nil, []string{"Register panicked: " + panicMsg}
 	}
 	rec := &recorder{}
 	checkErrors(rec, f.Errors(), c.Errors)
 	checkWarnings(rec, f.Errors(), c.Warnings)
 	doc, err := BuildSpec(f)
 	if err != nil {
-		return append(rec.msgs, "build spec: "+err.Error())
+		return nil, append(rec.msgs, "build spec: "+err.Error())
 	}
 	AssertFragments(rec, doc, c.Expect)
 	if plan.IsDone("P2.6") {
 		rec.msgs = append(rec.msgs, MetaProblems(doc)...)
 	}
-	return rec.msgs
+	return doc, rec.msgs
 }
 
 func safeRegister(c Case, f *fizz.Fizz) (msg string, panicked bool) {

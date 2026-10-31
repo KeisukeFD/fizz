@@ -1,26 +1,22 @@
 package kitchensink
 
 import (
-	"testing"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/loopfz/gadgeto/tonic"
 
 	"github.com/wI2L/fizz"
-	"github.com/wI2L/fizz/internal/golden"
 	"github.com/wI2L/fizz/internal/kitchensink/a/models"
 	"github.com/wI2L/fizz/internal/kitchensink/generic"
 	"github.com/wI2L/fizz/openapi"
 )
 
-// legacyGolden is the whole document as emitted by the 3.0.1 generator.
-// It is the safety net for the P1.1/P1.2 refactors (which must not change
-// it) and is deliberately NOT updated by later phases: phase 2 deletes or
-// regenerates it knowingly. Root testdata/ is used (next to spec.json)
-// because the plan and the other goldens live there; tests reach it with
-// a relative path.
-const legacyGolden = "../../testdata/legacy/kitchensink.json"
+// Whole golden files: the output of NewWholeFizz.
+const (
+	wholeGoldenJSON = "testdata/kitchensink.json"
+	wholeGoldenYAML = "testdata/kitchensink.yaml"
+)
 
 type legacyKind string
 
@@ -68,7 +64,11 @@ func legacyCreate(*gin.Context, *legacyCreateIn) (*legacyPet, error)           {
 func legacyDelete(*gin.Context, *legacyGetIn) error                            { return nil }
 func legacyItem(*gin.Context, *struct{}) (*models.Item, error)                 { return nil, nil }
 
-func TestLegacyGolden(t *testing.T) {
+// NewWholeFizz returns the whole kitchen-sink fixture: a pet store with
+// groups, parameters of every location, generics, examples, security
+// and servers. It is the fixture behind the whole-document golden, the
+// determinism test and the race test.
+func NewWholeFizz() *fizz.Fizz {
 	f := fizz.New()
 
 	g := f.Group("/pets", "Pets", "Pet operations")
@@ -99,12 +99,5 @@ func TestLegacyGolden(t *testing.T) {
 	gen.SetSecuritySchemes(map[string]*openapi.SecuritySchemeOrRef{
 		"api_key": {Value: &openapi.SecurityScheme{Type: "apiKey", Name: "api_key", In: "header"}},
 	})
-	if errs := f.Errors(); len(errs) != 0 {
-		t.Fatalf("registration errors: %v", errs)
-	}
-	doc, err := BuildSpec(f)
-	if err != nil {
-		t.Fatal(err)
-	}
-	golden.Assert(t, legacyGolden, doc)
+	return f
 }

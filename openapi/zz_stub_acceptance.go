@@ -10,10 +10,6 @@ import (
 	"reflect"
 )
 
-// Version is a stub.
-// FixedBy: P2.6
-const Version = ""
-
 // Warning is a stub type.
 // FixedBy: P3.3
 type Warning struct {

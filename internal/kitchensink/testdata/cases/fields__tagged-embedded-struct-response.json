@@ -1,0 +1,50 @@
+{
+    "openapi": "3.2.1",
+    "info": {
+        "title": "kitchensink",
+        "version": "0"
+    },
+    "paths": {
+        "/x": {
+            "get": {
+                "operationId": "x",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/KitchensinkFTaggedEmb"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "KitchensinkFShared": {
+                "type": "object",
+                "properties": {
+                    "v": {
+                        "type": "string"
+                    }
+                }
+            },
+            "KitchensinkFTaggedEmb": {
+                "type": "object",
+                "properties": {
+                    "shared": {
+                        "$ref": "#/components/schemas/KitchensinkFShared"
+                    },
+                    "z": {
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                }
+            }
+        }
+    }
+}

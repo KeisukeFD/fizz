@@ -43,7 +43,7 @@ func yamlParityDocs(t *testing.T) map[string]*openapi.OpenAPI {
 	return map[string]*openapi.OpenAPI{
 		"hand built":            handBuilt(t),
 		"generator output":      readDoc(t, "../testdata/spec.json"),
-		"legacy kitchen sink":   readDoc(t, "../testdata/legacy/kitchensink.json"),
+		"kitchen sink":          readDoc(t, "../internal/kitchensink/testdata/kitchensink.json"),
 		"extensions everywhere": readDoc(t, "../internal/acceptance/testdata/extensions-everywhere.json"),
 	}
 }

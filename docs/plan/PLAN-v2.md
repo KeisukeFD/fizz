@@ -406,6 +406,7 @@ Line refs are HEAD 87b41d4 (pre-split), tonic = `gadgeto@v0.9.0/tonic`. I re-che
   - An invalid bool is an error (today :203-208 silently returns false).
   - D15 default+required.
   - Enum values are trimmed (:842). Values follow the `,string` wire form. `example` becomes `examples:[v]`.
+  - Switch document encoding from the v1 option set to the v2 defaults: `omitzero` on struct-valued and bool fields, and no `time.Duration` left in `any`. G21 parity must stay green (ADR 0001 §4, "JSON v2 bridge").
 - Red first: un-skip the P0.4e default, enum and example cases.
 - Deps: P3.4.
 

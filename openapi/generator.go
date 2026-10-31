@@ -10,8 +10,10 @@ import (
 	"strconv"
 )
 
+// Version is the OpenAPI Specification version of the generated documents.
+const Version = "3.2.1"
+
 const (
-	version              = "3.0.1"
 	anyMediaType         = "*/*"
 	formatTag            = "format"
 	deprecatedTag        = "deprecated"
@@ -58,7 +60,7 @@ func NewGenerator(conf *SpecGenConfig) (*Generator, error) {
 	return &Generator{
 		config: conf,
 		api: &OpenAPI{
-			OpenAPI:    version,
+			OpenAPI:    Version,
 			Info:       &Info{},
 			Paths:      make(Paths),
 			Components: components,

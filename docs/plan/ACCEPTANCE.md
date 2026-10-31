@@ -537,7 +537,7 @@ Burn-down targets (skipped tests with FixedBy in the named range, after the phas
 |---|---|---|
 | Now | 89 | — |
 | Phase 1 | 89 | 0 FixedBy P1.* (A01, A03, A08) |
-| Phase 2 | 84 | 0 FixedBy P2.* (incl. K01–K03, G14–G19, G21, G22, H01–H04, H12, A10) |
+| Phase 2 | 105 measured at P2.6 (142 cases incl. Batch K; the 84 estimate predates them) | 0 FixedBy P2.* (incl. K01–K03, G14–G19, G21, G22, H01–H04, H12, A10) |
 | Phase 3 | 37 | 0 FixedBy P3.* (incl. K04, K06, F33–F35*) |
 | Phase 4 (+P6.1) | 4 (P5.1=1, P6.5=2, P7.1=1) | 0 FixedBy P4.*, P6.1 |
 | Phase 5 | 3 | 0 FixedBy P5.1 |

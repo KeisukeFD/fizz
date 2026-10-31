@@ -41,13 +41,15 @@ func (g *Generator) newSchemaFromType(t reflect.Type) *Schema {
 		}
 	}
 	if dt == TypeAny {
-		return &Schema{
-			Description: "Value of any type, including null",
-		}
+		return &Schema{}
 	}
 	schema := &Schema{
 		Type:   typeSetOf(dt.Type()),
 		Format: dt.Format(),
+	}
+	if dt == TypeByte {
+		schema.Format = ""
+		schema.ContentEncoding = "base64"
 	}
 	if nullable {
 		schema.MakeNullable()

@@ -82,7 +82,12 @@ O3, O5–O15, O17–O30 and O32–O36 are adopted as proposed in ACCEPTANCE §5.
   - Unknown members of any name are kept on decode and written back on encode.
   - Marshaling pins `json.DefaultOptionsV1()` plus `Deterministic(true)`, so v1 `json.Marshal(doc)` and `openapi.MarshalJSON(doc)` produce the same bytes.
   - Decoding uses v2 defaults: names are case-sensitive and duplicates are rejected. MIGRATION must mention this.
-  - **P2.6 revisits the option set.** Once the generator no longer produces nil slices or maps, P2.6 switches to the v2 defaults if the G21 parity test still holds.
+  - **P2.6 kept the v1 option set; the switch moves to P3.6.** P2.6 tried the v2 defaults and three things broke:
+    - v2 `omitempty` drops empty struct values such as `itemSchema: {}` and `components: {}`;
+    - non-pointer bools need `omitzero`;
+    - a `time.Duration` held in an `any` (`default`) has no default v2 representation.
+
+    P3.6 settles how defaults and examples are converted (Duration values become ns), so it switches to the v2 defaults: `omitzero` on struct-valued and bool fields, and no Duration left in `any`. It keeps the G21 parity test green.
 - **Binary size of `fizz.Embedded*UI`.** These make the root package import `docsui/embedded`. P8.3 must show (a test or a documented measurement) that a binary that does not call them carries no assets, because the linker drops the unreferenced `embed.FS`. If that does not hold, the selectors move to `docsui/embedded` and O1 goes back to the user.
 
 ## 5. Stub strategy (ACCEPTANCE §2, rule 2)
