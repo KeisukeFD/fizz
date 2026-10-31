@@ -165,6 +165,7 @@ Each row is a stub until its task lands. Signatures are binding. A task that nee
 | `type CollisionError struct{ Name string; Kept, Rejected reflect.Type }`, `Error()` | P4.5 |
 | `(*Generator).SetRequestBodyNamer(func(opID string, t reflect.Type) string)` | P4.6 |
 | `OperationInfo.WildcardParams []string` (names of the path parameters that come from a gin `/*name` catch-all; set by the router, which translates the path before `AddOperation`) | P4.3 |
+| `OperationInfo.RequestBody *RequestBodyInfo`; `RequestBodyInfo{ Description string; Required bool; Contents []*ContentInfo }`, `ContentInfo{ MediaType string; Model any; Encodings []*EncodingInfo }`, `EncodingInfo{ Property, ContentType string }` (filled by `fizz.RequestBody`; contents replace the inferred body, a duplicate media type is an error and the first is kept) | P6.6a |
 | `(*Generator).OperationIDUsed(id string) bool` (lets the router choose among default IDs) | P4.7 |
 | `type OperationError struct{ Method, Path, ID string; Err error }`, `Error()`, `Unwrap()` | P4.8 |
 | `(*Generator).RecordError(err error)` (lets the router and `OpenAPI` record errors that do not come from `AddOperation`) | P4.8 |
