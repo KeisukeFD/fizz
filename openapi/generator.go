@@ -41,6 +41,8 @@ type Generator struct {
 	dataTypes     map[reflect.Type]*OverridedDataType
 	operationsIDS map[string]struct{}
 	fieldCache    map[typeFieldsKey][]field
+	stack         []reflect.Type        // named composites being built, outermost first
+	promoted      map[reflect.Type]bool // named composites promoted to components
 	errors        []error
 	fullNames     bool
 	sortParams    bool
@@ -67,6 +69,7 @@ func NewGenerator(conf *SpecGenConfig) (*Generator, error) {
 			Components: components,
 		},
 		schemaTypes:   make(map[reflect.Type]struct{}),
+		promoted:      make(map[reflect.Type]bool),
 		typeNames:     make(map[reflect.Type]string),
 		dataTypes:     make(map[reflect.Type]*OverridedDataType),
 		operationsIDS: make(map[string]struct{}),

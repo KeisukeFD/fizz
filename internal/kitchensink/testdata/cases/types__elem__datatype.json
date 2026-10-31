@@ -1,0 +1,84 @@
+{
+    "openapi": "3.2.1",
+    "info": {
+        "title": "kitchensink",
+        "version": "0"
+    },
+    "paths": {
+        "/t": {
+            "get": {
+                "operationId": "t",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/KitchensinkTElems"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "KitchensinkTElems": {
+                "type": "object",
+                "properties": {
+                    "blobs": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "contentEncoding": "base64"
+                        }
+                    },
+                    "dt": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "format": "telem"
+                        }
+                    },
+                    "gofrs": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    "google": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    "map": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string",
+                            "format": "telem"
+                        }
+                    },
+                    "std": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    "times": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "format": "date-time"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

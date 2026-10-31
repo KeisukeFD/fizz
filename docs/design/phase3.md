@@ -88,14 +88,12 @@ func (g *Generator) schemaFor(t reflect.Type) *Schema
 - `buildSchemaRecursive` is deleted.
 - Elements and map values now get known types, overrides and interfaces. This fixes `elem/datatype` and `elem/override-datatype`.
 
-**Cycles through named non-struct types** (`type L []L`, `type M map[string]M`):
-- The Generator keeps an in-progress set of named composite types: kinds slice, array or map with `t.Name() != ""`.
-- On entry, the type is marked in-progress. If `schemaFor` reaches a type that is already in progress, that type is flagged "promote" and `{"$ref": "#/components/schemas/<typeName(t)>"}` is returned.
-- When the outer call for that type finishes:
-  - if it is flagged, its schema is registered under `typeName(t)` and the outer call also returns the `$ref`;
-  - otherwise the schema is returned inline, as today.
-- This is deterministic: it depends only on the type graph, not on map iteration.
-- Named composites that don't recurse stay inline, so there is no output churn for them.
+**Cycles through named non-struct types** (`type L []L`, `type M map[string]M`, `type A []B; type B map[string]A`):
+- The Generator keeps an ordered stack of the named composites being built (kinds slice, array or map with `t.Name() != ""`) and a `promoted` set.
+- On entry a type is pushed. If `schemaFor` reaches a type already on the stack, every named composite from that type up to the top of the stack (all members of the cycle) is promoted, and `{"$ref": "#/components/schemas/<typeName(t)>"}` is returned.
+- When the call for a promoted type finishes, its schema is registered under `typeName(t)` and it returns the `$ref`. A promoted type met later anywhere returns the `$ref` directly. Non-promoted types are returned inline, as today.
+- Rule 1, struct boundary: promotion applies only to cycles made purely of named composites. A named struct is already a component and cuts the cycle with a `$ref`, so `newSchemaFromStruct` saves the stack, flattens the struct with an empty one, and restores it. A cycle through a struct (`Z map[string]*Y`, `Y{K *Z}`) therefore promotes nothing.
+- Rule 2, entry independence: all cycle members are promoted, so the component set and schemas are the same whichever type is entered first, and do not depend on route registration order.
 
 **Element nullability:**
 - Today `buildSchemaRecursive` drops element pointers, so `[]*T` has a non-nullable `items`.

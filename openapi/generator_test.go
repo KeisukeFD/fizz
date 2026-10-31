@@ -380,8 +380,8 @@ func TestNewSchemaFromEnumField(t *testing.T) {
 		{"E", []any{"g", "h", "i"}, true},
 		{"F", []any{"j", "k", "l"}, true},
 		{"G", []any{"m", "n", "o"}, false},
-		{"H", []any{"p", "q", "r"}, false},
-		{"I", []any{7.0, 8.1, 9.2}, false},
+		{"H", []any{"p", "q", "r"}, true},
+		{"I", []any{7.0, 8.1, 9.2}, true},
 	}
 
 	typ := reflect.TypeFor[T]()

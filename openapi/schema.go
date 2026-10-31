@@ -11,11 +11,20 @@ func (g *Generator) newSchemaFromType(t reflect.Type) *Schema {
 	if t == nil {
 		return nil
 	}
+	return g.schemaFor(t)
+}
+
+// schemaFor returns the schema of type t at a use site. It is the single
+// recursion for top-level types, struct fields, slice/array elements and
+// map values.
+func (g *Generator) schemaFor(t reflect.Type) *Schema {
 	var nullable bool
 
-	// Dereference pointer.
+	// Dereference pointers.
 	if t.Kind() == reflect.Pointer {
-		t = t.Elem()
+		for t.Kind() == reflect.Pointer {
+			t = t.Elem()
+		}
 		nullable = true
 	} else if t.Implements(tofNullable) {
 		i, ok := reflect.New(t).Interface().(Nullable)
@@ -23,25 +32,26 @@ func (g *Generator) newSchemaFromType(t reflect.Type) *Schema {
 			nullable = i.Nullable()
 		}
 	}
+	// Overrides, interfaces and known types are all
+	// resolved by datatype.
 	dt := g.datatype(t)
 
-	if dt == TypeUnsupported {
+	switch dt {
+	case TypeUnsupported:
 		g.error(&TypeError{
 			Message: "unsupported type",
 			Type:    t,
 		})
 		return nil
-	}
-	if dt == TypeComplex {
+	case TypeAny:
+		return &Schema{}
+	case TypeComplex:
 		switch t.Kind() {
-		case reflect.Slice, reflect.Array, reflect.Map:
-			return g.buildSchemaRecursive(t)
 		case reflect.Struct:
 			return g.newSchemaFromStruct(t)
+		case reflect.Slice, reflect.Array, reflect.Map:
+			return g.composite(t)
 		}
-	}
-	if dt == TypeAny {
-		return &Schema{}
 	}
 	schema := &Schema{
 		Type:   typeSetOf(dt.Type()),
@@ -57,20 +67,36 @@ func (g *Generator) newSchemaFromType(t reflect.Type) *Schema {
 	return schema
 }
 
-// buildSchemaRecursive recursively decomposes the complex
-// type t into subsequent schemas.
-func (g *Generator) buildSchemaRecursive(t reflect.Type) *Schema {
+// composite returns the schema of the slice, array or map type t.
+// Named composites that form a cycle made purely of named composites
+// are all promoted to components.
+func (g *Generator) composite(t reflect.Type) *Schema {
+	named := t.Name() != ""
+	if named {
+		ref := &Schema{Ref: componentsSchemaPath + g.typeName(t)}
+
+		// Re-entered type: promote every composite of the cycle,
+		// from t up to the top of the stack.
+		for i, st := range g.stack {
+			if st == t {
+				for _, m := range g.stack[i:] {
+					g.promoted[m] = true
+				}
+				return ref
+			}
+		}
+		// Already promoted by an earlier cycle: its component exists.
+		if g.promoted[t] {
+			return ref
+		}
+		g.stack = append(g.stack, t)
+		defer func() { g.stack = g.stack[:len(g.stack)-1] }()
+	}
 	schema := &Schema{}
 
-	switch t.Kind() {
-	case reflect.Pointer:
-		return g.buildSchemaRecursive(t.Elem())
-	case reflect.Struct:
-		return g.newSchemaFromStruct(t)
-	case reflect.Map:
+	if t.Kind() == reflect.Map {
 		// Map type is considered as a type "object"
-		// and should declare underlying items type
-		// in additional properties field.
+		// and declares its value type in additionalProperties.
 		schema.Type = Types("object")
 
 		// JSON Schema allow only strings as object key.
@@ -81,11 +107,10 @@ func (g *Generator) buildSchemaRecursive(t reflect.Type) *Schema {
 			})
 			return nil
 		}
-		schema.AdditionalProperties = g.buildSchemaRecursive(t.Elem())
-	case reflect.Slice, reflect.Array:
+		schema.AdditionalProperties = g.schemaFor(t.Elem())
+	} else {
 		// Slice/Array types are considered as a type
-		// "array" and should declare underlying items
-		// type in items field.
+		// "array" and declare their element type in items.
 		schema.Type = Types("array")
 
 		// Go arrays have fixed size.
@@ -93,10 +118,12 @@ func (g *Generator) buildSchemaRecursive(t reflect.Type) *Schema {
 			schema.MinItems = u64(uint64(t.Len()))
 			schema.MaxItems = u64(uint64(t.Len()))
 		}
-		schema.Items = g.buildSchemaRecursive(t.Elem())
-	default:
-		dt := g.datatype(t)
-		schema.Type, schema.Format = typeSetOf(dt.Type()), dt.Format()
+		schema.Items = g.schemaFor(t.Elem())
+	}
+	if named && g.promoted[t] {
+		name := g.typeName(t)
+		g.api.Components.Schemas[name] = schema
+		return &Schema{Ref: componentsSchemaPath + name}
 	}
 	return schema
 }
@@ -125,6 +152,13 @@ func (g *Generator) newSchemaFromStruct(t reflect.Type) *Schema {
 	// struct are all considered unique.
 	if name != "" {
 		g.schemaTypes[t] = struct{}{}
+	}
+	// A named struct is a component: it cuts any cycle with a $ref,
+	// so cycles of named composites are scoped to the struct boundary.
+	if name != "" {
+		outer := g.stack
+		g.stack = nil
+		defer func() { g.stack = outer }()
 	}
 	schema = g.flattenStructSchema(t, t, schema)
 
