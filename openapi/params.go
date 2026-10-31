@@ -47,7 +47,7 @@ func (g *Generator) setOperationParams(op *Operation, t, parent reflect.Type, al
 	for _, pp := range pathParams {
 		has := false
 		for _, param := range op.Parameters {
-			if param.In == "path" && param.Name == pp {
+			if param.Value.In == "path" && param.Value.Name == pp {
 				has = true
 				break
 			}
@@ -137,7 +137,7 @@ func (g *Generator) addStructFieldToOperation(op *Operation, t reflect.Type, idx
 		// Check if a parameter with same name/location
 		// already exists.
 		for _, p := range op.Parameters {
-			if p != nil && (p.Name == param.Name) && (p.In == param.In) {
+			if p != nil && (p.Value.Name == param.Name) && (p.Value.In == param.In) {
 				g.error(&FieldError{
 					Message:           "duplicate parameter",
 					Name:              param.Name,
@@ -149,7 +149,7 @@ func (g *Generator) addStructFieldToOperation(op *Operation, t reflect.Type, idx
 			}
 		}
 		op.Parameters = append(op.Parameters, &ParameterOrRef{
-			Parameter: param,
+			Value: param,
 		})
 	} else {
 		if !allowBody {
@@ -319,8 +319,8 @@ func (g *Generator) paramLocation(f reflect.StructField, in reflect.Type) (strin
 // in p or the one referenced in the API components.
 func (g *Generator) resolveParameter(p *ParameterOrRef) *Parameter {
 	// Parameters are always automatically inlined in the spec.
-	if p.Parameter != nil && p.Reference == nil {
-		return p.Parameter
+	if p.Value != nil && p.Ref == nil {
+		return p.Value
 	}
 	return nil
 }

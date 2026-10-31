@@ -362,14 +362,14 @@ func TestSpecHandler(t *testing.T) {
 
 	fizz.Generator().API().Components.SecuritySchemes = map[string]*openapi.SecuritySchemeOrRef{
 		"api_key": {
-			SecurityScheme: &openapi.SecurityScheme{
+			Value: &openapi.SecurityScheme{
 				Type: "apiKey",
 				Name: "api_key",
 				In:   "header",
 			},
 		},
 		"oauth2": {
-			SecurityScheme: &openapi.SecurityScheme{
+			Value: &openapi.SecurityScheme{
 				Type: "oauth2",
 				Flows: &openapi.OAuthFlows{
 					Implicit: &openapi.OAuthFlow{

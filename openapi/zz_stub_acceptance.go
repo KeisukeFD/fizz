@@ -14,17 +14,6 @@ import (
 // FixedBy: P2.6
 const Version = ""
 
-// OrRef is a stub type.
-// FixedBy: P2.1a
-type OrRef[T any] struct {
-	Ref   *Reference
-	Value *T
-}
-
-// ErrNilOrRef is a stub.
-// FixedBy: P2.1a
-var ErrNilOrRef = errors.New("stub: P2.1a")
-
 // ErrInvalidExtensionKey is a stub.
 // FixedBy: P2.3
 var ErrInvalidExtensionKey = errors.New("stub: P2.3")

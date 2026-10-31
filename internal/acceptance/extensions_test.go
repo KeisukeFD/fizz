@@ -85,7 +85,7 @@ func TestOAuthFlowYAML(t *testing.T) {
 	at.Pending(t, "P2.5", func(tb testing.TB) {
 		f := fizz.New()
 		f.Generator().SetSecuritySchemes(map[string]*openapi.SecuritySchemeOrRef{
-			"oauth": {SecurityScheme: &openapi.SecurityScheme{
+			"oauth": {Value: &openapi.SecurityScheme{
 				Type: "oauth2",
 				Flows: &openapi.OAuthFlows{ClientCredentials: &openapi.OAuthFlow{
 					TokenURL: "https://example.com/token",

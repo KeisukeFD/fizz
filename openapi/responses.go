@@ -63,7 +63,7 @@ func (g *Generator) setOperationResponse(op *Operation, t reflect.Type, code, mt
 	if examples != nil {
 		castedExamples = make(map[string]*ExampleOrRef)
 		for name, val := range examples {
-			castedExamples[name] = &ExampleOrRef{Example: &Example{Value: val}}
+			castedExamples[name] = &ExampleOrRef{Value: &Example{Value: val}}
 		}
 	}
 
@@ -72,7 +72,7 @@ func (g *Generator) setOperationResponse(op *Operation, t reflect.Type, code, mt
 	schema := g.newSchemaFromType(t)
 
 	if schema != nil || example != nil || castedExamples != nil {
-		r.Content[mt] = &MediaTypeOrRef{MediaType: &MediaType{
+		r.Content[mt] = &MediaTypeOrRef{Value: &MediaType{
 			Schema:   schema,
 			Example:  example,
 			Examples: castedExamples,
@@ -88,13 +88,13 @@ func (g *Generator) setOperationResponse(op *Operation, t reflect.Type, code, mt
 			} else {
 				sor = g.newSchemaFromType(reflect.TypeOf(h.Model))
 			}
-			r.Headers[h.Name] = &HeaderOrRef{Header: &Header{
+			r.Headers[h.Name] = &HeaderOrRef{Value: &Header{
 				Description: h.Description,
 				Schema:      sor,
 			}}
 		}
 	}
-	op.Responses[code] = &ResponseOrRef{Response: r}
+	op.Responses[code] = &ResponseOrRef{Value: r}
 
 	return nil
 }

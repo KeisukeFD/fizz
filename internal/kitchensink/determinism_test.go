@@ -47,7 +47,7 @@ func newLegacyFizz(t *testing.T) *fizz.Fizz {
 	gen.SetServers([]*openapi.Server{{URL: "https://api.example.com/v1", Description: "production"}})
 	gen.SetSecurityRequirement([]*openapi.SecurityRequirement{{"api_key": []string{}}})
 	gen.SetSecuritySchemes(map[string]*openapi.SecuritySchemeOrRef{
-		"api_key": {SecurityScheme: &openapi.SecurityScheme{Type: "apiKey", Name: "api_key", In: "header"}},
+		"api_key": {Value: &openapi.SecurityScheme{Type: "apiKey", Name: "api_key", In: "header"}},
 	})
 	if errs := f.Errors(); len(errs) != 0 {
 		t.Fatalf("registration errors: %v", errs)

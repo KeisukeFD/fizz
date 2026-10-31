@@ -14,11 +14,12 @@ import (
 // A task PR adds its own ID here and nothing else; the harness then
 // fails every skipped test that names the task in FixedBy.
 var Done = map[string]bool{
-	"P1.0": true,
-	"P1.1": true,
-	"P1.2": true,
-	"P1.3": true,
-	"P2.2": true,
+	"P1.0":  true,
+	"P1.1":  true,
+	"P1.2":  true,
+	"P1.3":  true,
+	"P2.1a": true,
+	"P2.2":  true,
 }
 
 // IsDone reports whether task is in the done ledger. A composite ID

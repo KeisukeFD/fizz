@@ -2,13 +2,6 @@ package openapi
 
 import "encoding/json"
 
-// Reference is a simple object to allow referencing
-// other components in the specification, internally and
-// externally.
-type Reference struct {
-	Ref string `json:"$ref" yaml:"$ref"`
-}
-
 // Parameter describes a single operation parameter.
 type Parameter struct {
 	Name            string  `json:"name" yaml:"name"`
@@ -24,18 +17,7 @@ type Parameter struct {
 
 // ParameterOrRef represents a Parameter that can be inlined
 // or referenced in the API description.
-type ParameterOrRef struct {
-	*Parameter
-	*Reference
-}
-
-// MarshalYAML implements yaml.Marshaler for ParameterOrRef.
-func (por *ParameterOrRef) MarshalYAML() (any, error) {
-	if por.Parameter != nil {
-		return por.Parameter, nil
-	}
-	return por.Reference, nil
-}
+type ParameterOrRef = OrRef[Parameter]
 
 // RequestBody represents a request body.
 type RequestBody struct {
@@ -116,18 +98,7 @@ type Responses map[string]*ResponseOrRef
 
 // ResponseOrRef represents a Response that can be inlined
 // or referenced in the API description.
-type ResponseOrRef struct {
-	*Response
-	*Reference
-}
-
-// MarshalYAML implements yaml.Marshaler for ResponseOrRef.
-func (ror *ResponseOrRef) MarshalYAML() (any, error) {
-	if ror.Response != nil {
-		return ror.Response, nil
-	}
-	return ror.Reference, nil
-}
+type ResponseOrRef = OrRef[Response]
 
 // Response describes a single response from an API.
 type Response struct {
@@ -138,18 +109,7 @@ type Response struct {
 
 // HeaderOrRef represents a Header that can be inlined
 // or referenced in the API description.
-type HeaderOrRef struct {
-	*Header
-	*Reference
-}
-
-// MarshalYAML implements yaml.Marshaler for HeaderOrRef.
-func (hor *HeaderOrRef) MarshalYAML() (any, error) {
-	if hor.Header != nil {
-		return hor.Header, nil
-	}
-	return hor.Reference, nil
-}
+type HeaderOrRef = OrRef[Header]
 
 // Header represents an HTTP header.
 type Header struct {
@@ -162,18 +122,7 @@ type Header struct {
 
 // MediaTypeOrRef represents a MediaType that can be inlined
 // or referenced in the API description.
-type MediaTypeOrRef struct {
-	*MediaType
-	*Reference
-}
-
-// MarshalYAML implements yaml.Marshaler for MediaTypeOrRef.
-func (mtor *MediaTypeOrRef) MarshalYAML() (any, error) {
-	if mtor.MediaType != nil {
-		return mtor.MediaType, nil
-	}
-	return mtor.Reference, nil
-}
+type MediaTypeOrRef = OrRef[MediaType]
 
 // MediaType represents the type of a media.
 type MediaType struct {
@@ -185,18 +134,7 @@ type MediaType struct {
 
 // ExampleOrRef represents an Example that can be inlined
 // or referenced in the API description.
-type ExampleOrRef struct {
-	*Example
-	*Reference
-}
-
-// MarshalYAML implements yaml.Marshaler for ExampleOrRef.
-func (eor *ExampleOrRef) MarshalYAML() (any, error) {
-	if eor.Example != nil {
-		return eor.Example, nil
-	}
-	return eor.Reference, nil
-}
+type ExampleOrRef = OrRef[Example]
 
 // Example represents the example of a media type.
 type Example struct {

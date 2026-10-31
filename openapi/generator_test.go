@@ -605,11 +605,11 @@ func TestSetOperationResponseError(t *testing.T) {
 	}
 	err := g.setOperationResponse(op, reflect.TypeFor[*string](), "200", "application/json", "", nil, nil, nil)
 	assert.Nil(t, err)
-	assert.Equal(t, "OK", op.Responses["200"].Description)
+	assert.Equal(t, "OK", op.Responses["200"].Value.Description)
 
 	err = g.setOperationResponse(op, reflect.TypeFor[*string](), "429", "application/json", "testDesc", nil, nil, nil)
 	assert.Nil(t, err)
-	assert.Equal(t, "testDesc", op.Responses["429"].Description)
+	assert.Equal(t, "testDesc", op.Responses["429"].Value.Description)
 
 	// Add another response with same code.
 	err = g.setOperationResponse(op, reflect.TypeFor[*int](), "200", "application/xml", "", nil, nil, nil)
@@ -643,7 +643,7 @@ func TestSetOperationResponseExample(t *testing.T) {
 	assert.Nil(t, err)
 
 	// assert example set correctly
-	mt := op.Responses["400"].Response.Content["application/json"].MediaType
+	mt := op.Responses["400"].Value.Content["application/json"].Value
 	assert.Equal(t, error1, mt.Example)
 
 	// examples should be empty
@@ -670,10 +670,10 @@ func TestSetOperationResponseExamples(t *testing.T) {
 	assert.Nil(t, err)
 
 	// assert examples set correctly
-	mt := op.Responses["400"].Response.Content["application/json"].MediaType
+	mt := op.Responses["400"].Value.Content["application/json"].Value
 	assert.Equal(t, 2, len(mt.Examples))
-	assert.Equal(t, error1, mt.Examples["one"].Example.Value)
-	assert.Equal(t, error2, mt.Examples["two"].Example.Value)
+	assert.Equal(t, error1, mt.Examples["one"].Value.Value)
+	assert.Equal(t, error2, mt.Examples["two"].Value.Value)
 
 	// example should be empty
 	assert.Nil(t, mt.Example)

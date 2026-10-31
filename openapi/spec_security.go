@@ -4,18 +4,7 @@ import "encoding/json"
 
 // SecuritySchemeOrRef represents a SecurityScheme that can be inlined
 // or referenced in the API description.
-type SecuritySchemeOrRef struct {
-	*SecurityScheme
-	*Reference
-}
-
-// MarshalYAML implements yaml.Marshaler for SecuritySchemeOrRef.
-func (sor *SecuritySchemeOrRef) MarshalYAML() (any, error) {
-	if sor.SecurityScheme != nil {
-		return sor.SecurityScheme, nil
-	}
-	return sor.Reference, nil
-}
+type SecuritySchemeOrRef = OrRef[SecurityScheme]
 
 // SecurityScheme represents a security scheme that can be used by an operation.
 type SecurityScheme struct {

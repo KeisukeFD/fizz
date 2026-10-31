@@ -11,11 +11,11 @@ import (
 func TestYAMLMarshalingRefs(t *testing.T) {
 	// tests for references.
 	tests := []any{
-		&ParameterOrRef{Reference: &Reference{Ref: ""}},
-		&ResponseOrRef{Reference: &Reference{Ref: ""}},
-		&HeaderOrRef{Reference: &Reference{Ref: ""}},
-		&MediaTypeOrRef{Reference: &Reference{Ref: ""}},
-		&ExampleOrRef{Reference: &Reference{Ref: ""}},
+		&ParameterOrRef{Ref: &Reference{Ref: ""}},
+		&ResponseOrRef{Ref: &Reference{Ref: ""}},
+		&HeaderOrRef{Ref: &Reference{Ref: ""}},
+		&MediaTypeOrRef{Ref: &Reference{Ref: ""}},
+		&ExampleOrRef{Ref: &Reference{Ref: ""}},
 	}
 	for _, i := range tests {
 		values := reflect.ValueOf(i).MethodByName("MarshalYAML").Call(nil)
@@ -40,11 +40,11 @@ func TestYAMLMarshalingRefs(t *testing.T) {
 func TestYAMLMarshalingTypes(t *testing.T) {
 	// tests for types.
 	tests := map[any]any{
-		&ParameterOrRef{Parameter: new(Parameter)}: &Parameter{},
-		&ResponseOrRef{Response: new(Response)}:    &Response{},
-		&HeaderOrRef{Header: new(Header)}:          &Header{},
-		&MediaTypeOrRef{MediaType: new(MediaType)}: &MediaType{},
-		&ExampleOrRef{Example: new(Example)}:       &Example{},
+		&ParameterOrRef{Value: new(Parameter)}: &Parameter{},
+		&ResponseOrRef{Value: new(Response)}:   &Response{},
+		&HeaderOrRef{Value: new(Header)}:       &Header{},
+		&MediaTypeOrRef{Value: new(MediaType)}: &MediaType{},
+		&ExampleOrRef{Value: new(Example)}:     &Example{},
 	}
 	for i, e := range tests {
 		values := reflect.ValueOf(i).MethodByName("MarshalYAML").Call(nil)
