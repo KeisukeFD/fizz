@@ -1,0 +1,30 @@
+package fizz
+
+import (
+	"strings"
+
+	"github.com/gin-gonic/gin"
+	"github.com/wI2L/fizz/openapi"
+)
+
+// OpenAPI returns a Gin HandlerFunc that serves
+// the marshalled OpenAPI specification of the API.
+func (f *Fizz) OpenAPI(info *openapi.Info, ct string) gin.HandlerFunc {
+	f.gen.SetInfo(info)
+
+	ct = strings.ToLower(ct)
+	if ct == "" {
+		ct = "json"
+	}
+	switch ct {
+	case "json":
+		return func(c *gin.Context) {
+			c.JSON(200, f.gen.API())
+		}
+	case "yaml":
+		return func(c *gin.Context) {
+			c.YAML(200, f.gen.API())
+		}
+	}
+	panic("invalid content type, use JSON or YAML")
+}
