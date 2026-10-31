@@ -77,6 +77,12 @@ O3, O5–O15, O17–O30 and O32–O36 are adopted as proposed in ACCEPTANCE §5.
   - A kitchen-sink or acceptance case that starts passing early has its FixedBy relabelled to the task that made it pass (precedent: O34).
   - Until P2.3, the model is encoded with `encoding/json` v1 (`omitzero` is supported since Go 1.24).
 - **`ExternalDocs` ownership.** `Schema.ExternalDocs` (P2.2) needs the type, so `openapi.ExternalDocs` lands in **P2.2**, not P2.1b.
+- **JSON v2 bridge (P2.3).**
+  - In Go 1.27 the v2 tag for the extension catch-all is `json:",embed"` (an "embedded fallback" map). D12's `inline` was the draft name.
+  - Unknown members of any name are kept on decode and written back on encode.
+  - Marshaling pins `json.DefaultOptionsV1()` plus `Deterministic(true)`, so v1 `json.Marshal(doc)` and `openapi.MarshalJSON(doc)` produce the same bytes.
+  - Decoding uses v2 defaults: names are case-sensitive and duplicates are rejected. MIGRATION must mention this.
+  - **P2.6 revisits the option set.** Once the generator no longer produces nil slices or maps, P2.6 switches to the v2 defaults if the G21 parity test still holds.
 - **Binary size of `fizz.Embedded*UI`.** These make the root package import `docsui/embedded`. P8.3 must show (a test or a documented measurement) that a binary that does not call them carries no assets, because the linker drops the unreferenced `embed.FS`. If that does not hold, the selectors move to `docsui/embedded` and O1 goes back to the user.
 
 ## 5. Stub strategy (ACCEPTANCE §2, rule 2)
