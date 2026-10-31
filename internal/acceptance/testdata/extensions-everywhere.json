@@ -1,0 +1,124 @@
+{
+  "openapi": "3.2.0",
+  "x-k": "openapi",
+  "info": {
+    "title": "Extensions everywhere",
+    "version": "1.0.0",
+    "x-k": "info",
+    "contact": {"name": "Ann", "url": "https://example.com/ann", "email": "ann@example.com", "x-k": "contact"},
+    "license": {"name": "MIT", "identifier": "MIT", "x-k": "license"}
+  },
+  "servers": [
+    {
+      "url": "https://example.com/{base}",
+      "x-k": "server",
+      "variables": {
+        "base": {"default": "v1", "enum": ["v1", "v2"], "x-k": "servervariable"}
+      }
+    }
+  ],
+  "externalDocs": {"url": "https://example.com/docs", "x-k": "externaldocs"},
+  "tags": [
+    {"name": "pets", "description": "Pets", "externalDocs": {"url": "https://example.com/pets", "x-k": "externaldocs"}, "x-k": "tag"}
+  ],
+  "paths": {
+    "/pets/{id}": {
+      "x-k": "pathitem",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {"type": "string"},
+          "x-k": "parameter"
+        }
+      ],
+      "put": {
+        "operationId": "putPet",
+        "tags": ["pets"],
+        "x-k": "operation",
+        "externalDocs": {"url": "https://example.com/put", "x-k": "externaldocs"},
+        "requestBody": {
+          "required": true,
+          "x-k": "requestbody",
+          "content": {
+            "multipart/form-data": {
+              "x-k": "mediatype",
+              "schema": {"$ref": "#/components/schemas/Pet"},
+              "encoding": {
+                "name": {"contentType": "text/plain", "x-k": "encoding"}
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "ok",
+            "x-k": "response",
+            "headers": {
+              "X-Rate": {"schema": {"type": "integer"}, "x-k": "header"}
+            },
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Pet"},
+                "examples": {
+                  "one": {"summary": "one", "value": {"name": "rex"}, "x-k": "example"}
+                }
+              }
+            },
+            "links": {
+              "self": {"operationId": "putPet", "parameters": {"id": "$response.body#/id"}, "x-k": "link"}
+            }
+          }
+        },
+        "callbacks": {
+          "onEvent": {
+            "x-k": {},
+            "{$request.body#/url}": {
+              "post": {
+                "responses": {"200": {"description": "ok"}}
+              }
+            }
+          }
+        },
+        "security": [{"oauth": ["read"]}]
+      }
+    }
+  },
+  "webhooks": {
+    "pet-created": {
+      "x-k": "pathitem",
+      "post": {"responses": {"200": {"description": "ok"}}}
+    }
+  },
+  "components": {
+    "x-k": "components",
+    "schemas": {
+      "Pet": {
+        "type": "object",
+        "x-k": "schema",
+        "properties": {
+          "name": {"type": "string", "x-k": "schema"},
+          "kind": {"type": "string"}
+        },
+        "xml": {"name": "pet", "x-k": "xml"},
+        "discriminator": {"propertyName": "kind", "x-k": "discriminator"}
+      }
+    },
+    "securitySchemes": {
+      "oauth": {
+        "type": "oauth2",
+        "x-k": "securityscheme",
+        "flows": {
+          "x-k": "oauthflows",
+          "authorizationCode": {
+            "authorizationUrl": "https://example.com/auth",
+            "tokenUrl": "https://example.com/token",
+            "scopes": {"read": "read access"},
+            "x-k": "oauthflow"
+          }
+        }
+      }
+    }
+  }
+}
