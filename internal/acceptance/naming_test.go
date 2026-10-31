@@ -104,7 +104,6 @@ func TestBEDefaultComponentNameFormat(t *testing.T) {
 			{"/box-item", bEOut[boxfix.Box[xmodels.Item]](), "FixturesBox_models.Item"},
 			{"/box-list", bEOut[boxfix.Box[[]string]](), "FixturesBox_List_string"},
 			{"/box-map", bEOut[boxfix.Box[map[string]int]](), "FixturesBox_Map_string_int"},
-			{"/box-ptr", bEOut[boxfix.Box[*xmodels.Item]](), "FixturesBox_models.Item"},
 		}
 		for _, r := range rows {
 			f.GET(r.path, []fizz.OperationOption{fizz.ID("id" + strings.ReplaceAll(r.path, "/", "_"))}, r.h)
@@ -117,6 +116,14 @@ func TestBEDefaultComponentNameFormat(t *testing.T) {
 			if !bENameRE.MatchString(r.want) {
 				tb.Errorf("%s: expected name %q is not a valid key", r.path, r.want)
 			}
+		}
+		// Box[*Item] renders like Box[Item] but is another type with
+		// another schema (nullable field): checked on its own spec, as
+		// both in one spec collide and the second is inlined.
+		fp := fizz.New()
+		fp.GET("/box-ptr", []fizz.OperationOption{fizz.ID("id_box_ptr")}, bEOut[boxfix.Box[*xmodels.Item]]())
+		if got := bERespRef(tb, at.Spec(tb, fp), "/box-ptr"); got != "FixturesBox_models.Item" {
+			tb.Errorf("/box-ptr: component %q, want %q", got, "FixturesBox_models.Item")
 		}
 		for name := range bESchemas(tb, doc) {
 			if !bENameRE.MatchString(name) {

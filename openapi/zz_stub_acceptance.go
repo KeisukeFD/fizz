@@ -10,20 +10,6 @@ import (
 	"reflect"
 )
 
-// CollisionError is a stub type.
-// FixedBy: P4.5
-type CollisionError struct {
-	Name     string
-	Kept     reflect.Type
-	Rejected reflect.Type
-}
-
-// Error is a stub.
-// FixedBy: P4.5
-func (e *CollisionError) Error() string {
-	return ""
-}
-
 // OperationError is a stub type.
 // FixedBy: P4.8
 type OperationError struct {

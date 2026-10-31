@@ -1,0 +1,71 @@
+{
+    "openapi": "3.2.1",
+    "info": {
+        "title": "kitchensink",
+        "version": "0"
+    },
+    "paths": {
+        "/a": {
+            "get": {
+                "operationId": "getA",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ModelsItem"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/b": {
+            "get": {
+                "operationId": "getB",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "price": {
+                                            "type": "number",
+                                            "format": "double"
+                                        },
+                                        "sku": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "ModelsItem": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "name": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "name"
+                ]
+            }
+        }
+    }
+}

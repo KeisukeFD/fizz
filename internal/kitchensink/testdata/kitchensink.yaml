@@ -62,7 +62,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GenericPage[Github.Com/WI2L/Fizz/Internal/Kitchensink.LegacyPet]'
+                $ref: '#/components/schemas/GenericPage_kitchensink.legacyPet'
         "400":
           description: Bad request
           content:
@@ -143,7 +143,7 @@ components:
       properties:
         pet:
           $ref: '#/components/schemas/KitchensinkLegacyPet'
-    GenericPage[Github.Com/WI2L/Fizz/Internal/Kitchensink.LegacyPet]:
+    GenericPage_kitchensink.legacyPet:
       type: object
       properties:
         items:

@@ -1,0 +1,89 @@
+{
+    "openapi": "3.2.1",
+    "info": {
+        "title": "kitchensink",
+        "version": "0"
+    },
+    "paths": {
+        "/page": {
+            "get": {
+                "operationId": "getPage",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GenericPage_models.Item"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/pair": {
+            "get": {
+                "operationId": "getPair",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GenericPair_string_int"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "GenericPage_models.Item": {
+                "type": "object",
+                "properties": {
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ModelsItem"
+                        }
+                    },
+                    "total": {
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                }
+            },
+            "GenericPair_string_int": {
+                "type": "object",
+                "properties": {
+                    "key": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                }
+            },
+            "ModelsItem": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "name": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "name"
+                ]
+            }
+        }
+    }
+}

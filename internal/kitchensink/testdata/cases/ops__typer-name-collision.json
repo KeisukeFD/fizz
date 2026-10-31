@@ -1,0 +1,60 @@
+{
+    "openapi": "3.2.1",
+    "info": {
+        "title": "kitchensink",
+        "version": "0"
+    },
+    "paths": {
+        "/a": {
+            "get": {
+                "operationId": "getA",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/OShared"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/b": {
+            "get": {
+                "operationId": "getB",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "b": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "OShared": {
+                "type": "object",
+                "properties": {
+                    "a": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    }
+}

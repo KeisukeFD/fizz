@@ -92,7 +92,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/GenericPage[Github.Com/WI2L/Fizz/Internal/Kitchensink.LegacyPet]"
+                                    "$ref": "#/components/schemas/GenericPage_kitchensink.legacyPet"
                                 }
                             }
                         }
@@ -229,7 +229,7 @@
                     }
                 }
             },
-            "GenericPage[Github.Com/WI2L/Fizz/Internal/Kitchensink.LegacyPet]": {
+            "GenericPage_kitchensink.legacyPet": {
                 "type": "object",
                 "properties": {
                     "items": {

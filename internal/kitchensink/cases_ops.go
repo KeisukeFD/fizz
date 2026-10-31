@@ -161,7 +161,7 @@ func init() {
 			},
 			// First type wins, the second is reported and not merged.
 			Expect: []Fragment{
-				{Pointer: schemas + "ModelsItem/properties/id", JSON: `{"type":"integer"}`},
+				{Pointer: schemas + "ModelsItem/properties/id", JSON: `{"type":"integer","format":"int64"}`},
 				{Pointer: schemas + "ModelsItem/properties/sku", Absent: true},
 			},
 			Errors:  []string{"ModelsItem"},

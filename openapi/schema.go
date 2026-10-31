@@ -98,21 +98,29 @@ func (g *Generator) schemaOf(t reflect.Type) *Schema {
 func (g *Generator) composite(t reflect.Type) *Schema {
 	named := t.Name() != ""
 	if named {
-		ref := &Schema{Ref: componentsSchemaPath + g.typeName(t)}
-
 		// Re-entered type: promote every composite of the cycle,
 		// from t up to the top of the stack.
 		for i, st := range g.stack {
 			if st == t {
-				for _, m := range g.stack[i:] {
-					g.promoted[m] = true
+				name, ok := g.componentName(t)
+				if !ok {
+					// The name belongs to another type: the
+					// cycle cannot be cut with a $ref.
+					return &Schema{}
 				}
-				return ref
+				for _, m := range g.stack[i:] {
+					if m == t {
+						g.promoted[m] = true
+					} else if _, ok := g.componentName(m); ok {
+						g.promoted[m] = true
+					}
+				}
+				return &Schema{Ref: componentsSchemaPath + name}
 			}
 		}
 		// Already promoted by an earlier cycle: its component exists.
 		if g.promoted[t] {
-			return ref
+			return &Schema{Ref: componentsSchemaPath + g.typeName(t)}
 		}
 		g.stack = append(g.stack, t)
 		defer func() { g.stack = g.stack[:len(g.stack)-1] }()
@@ -213,7 +221,24 @@ func (g *Generator) newSchemaFromStruct(t reflect.Type) *Schema {
 	if t.Kind() != reflect.Struct {
 		return nil
 	}
-	name := g.typeName(t)
+	name, ok := g.componentName(t)
+	if !ok && g.typeName(t) != "" {
+		// The component name belongs to another type (a
+		// *CollisionError was recorded): inline the schema.
+		if g.inlining[t] {
+			// Recursive type that cannot be a $ref.
+			return &Schema{}
+		}
+		if g.inlining == nil {
+			g.inlining = make(map[reflect.Type]bool)
+		}
+		g.inlining[t] = true
+		defer delete(g.inlining, t)
+		return g.flattenStructSchema(t, t, &Schema{
+			Type:       Types("object"),
+			Properties: make(map[string]*Schema),
+		})
+	}
 
 	// If the type of the field has already been registered,
 	// skip the schema generation to avoid a recursive loop.

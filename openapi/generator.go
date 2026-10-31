@@ -50,7 +50,9 @@ type Generator struct {
 	pointersNullable bool
 	annotationStyle  AnnotationStyle
 	tags             TagNames
-	schemaNamer      func(reflect.Type) string // not consumed yet
+	schemaNamer      func(reflect.Type) string
+	registry         registry
+	inlining         map[reflect.Type]bool // collision losers being inlined
 }
 
 // NewGenerator returns a new OpenAPI generator.
@@ -268,6 +270,9 @@ func (g *Generator) OverrideTypeName(t reflect.Type, name string) error {
 	}
 	if _, ok := g.typeNames[t]; ok {
 		return errors.New("type name already overrided")
+	}
+	if owner, ok := g.registry.owner(sanitizeName(name)); ok && owner != t {
+		return fmt.Errorf("type name %q is already used by %s", name, owner)
 	}
 	g.typeNames[t] = name
 
