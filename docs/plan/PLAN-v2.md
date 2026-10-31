@@ -850,6 +850,10 @@ Rules for every task:
 - **D28 Cut line.**
   - Above the line: P10.3a–g, P10.7a–m, P10.9c, P10.9d, P10.9n.
   - Below the line (missing features, kept allowlisted and listed in README "Known limitations"): P10.9a, b, h, i, k, l, m, o, p.
+- **D29 (user, 2026-10-31; revises D25 and part of D26).** tonic v0.9.0 binds headers and path params from one string (`c.GetHeader` / `c.Param`), after fizz's hook runs, so the hook cannot fix them. For v0.30:
+  - P10.7e / P10.7l: a slice or array header/path param is a **generation error**, like map params.
+  - P10.7i: the bind hook injects an absent header's `default` tag value into the request. An optional non-string header with no default gets a generation **warning** saying that an absent header returns 400 under tonic.
+  - Real support comes with the post-v1 own binding layer (§17). The contract subtests for slice header/path become "expect generation error" cases.
 - **P10.3g** `PathItem.Parameters` and `Link.Parameters` still use `omitempty`, so empty containers are dropped (same class as P10.3b–e). Found during the P10.3 fixes.
 - **P10.5d** Harness hygiene: a `limitation` allowlist entry whose task is in `plan.Done` fails (stale). The reason must then be reclassified or the entry removed.
 
