@@ -22,8 +22,9 @@ const (
 // It needs no router: mount it on any http.ServeMux.
 //
 // Swagger UI renders OpenAPI 3.2 only partly: itemSchema is not shown
-// (swagger-ui#11065) and $ref siblings or tag kind and parent may be
-// ignored. Use ScalarUI for fuller 3.2 rendering.
+// (swagger-ui#11065) and the tag summary is not shown; tag kind and
+// parent are unverified (see docs/compat.md in the fizz repository).
+// Use ScalarUI for fuller 3.2 rendering.
 func SwaggerUI(specURL string, opts ...Option) http.Handler {
 	c := newConfig(opts)
 	m := uiConfig(c, specURL)

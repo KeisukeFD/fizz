@@ -40,10 +40,10 @@ type DocsUI struct {
 // SwaggerUI selects Swagger UI as the renderer of Docs.
 //
 // Swagger UI renders OpenAPI 3.2 only partly. Known gaps: itemSchema
-// is not rendered (swagger-ui#11065), and $ref siblings such as a
-// description next to a $ref, and tag kind and parent, may be
-// ignored. Use ScalarUI for fuller 3.2 rendering. The choice is
-// always honored: fizz never falls back to another renderer.
+// is not rendered (swagger-ui#11065) and the tag summary is not shown;
+// tag kind and parent are unverified (see docs/compat.md). Use ScalarUI
+// for fuller 3.2 rendering. The choice is always honored: fizz never
+// falls back to another renderer.
 func SwaggerUI(opts ...docsui.Option) DocsUI {
 	return DocsUI{renderer: rendererSwagger, build: func(_, specURL string) http.Handler {
 		return docsui.SwaggerUI(specURL, opts...)

@@ -760,10 +760,12 @@ for _, path := range []string{"/docs", "/scalar", "/offline"} {
 ```
 
 <!-- P8.4: verify rendering notes -->
-**Swagger UI and OpenAPI 3.2.** These are known upstream gaps, taken from the Swagger UI issue tracker and a preliminary spike; browser verification of the documents that fizz generates is still pending, so treat them as reported behaviour, not as guarantees:
+**Swagger UI and OpenAPI 3.2.** These are known upstream gaps, taken from the Swagger UI issue tracker and the P0.6 spike (2026-10-30, a hand-made 3.2.1 document); browser verification of the documents that fizz generates is still pending, so treat them as reported behaviour, not as guarantees:
 - `itemSchema`, the 3.2 schema of sequential media types, is not rendered ([swagger-ui#11065](https://github.com/swagger-api/swagger-ui/issues/11065)). Fizz does not generate `itemSchema`; it matters for documents you extend with a hook.
-- Tag `summary`, `kind` and `parent`, the 3.2 tag fields, may not be displayed.
-- A `$ref` may be shown as an anonymous `object` in an inline response schema, and `x-` extensions are hidden by default.
+- The tag `summary` is not displayed; tag `kind` and `parent` are unverified.
+- A `$ref` in an inline response schema is shown as an anonymous `object` (Scalar keeps the component name).
+- `x-` extensions are hidden by default, in both Swagger UI and Scalar.
+- A `description` next to a `$ref` was rendered by both UIs in the spike; it is still on the verification checklist for fizz's own documents.
 
 Use `fizz.ScalarUI()` for fuller 3.2 rendering. The details are in [docs/compat.md](docs/compat.md).
 
