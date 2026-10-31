@@ -324,11 +324,18 @@ func LoadAllow(tb testing.TB, path string) []Allow {
 // oai/upgraded/learn/examples, e.g. "v3.0/petstore.json".
 func Official(tb testing.TB, rel string) []byte {
 	tb.Helper()
+	return OfficialAt(tb, "learn/examples/"+rel)
+}
+
+// OfficialAt returns the upgraded official document of the given path
+// under oai/upgraded, e.g. "spectext/base-uri-within-content-1.json".
+func OfficialAt(tb testing.TB, rel string) []byte {
+	tb.Helper()
 	_, file, _, ok := runtime.Caller(0)
 	if !ok {
 		tb.Fatal("cannot locate the repro package")
 	}
-	p := filepath.Join(filepath.Dir(file), "..", "oai", "upgraded", "learn", "examples", filepath.FromSlash(rel))
+	p := filepath.Join(filepath.Dir(file), "..", "oai", "upgraded", filepath.FromSlash(rel))
 	b, err := os.ReadFile(p)
 	if err != nil {
 		tb.Fatalf("official document: %v", err)
@@ -375,4 +382,11 @@ func Run(tb testing.TB, f *fizz.Fizz, official, allowPath string) {
 	tb.Helper()
 	got := Serve(tb, f)
 	Compare(tb, got, Official(tb, official), LoadAllow(tb, allowPath))
+}
+
+// RunAt is Run for a document under oai/upgraded (see OfficialAt).
+func RunAt(tb testing.TB, f *fizz.Fizz, official, allowPath string) {
+	tb.Helper()
+	got := Serve(tb, f)
+	Compare(tb, got, OfficialAt(tb, official), LoadAllow(tb, allowPath))
 }

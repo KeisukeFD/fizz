@@ -1,0 +1,177 @@
+[
+  {
+    "pointer": "/components",
+    "kind": "extra",
+    "category": "limitation",
+    "task": "P10.9c",
+    "reason": "A document with no component still emits \"components\": {} (empty object, valid OAS); the official example has none."
+  },
+  {
+    "pointer": "/paths/~1flights~1search/query/requestBody/content/application~1json/schema/properties/cabinClass/example",
+    "kind": "missing",
+    "category": "naming",
+    "reason": "fizz writes the example tag of a schema as examples:[v], the non-deprecated JSON Schema 2020-12 form (ADR 0001, \"example -> examples:[v]\"); the 3.2 official example still uses the deprecated singular example keyword."
+  },
+  {
+    "pointer": "/paths/~1flights~1search/query/requestBody/content/application~1json/schema/properties/cabinClass/examples",
+    "kind": "extra",
+    "category": "naming",
+    "reason": "Counterpart of the missing singular example: fizz writes examples:[v] (ADR 0001, \"example -> examples:[v]\")."
+  },
+  {
+    "pointer": "/paths/~1flights~1search/query/requestBody/content/application~1json/schema/properties/departureDate/example",
+    "kind": "missing",
+    "category": "naming",
+    "reason": "fizz writes the example tag of a schema as examples:[v], the non-deprecated JSON Schema 2020-12 form (ADR 0001, \"example -> examples:[v]\"); the 3.2 official example still uses the deprecated singular example keyword."
+  },
+  {
+    "pointer": "/paths/~1flights~1search/query/requestBody/content/application~1json/schema/properties/departureDate/examples",
+    "kind": "extra",
+    "category": "naming",
+    "reason": "Counterpart of the missing singular example: fizz writes examples:[v] (ADR 0001, \"example -> examples:[v]\")."
+  },
+  {
+    "pointer": "/paths/~1flights~1search/query/requestBody/content/application~1json/schema/properties/destination/example",
+    "kind": "missing",
+    "category": "naming",
+    "reason": "fizz writes the example tag of a schema as examples:[v], the non-deprecated JSON Schema 2020-12 form (ADR 0001, \"example -> examples:[v]\"); the 3.2 official example still uses the deprecated singular example keyword."
+  },
+  {
+    "pointer": "/paths/~1flights~1search/query/requestBody/content/application~1json/schema/properties/destination/examples",
+    "kind": "extra",
+    "category": "naming",
+    "reason": "Counterpart of the missing singular example: fizz writes examples:[v] (ADR 0001, \"example -> examples:[v]\")."
+  },
+  {
+    "pointer": "/paths/~1flights~1search/query/requestBody/content/application~1json/schema/properties/nonStopOnly/example",
+    "kind": "missing",
+    "category": "naming",
+    "reason": "fizz writes the example tag of a schema as examples:[v], the non-deprecated JSON Schema 2020-12 form (ADR 0001, \"example -> examples:[v]\"); the 3.2 official example still uses the deprecated singular example keyword."
+  },
+  {
+    "pointer": "/paths/~1flights~1search/query/requestBody/content/application~1json/schema/properties/nonStopOnly/examples",
+    "kind": "extra",
+    "category": "naming",
+    "reason": "Counterpart of the missing singular example: fizz writes examples:[v] (ADR 0001, \"example -> examples:[v]\")."
+  },
+  {
+    "pointer": "/paths/~1flights~1search/query/requestBody/content/application~1json/schema/properties/origin/example",
+    "kind": "missing",
+    "category": "naming",
+    "reason": "fizz writes the example tag of a schema as examples:[v], the non-deprecated JSON Schema 2020-12 form (ADR 0001, \"example -> examples:[v]\"); the 3.2 official example still uses the deprecated singular example keyword."
+  },
+  {
+    "pointer": "/paths/~1flights~1search/query/requestBody/content/application~1json/schema/properties/origin/examples",
+    "kind": "extra",
+    "category": "naming",
+    "reason": "Counterpart of the missing singular example: fizz writes examples:[v] (ADR 0001, \"example -> examples:[v]\")."
+  },
+  {
+    "pointer": "/paths/~1flights~1search/query/requestBody/content/application~1json/schema/properties/passengers/example",
+    "kind": "missing",
+    "category": "naming",
+    "reason": "fizz writes the example tag of a schema as examples:[v], the non-deprecated JSON Schema 2020-12 form (ADR 0001, \"example -> examples:[v]\"); the 3.2 official example still uses the deprecated singular example keyword."
+  },
+  {
+    "pointer": "/paths/~1flights~1search/query/requestBody/content/application~1json/schema/properties/passengers/examples",
+    "kind": "extra",
+    "category": "naming",
+    "reason": "Counterpart of the missing singular example: fizz writes examples:[v] (ADR 0001, \"example -> examples:[v]\")."
+  },
+  {
+    "pointer": "/paths/~1flights~1search/query/requestBody/content/application~1json/schema/properties/returnDate/example",
+    "kind": "missing",
+    "category": "naming",
+    "reason": "fizz writes the example tag of a schema as examples:[v], the non-deprecated JSON Schema 2020-12 form (ADR 0001, \"example -> examples:[v]\"); the 3.2 official example still uses the deprecated singular example keyword."
+  },
+  {
+    "pointer": "/paths/~1flights~1search/query/requestBody/content/application~1json/schema/properties/returnDate/examples",
+    "kind": "extra",
+    "category": "naming",
+    "reason": "Counterpart of the missing singular example: fizz writes examples:[v] (ADR 0001, \"example -> examples:[v]\")."
+  },
+  {
+    "pointer": "/paths/~1flights~1search/query/requestBody/content/application~1json/schema/required/0",
+    "kind": "changed",
+    "category": "naming",
+    "reason": "fizz sorts the required array alphabetically for deterministic output (openapi/fields.go); the official example lists it in declaration order. The set is the same."
+  },
+  {
+    "pointer": "/paths/~1flights~1search/query/requestBody/content/application~1json/schema/required/2",
+    "kind": "changed",
+    "category": "naming",
+    "reason": "fizz sorts the required array alphabetically for deterministic output (openapi/fields.go); the official example lists it in declaration order. The set is the same."
+  },
+  {
+    "pointer": "/paths/~1flights~1search/query/responses/200/content/application~1json/schema/properties/flights/items/properties/arrivalTime/example",
+    "kind": "missing",
+    "category": "naming",
+    "reason": "fizz writes the example tag of a schema as examples:[v], the non-deprecated JSON Schema 2020-12 form (ADR 0001, \"example -> examples:[v]\"); the 3.2 official example still uses the deprecated singular example keyword."
+  },
+  {
+    "pointer": "/paths/~1flights~1search/query/responses/200/content/application~1json/schema/properties/flights/items/properties/arrivalTime/examples",
+    "kind": "extra",
+    "category": "naming",
+    "reason": "Counterpart of the missing singular example: fizz writes examples:[v] (ADR 0001, \"example -> examples:[v]\")."
+  },
+  {
+    "pointer": "/paths/~1flights~1search/query/responses/200/content/application~1json/schema/properties/flights/items/properties/departureTime/example",
+    "kind": "missing",
+    "category": "naming",
+    "reason": "fizz writes the example tag of a schema as examples:[v], the non-deprecated JSON Schema 2020-12 form (ADR 0001, \"example -> examples:[v]\"); the 3.2 official example still uses the deprecated singular example keyword."
+  },
+  {
+    "pointer": "/paths/~1flights~1search/query/responses/200/content/application~1json/schema/properties/flights/items/properties/departureTime/examples",
+    "kind": "extra",
+    "category": "naming",
+    "reason": "Counterpart of the missing singular example: fizz writes examples:[v] (ADR 0001, \"example -> examples:[v]\")."
+  },
+  {
+    "pointer": "/paths/~1flights~1search/query/responses/200/content/application~1json/schema/properties/flights/items/properties/destination/example",
+    "kind": "missing",
+    "category": "naming",
+    "reason": "fizz writes the example tag of a schema as examples:[v], the non-deprecated JSON Schema 2020-12 form (ADR 0001, \"example -> examples:[v]\"); the 3.2 official example still uses the deprecated singular example keyword."
+  },
+  {
+    "pointer": "/paths/~1flights~1search/query/responses/200/content/application~1json/schema/properties/flights/items/properties/destination/examples",
+    "kind": "extra",
+    "category": "naming",
+    "reason": "Counterpart of the missing singular example: fizz writes examples:[v] (ADR 0001, \"example -> examples:[v]\")."
+  },
+  {
+    "pointer": "/paths/~1flights~1search/query/responses/200/content/application~1json/schema/properties/flights/items/properties/flightNumber/example",
+    "kind": "missing",
+    "category": "naming",
+    "reason": "fizz writes the example tag of a schema as examples:[v], the non-deprecated JSON Schema 2020-12 form (ADR 0001, \"example -> examples:[v]\"); the 3.2 official example still uses the deprecated singular example keyword."
+  },
+  {
+    "pointer": "/paths/~1flights~1search/query/responses/200/content/application~1json/schema/properties/flights/items/properties/flightNumber/examples",
+    "kind": "extra",
+    "category": "naming",
+    "reason": "Counterpart of the missing singular example: fizz writes examples:[v] (ADR 0001, \"example -> examples:[v]\")."
+  },
+  {
+    "pointer": "/paths/~1flights~1search/query/responses/200/content/application~1json/schema/properties/flights/items/properties/origin/example",
+    "kind": "missing",
+    "category": "naming",
+    "reason": "fizz writes the example tag of a schema as examples:[v], the non-deprecated JSON Schema 2020-12 form (ADR 0001, \"example -> examples:[v]\"); the 3.2 official example still uses the deprecated singular example keyword."
+  },
+  {
+    "pointer": "/paths/~1flights~1search/query/responses/200/content/application~1json/schema/properties/flights/items/properties/origin/examples",
+    "kind": "extra",
+    "category": "naming",
+    "reason": "Counterpart of the missing singular example: fizz writes examples:[v] (ADR 0001, \"example -> examples:[v]\")."
+  },
+  {
+    "pointer": "/paths/~1flights~1search/query/responses/200/content/application~1json/schema/properties/flights/items/properties/price/example",
+    "kind": "missing",
+    "category": "naming",
+    "reason": "fizz writes the example tag of a schema as examples:[v], the non-deprecated JSON Schema 2020-12 form (ADR 0001, \"example -> examples:[v]\"); the 3.2 official example still uses the deprecated singular example keyword."
+  },
+  {
+    "pointer": "/paths/~1flights~1search/query/responses/200/content/application~1json/schema/properties/flights/items/properties/price/examples",
+    "kind": "extra",
+    "category": "naming",
+    "reason": "Counterpart of the missing singular example: fizz writes examples:[v] (ADR 0001, \"example -> examples:[v]\")."
+  }
+]

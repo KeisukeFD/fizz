@@ -1,0 +1,57 @@
+[
+  {
+    "pointer": "/components",
+    "kind": "extra",
+    "category": "limitation",
+    "task": "P10.9c",
+    "reason": "A document with no component still emits \"components\": {} (empty object, valid OAS); the official example has none."
+  },
+  {
+    "pointer": "/paths/~1flights/get/operationId",
+    "kind": "extra",
+    "category": "naming",
+    "reason": "fizz gives every operation an operationId (the fizz.ID option or a generated one, ADR 0001); there is no way to omit it, and the official example has none."
+  },
+  {
+    "pointer": "/paths/~1flights/get/responses",
+    "kind": "extra",
+    "category": "naming",
+    "reason": "fizz documents the status code of the tonic handler (200, description OK) on every operation; the official example gives no responses."
+  },
+  {
+    "pointer": "/paths/~1flights~1delayed/get/operationId",
+    "kind": "extra",
+    "category": "naming",
+    "reason": "fizz gives every operation an operationId (the fizz.ID option or a generated one, ADR 0001); there is no way to omit it, and the official example has none."
+  },
+  {
+    "pointer": "/paths/~1flights~1delayed/get/responses",
+    "kind": "extra",
+    "category": "naming",
+    "reason": "fizz documents the status code of the tonic handler (200, description OK) on every operation; the official example gives no responses."
+  },
+  {
+    "pointer": "/paths/~1flights~1domestic/get/operationId",
+    "kind": "extra",
+    "category": "naming",
+    "reason": "fizz gives every operation an operationId (the fizz.ID option or a generated one, ADR 0001); there is no way to omit it, and the official example has none."
+  },
+  {
+    "pointer": "/paths/~1flights~1domestic/get/responses",
+    "kind": "extra",
+    "category": "naming",
+    "reason": "fizz documents the status code of the tonic handler (200, description OK) on every operation; the official example gives no responses."
+  },
+  {
+    "pointer": "/paths/~1flights~1international/get/operationId",
+    "kind": "extra",
+    "category": "naming",
+    "reason": "fizz gives every operation an operationId (the fizz.ID option or a generated one, ADR 0001); there is no way to omit it, and the official example has none."
+  },
+  {
+    "pointer": "/paths/~1flights~1international/get/responses",
+    "kind": "extra",
+    "category": "naming",
+    "reason": "fizz documents the status code of the tonic handler (200, description OK) on every operation; the official example gives no responses."
+  }
+]

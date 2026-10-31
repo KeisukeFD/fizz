@@ -839,6 +839,9 @@ Rules for every task:
 - **P10.9b** A required body field loses its `default` tag (warning), but a required property with a default is valid OAS. Affects uspto (`criteria`). Missing feature.
 - **P10.9c** A document with no component still emits `"components": {}`. Affects api-with-examples. Cosmetic, valid OAS. Missing feature (omit the empty object).
 - **P10.9d** The `description` tag on a parameter is duplicated into its schema (`schema.description`), besides `parameter.description`. Affects petstore, petstore-expanded, uspto. Bug (red case `params/description-tag-not-in-schema`).
+- **P10.9n** A document with no route still emits `"paths": {}`; OAS 3.2 allows omitting it when there are components. Affects spec-text base-uri-from-the-retrieval-uri-1. Cosmetic, valid OAS. Missing feature (omit the empty object, like P10.9c).
+- **P10.9o** An operation cannot reference an external request body: `Operation.RequestBody` is a `*RequestBody` with no `$ref` form, so `requestBody: {"$ref": "shared/foo#/components/requestBodies/Foo"}` cannot be written. Affects spec-text base-uri-within-content-1, resolving-relative-self-and-id-1 (not reproduced). Missing feature.
+- **P10.9p** `Schema` has no `$id` keyword (nor `$anchor`), so a component schema cannot carry its identifier. Affects spec-text base-uri-within-content-2, resolving-relative-self-and-id-2 (not reproduced). Missing feature.
 
 ---
 
@@ -908,7 +911,7 @@ Rules for every task:
 | P10.6 | P10.5a | internal/conformance/contract | P10.7x |
 | P10.7a–g | their red case (P10.2/P10.6) | params_option.go / params.go / fields.go / generator.go / bindhook.go | serialized on chain H when they touch generator.go/params.go |
 | P10.8 | P10.4 | tools/ or internal/conformance/x | anything |
-| P10.9a–d | P10.5a | responses.go / operation_options.go (a), params.go / fields.go (b, d), generator.go / spec_root.go (c) | serialized on chain H when they touch generator.go/params.go |
+| P10.9a–d, P10.9n–p | P10.5a, P10.5c | responses.go / operation_options.go (a), params.go / fields.go (b, d), generator.go / spec_root.go (c, n), spec_paths.go (o), spec_schema.go (p) | serialized on chain H when they touch generator.go/params.go |
 | P9.5 | cut line | tags, notes | — |
 
 ## 14. Estimates and critical path (rough; agent-days plus review)
