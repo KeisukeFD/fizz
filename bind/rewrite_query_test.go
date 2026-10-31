@@ -8,7 +8,7 @@ import (
 	"github.com/wI2L/fizz/bind"
 )
 
-var rwTags = bind.Tags{Query: "query", Cookie: "cookie", Style: "style", Explode: "explode", Default: "default"}
+var rwTags = bind.Tags{Query: "query", Path: "path", Cookie: "cookie", Style: "style", Explode: "explode", Default: "default"}
 
 type listIn struct {
 	Space []string `query:"space" style:"spaceDelimited"`

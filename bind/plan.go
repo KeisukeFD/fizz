@@ -13,9 +13,10 @@ import (
 // (for example "query"), not a tag value. It is owned by this package so
 // that bind does not depend on any router or on the openapi package.
 type Tags struct {
-	// Explode is the tonic tag of the explode option. Empty reads every
-	// explode as unset.
-	Query, Cookie, Style, Explode, Default string
+	// Path and Explode are the tonic tags of path parameters and of the
+	// explode option. Empty disables the planning of path parameters, and
+	// reads every explode as unset.
+	Query, Path, Cookie, Style, Explode, Default string
 }
 
 // Plan is the precomputed decoding recipe for one struct type. It is
@@ -27,6 +28,8 @@ type Plan struct {
 	cookies []cookieField
 	// lists are the spaceDelimited and pipeDelimited query arrays.
 	lists []listField
+	// paths are the label and matrix path parameters.
+	paths []pathField
 }
 
 // listField is a query array documented as spaceDelimited or
@@ -38,6 +41,12 @@ type listField struct {
 	// occurrence (its explode tag is not false). Otherwise tonic splits
 	// one value on commas.
 	tonicExploded bool
+}
+
+// pathField is a scalar path parameter documented as label or matrix.
+type pathField struct {
+	name   string
+	matrix bool // matrix, else label
 }
 
 type planKind int
@@ -113,7 +122,7 @@ func PlanFor(t reflect.Type, tags Tags) (*Plan, error) {
 // Empty reports whether p plans no parameter, so that Query and Cookies
 // would leave every field alone. A nil Plan is empty.
 func (p *Plan) Empty() bool {
-	return p == nil || len(p.fields) == 0 && len(p.cookies) == 0 && len(p.lists) == 0
+	return p == nil || len(p.fields) == 0 && len(p.cookies) == 0 && len(p.lists) == 0 && len(p.paths) == 0
 }
 
 func buildPlan(t reflect.Type, tags Tags) (*Plan, error) {
@@ -171,6 +180,10 @@ func (p *Plan) collect(st reflect.Type, prefix []int, tags Tags, active map[refl
 			}
 		}
 		style := f.Tag.Get(tags.Style)
+		if tags.Path != "" && (style == "label" || style == "matrix") {
+			p.addPath(f, style, tags)
+			continue
+		}
 		if style == "spaceDelimited" || style == "pipeDelimited" {
 			p.addList(f, style, tags)
 			continue
@@ -269,6 +282,24 @@ func (p *Plan) addList(f reflect.StructField, style string, tags Tags) {
 		delim = "|"
 	}
 	p.lists = append(p.lists, listField{name: name, delim: delim, tonicExploded: tonicExploded})
+}
+
+// addPath plans a label or matrix path parameter. Only scalars are
+// planned: tonic reads a path parameter as one value, so it cannot bind an
+// array from it.
+func (p *Plan) addPath(f reflect.StructField, style string, tags Tags) {
+	name, _, _ := strings.Cut(f.Tag.Get(tags.Path), ",")
+	if name == "" || name == "-" {
+		return
+	}
+	t := f.Type
+	if t.Kind() == reflect.Pointer {
+		t = t.Elem()
+	}
+	if !isScalar(t) {
+		return
+	}
+	p.paths = append(p.paths, pathField{name: name, matrix: style == "matrix"})
 }
 
 func planDeepObject(f reflect.StructField, name string) (planField, error) {

@@ -125,7 +125,7 @@ func TestDelimitedDriftGuard(t *testing.T) {
 	}
 }
 
-var bBDelimTags = bind.Tags{Query: "query", Cookie: "cookie", Style: "style", Explode: "explode", Default: "default"}
+var bBDelimTags = bind.Tags{Query: "query", Path: "path", Cookie: "cookie", Style: "style", Explode: "explode", Default: "default"}
 
 func driftApp[T any](h func(*gin.Context, *T) error) *fizz.Fizz {
 	f := fizz.New()
