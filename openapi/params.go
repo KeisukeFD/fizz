@@ -241,6 +241,10 @@ var locationsOrder = map[string]int{
 // compareParams orders parameters by location, then by name.
 func (g *Generator) compareParams(p1, p2 *ParameterOrRef) int {
 	a, b := g.resolveParameter(p1), g.resolveParameter(p2)
+	// A reference that does not resolve sorts last.
+	if a == nil || b == nil {
+		return cmp.Compare(boolInt(a == nil), boolInt(b == nil))
+	}
 	return cmp.Or(
 		cmp.Compare(locationsOrder[a.In], locationsOrder[b.In]),
 		cmp.Compare(a.Name, b.Name),
@@ -492,11 +496,17 @@ func (g *Generator) paramLocation(f reflect.StructField, in reflect.Type) (strin
 // resolveParameter returns either the inlined parameter
 // in p or the one referenced in the API components.
 func (g *Generator) resolveParameter(p *ParameterOrRef) *Parameter {
-	// Parameters are always automatically inlined in the spec.
-	if p.Value != nil && p.Ref == nil {
-		return p.Value
+	if p.Ref != nil {
+		return g.componentParameter(p.Ref.Ref)
 	}
-	return nil
+	return p.Value
+}
+
+func boolInt(b bool) int {
+	if b {
+		return 1
+	}
+	return 0
 }
 
 // cookieLocation is the "in" value of cookie parameters. The name of

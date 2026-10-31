@@ -1,8 +1,8 @@
 package acceptance
 
 // Batch F (default build): generator hooks and the precedence table.
-// See docs/plan/ACCEPTANCE.md, F23-F32. The two precedence rows that
-// need options of P6.6b and P6.6c are in precedence_pending_test.go.
+// See docs/plan/ACCEPTANCE.md, F23-F32. The precedence row that
+// needs the option of P6.6c is in precedence_pending_test.go.
 //
 // Every package-level identifier is prefixed fH or starts with f, as
 // sibling files share the package.
@@ -22,6 +22,11 @@ import (
 	"github.com/wI2L/fizz/internal/acceptance/at"
 	"github.com/wI2L/fizz/openapi"
 )
+
+// fQueryIn has one query parameter.
+type fQueryIn struct {
+	Q string `query:"q"`
+}
 
 const fAddrRef = "#/components/schemas/AcceptanceBFAddr"
 
@@ -336,6 +341,18 @@ func TestPrecedence(t *testing.T) {
 			bFPost[fPrecBody](f, "/b", "b")
 			doc := at.Spec(tb, f)
 			at.Frag(tb, doc, bFBodyPtr(tb, doc, "/b")+"/properties/desc/description", `"hook"`)
+		}},
+		{"7 ParameterHook < Parameter option", func(tb testing.TB) {
+			f := fHooked(openapi.Hooks{Parameter: func(_ *openapi.ParameterContext, p *openapi.Parameter) bool {
+				p.Description = "hook"
+				return false
+			}})
+			f.GET("/x", []fizz.OperationOption{
+				fizz.ID("x"),
+				fizz.Parameter(&openapi.Parameter{Name: "q", In: "query", Description: "option"}),
+			}, fHandler[fQueryIn]())
+			doc := at.Spec(tb, f)
+			at.Frag(tb, doc, bFParamPtr(tb, doc, "/x", "get", "q")+"/description", `"option"`)
 		}},
 		{"8 options < OperationHook", func(tb testing.TB) {
 			f := fHooked(openapi.Hooks{Operation: func(_ *openapi.OperationContext, op *openapi.Operation) error {

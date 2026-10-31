@@ -21,12 +21,6 @@ func BindHook(next tonic.BindHook) tonic.BindHook {
 func InstallBindHook() {
 }
 
-// Parameter is a stub.
-// FixedBy: P6.6b
-func Parameter(p *openapi.Parameter) OperationOption {
-	return func(*openapi.OperationInfo) {}
-}
-
 // Tags is a stub.
 // FixedBy: P6.6c
 func Tags(tags ...string) OperationOption {

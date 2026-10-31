@@ -110,6 +110,19 @@ func (o *OpenAPI) Clone() (*OpenAPI, error) {
 	return c, nil
 }
 
+// Clone returns a deep copy of the parameter, with the rules of
+// OpenAPI.Clone. A nil receiver gives a nil copy.
+func (p *Parameter) Clone() (*Parameter, error) {
+	if p == nil {
+		return nil, nil
+	}
+	c, err := deepClone(p)
+	if err != nil {
+		return nil, fmt.Errorf("openapi: cloning the parameter: %w", err)
+	}
+	return c, nil
+}
+
 // Clone returns a deep copy of the operation, with the rules of
 // OpenAPI.Clone. A nil receiver gives a nil copy.
 func (o *Operation) Clone() (*Operation, error) {

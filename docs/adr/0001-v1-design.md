@@ -134,7 +134,7 @@ Each row is a stub until its task lands. Signatures are binding. A task that nee
 | `RequestBody(desc string, required bool, contents ...ContentOption) OperationOption` | P6.6a |
 | `Content(mediaType string, model any, encs ...EncodingOption) ContentOption` | P6.6a |
 | `Encoding(property, contentType string) EncodingOption` | P6.6a |
-| `Parameter(p *openapi.Parameter) OperationOption` | P6.6b |
+| `Parameter(p *openapi.Parameter) OperationOption` (merges by name and `in`; see the `OperationInfo.Parameters` row of §6) | P6.6b |
 | `Tags(tags ...string) OperationOption` | P6.6c |
 | `ExternalDocs(url, desc string) OperationOption` | P6.6c |
 | `Extension(key string, value any) OperationOption` | P6.6c |
@@ -166,6 +166,7 @@ Each row is a stub until its task lands. Signatures are binding. A task that nee
 | `(*Generator).SetRequestBodyNamer(func(opID string, t reflect.Type) string)` | P4.6 |
 | `OperationInfo.WildcardParams []string` (names of the path parameters that come from a gin `/*name` catch-all; set by the router, which translates the path before `AddOperation`) | P4.3 |
 | `OperationInfo.RequestBody *RequestBodyInfo`; `RequestBodyInfo{ Description string; Required bool; Contents []*ContentInfo }`, `ContentInfo{ MediaType string; Model any; Encodings []*EncodingInfo }`, `EncodingInfo{ Property, ContentType string }` (filled by `fizz.RequestBody`; contents replace the inferred body, a duplicate media type is an error and the first is kept) | P6.6a |
+| `OperationInfo.Parameters []*Parameter` (filled by `fizz.Parameter`, applied after the inferred parameters and before the OperationHook: each non-zero field replaces the inferred one, Extensions merge by key, no match appends, a missing name or `in`, a path parameter not in the path and a merge into a `$ref` are errors); `(*Parameter).Clone() (*Parameter, error)` | P6.6b |
 | `(*Generator).OperationIDUsed(id string) bool` (lets the router choose among default IDs) | P4.7 |
 | `type OperationError struct{ Method, Path, ID string; Err error }`, `Error()`, `Unwrap()` | P4.8 |
 | `(*Generator).RecordError(err error)` (lets the router and `OpenAPI` record errors that do not come from `AddOperation`) | P4.8 |

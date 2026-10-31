@@ -225,3 +225,35 @@ func Encoding(property, contentType string) EncodingOption {
 		s.contentType = contentType
 	}
 }
+
+// Parameter adds p to the parameters of the operation, or merges it into
+// the inferred one that has the same name and location ("in"). It acts
+// over what the input type, the tags and the ParameterHook give, and under
+// the OperationHook.
+//
+// The merge is field by field: each non-zero field of p replaces the
+// inferred one (a non-nil pointer, slice or map is non-zero), so that
+// a field p leaves out keeps its inferred value, the schema included.
+// Schema and Content are replaced whole, not merged; Extensions are
+// merged key by key. A bool that is false cannot unset a true one.
+// Options on the same parameter apply in order, the last one winning.
+// A parameter with no inferred match is appended.
+//
+// A nil p is ignored, and p is copied: it may be reused. A parameter
+// without a name or a location, a path parameter that is not in the
+// path, and a merge into a $ref parameter are recorded errors; the
+// operation is still added, without that parameter.
+func Parameter(p *openapi.Parameter) OperationOption {
+	if p == nil {
+		return func(*openapi.OperationInfo) {}
+	}
+	c, err := p.Clone()
+	if err != nil {
+		// Keep the original: the generator copies it again and records
+		// the error against the operation.
+		c = p
+	}
+	return func(o *openapi.OperationInfo) {
+		o.Parameters = append(o.Parameters, c)
+	}
+}

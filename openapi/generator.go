@@ -576,6 +576,7 @@ func (g *Generator) buildOperation(path, method, tag string, in, out reflect.Typ
 		}
 	}
 	g.applyRequestBody(op, method, info.RequestBody)
+	g.applyParameters(op, path, info.Parameters)
 	return g.operationHook(op, method, path), nil
 }
 

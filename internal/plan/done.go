@@ -52,6 +52,7 @@ var Done = map[string]bool{
 	"P6.4":  true,
 	"P6.5":  true,
 	"P6.6a": true,
+	"P6.6b": true,
 	"P7.2a": true,
 	"P8.1":  true,
 	"P8.2":  true,

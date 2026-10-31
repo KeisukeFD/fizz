@@ -19,6 +19,10 @@ type OperationInfo struct {
 	// RequestBody, if set, adjusts the request body of the operation:
 	// see the RequestBody option of the fizz package.
 	RequestBody *RequestBodyInfo
+	// Parameters are merged into the parameters of the operation, in
+	// order, by name and location: see the Parameter option of the
+	// fizz package.
+	Parameters []*Parameter
 	// WildcardParams names the path parameters of the operation that
 	// come from a catch-all gin segment ("/*name"). The router sets it
 	// when it translates the gin path; the path given to AddOperation
