@@ -31,7 +31,7 @@ var (
 
 // Fizz is an abstraction of a Gin engine that wraps the
 // routes handlers with Tonic and generates an OpenAPI
-// 3.0 specification from it.
+// 3.2.1 specification from it.
 type Fizz struct {
 	gen    *openapi.Generator
 	engine *gin.Engine
