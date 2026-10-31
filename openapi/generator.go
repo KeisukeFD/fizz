@@ -415,6 +415,14 @@ func (g *Generator) AddOperation(path, method, tag string, in, out reflect.Type,
 	return op, nil
 }
 
+// OperationIDUsed reports whether id is already the ID of a documented
+// operation. The router uses it to choose among the candidate default
+// IDs of an operation.
+func (g *Generator) OperationIDUsed(id string) bool {
+	_, ok := g.operationsIDS[id]
+	return ok
+}
+
 // buildOperation builds the operation without touching the operation
 // IDs or the paths. It still writes the component schemas, the type
 // registry and their caches, which AddOperation rolls back on failure.

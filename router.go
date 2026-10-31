@@ -21,6 +21,7 @@ func (g *RouterGroup) Group(path, name, description string, handlers ...gin.Hand
 
 	return &RouterGroup{
 		gen:         g.gen,
+		idNamer:     g.idNamer,
 		group:       g.group.Group(path, handlers...),
 		Name:        name,
 		Description: description,
@@ -119,10 +120,6 @@ func (g *RouterGroup) Handle(path, method string, infos []OperationOption, handl
 	if len(wrapped) == 1 {
 		hfunc := wrapped[0].r
 
-		// Set an operation ID if none is provided.
-		if oi.ID == "" {
-			oi.ID = hfunc.HandlerName()
-		}
 		oi.StatusCode = hfunc.GetDefaultStatusCode()
 
 		// Set an input type if provided.
@@ -133,6 +130,18 @@ func (g *RouterGroup) Handle(path, method string, infos []OperationOption, handl
 
 		// Consolidate path for OpenAPI spec.
 		operationPath := joinPaths(g.group.BasePath(), path)
+
+		// Set an operation ID if none is provided. A default ID
+		// that is already taken falls back (see defaultOperationID);
+		// an explicit one never does and fails in AddOperation.
+		if oi.ID == "" {
+			h := hfunc.GetHandler()
+			name := ""
+			if fn := runtime.FuncForPC(h.Pointer()); fn != nil {
+				name = fn.Name()
+			}
+			oi.ID = defaultOperationID(method, openAPIPath(operationPath), name, g.idNamer, g.gen.OperationIDUsed)
+		}
 
 		// Add operation to the OpenAPI spec.
 		// On failure the generator has recorded the error (see

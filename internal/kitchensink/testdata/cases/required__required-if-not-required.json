@@ -7,7 +7,7 @@
     "paths": {
         "/x": {
             "get": {
-                "operationId": "func1",
+                "operationId": "kGet",
                 "responses": {
                     "200": {
                         "description": "OK",

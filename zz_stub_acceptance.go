@@ -13,12 +13,6 @@ import (
 	"net/http"
 )
 
-// WithOperationIDNamer is a stub.
-// FixedBy: P4.7
-func WithOperationIDNamer(func(method, path, handlerName string) string) Option {
-	return func(*config) {}
-}
-
 // WithHooks is a stub.
 // FixedBy: P6.4
 func WithHooks(openapi.Hooks) Option {

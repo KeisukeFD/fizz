@@ -233,8 +233,11 @@ func TestBEDefaultOperationIDs(t *testing.T) {
 			{"/gen", func() { f.GET("/gen", nil, tonic.Handler(bEGen[int], 200)) }, "bEGen"},
 			{"/closure", func() { bERegister(f) }, "bERegister"},
 			{"/x", func() { f.GET("/x", nil, tonic.Handler(xmodels.Get, 200)) }, "Get"},
-			{"/y", func() { f.GET("/y", nil, tonic.Handler(ymodels.Get, 200)) }, "models.Get"},
-			{"/a/:id", func() { f.GET("/a/:id", nil, tonic.Handler(xmodels.Get, 200)) }, "get_a_id"},
+			// The qualifier is the last import-path segment (y): the declared
+			// package name of a function is not available at run time (types
+			// use the declared name via reflect; functions cannot).
+			{"/y", func() { f.GET("/y", nil, tonic.Handler(ymodels.Get, 200)) }, "y.Get"},
+			{"/a/:id", func() { f.GET("/a/:id", nil, tonic.Handler(ymodels.Get, 200)) }, "get_a_id"},
 		}
 		for _, r := range regs {
 			if err := bESafe(r.reg); err != nil {
@@ -250,6 +253,31 @@ func TestBEDefaultOperationIDs(t *testing.T) {
 			if got := bEOpID(tb, doc, p); got != r.want {
 				tb.Errorf("GET %s: operationId %q, want %q", p, got, r.want)
 			}
+		}
+	})
+}
+
+func TestBEOperationIDNamer(t *testing.T) {
+	at.Pending(t, "P4.7", func(tb testing.TB) {
+		var calls []string
+		f := fizz.New(fizz.WithOperationIDNamer(func(m, p, h string) string {
+			calls = append(calls, m+" "+p)
+			return "n_" + strings.ToLower(m) + strings.ReplaceAll(strings.ReplaceAll(p, "/", "_"), "{id}", "ID")
+		}))
+		f.GET("/pets/:id", nil, tonic.Handler(bEListPets, 200))
+		f.GET("/own", []fizz.OperationOption{fizz.ID("explicit")}, tonic.Handler(bEListPets, 200))
+		doc, err := bEBuild(f)
+		if err != nil {
+			tb.Fatal(err)
+		}
+		if got := bEOpID(tb, doc, "/pets/{id}"); got != "n_get_pets_ID" {
+			tb.Errorf("namer ID: got %q", got)
+		}
+		if got := bEOpID(tb, doc, "/own"); got != "explicit" {
+			tb.Errorf("explicit ID: got %q", got)
+		}
+		if len(calls) != 1 || calls[0] != "GET /pets/{id}" {
+			tb.Errorf("namer calls: %v", calls)
 		}
 	})
 }

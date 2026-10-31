@@ -38,6 +38,7 @@ type Fizz struct {
 type RouterGroup struct {
 	group       *gin.RouterGroup
 	gen         *openapi.Generator
+	idNamer     func(method, path, handlerName string) string
 	Name        string
 	Description string
 }
@@ -84,8 +85,9 @@ func NewFromEngine(e *gin.Engine, opts ...Option) *Fizz {
 		engine: e,
 		gen:    gen,
 		RouterGroup: &RouterGroup{
-			group: &e.RouterGroup,
-			gen:   gen,
+			group:   &e.RouterGroup,
+			gen:     gen,
+			idNamer: cfg.idNamer,
 		},
 	}
 }

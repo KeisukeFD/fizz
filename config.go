@@ -15,6 +15,7 @@ type config struct {
 	pointersNullable bool
 	annotationStyle  openapi.AnnotationStyle
 	mediaType        string
+	idNamer          func(method, path, handlerName string) string
 	noBindHook       bool // consumed by P7.2b; no effect yet
 }
 
@@ -68,4 +69,16 @@ func WithoutBindHook() Option {
 // responses. An empty string selects tonic.MediaType().
 func WithDefaultMediaType(mediaType string) Option {
 	return func(c *config) { c.mediaType = mediaType }
+}
+
+// WithOperationIDNamer sets the function that derives the ID of an
+// operation registered without fizz.ID. It receives the HTTP method,
+// the OpenAPI path (for example "/users/{id}") and the full
+// runtime name of the handler (for example
+// "github.com/x/pkg.(*T).Method-fm"). It is not called when fizz.ID is set. An
+// empty result selects the default naming. If the ID it returns is
+// already used, the ID falls back to the method and path
+// ("get_users_id"). A nil function selects the default naming.
+func WithOperationIDNamer(fn func(method, path, handlerName string) string) Option {
+	return func(c *config) { c.idNamer = fn }
 }

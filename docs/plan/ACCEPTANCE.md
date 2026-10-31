@@ -332,7 +332,7 @@ All HTML checks parse with `at.HTML`. Constants: `docsui.SwaggerUIJS/CSS`, `docs
 | E06 | `TestCollisionIsHardError` | The collision makes `f.Err()` non-nil | P4.8 | tag |
 | E07 | `TestOverrideTypeNameCollision` | After `eA` is registered as `AcceptanceEA`, `Generator().OverrideTypeName(TypeFor[eB](), "AcceptanceEA")` → non-nil error; component unchanged | P4.5 | now |
 | E08 | `TestRequestBodyNamer` | `WithRequestBodyNamer(func(opID string, t reflect.Type) string {return opID+"Body"})` → `#/components/schemas/createBody` | P4.6 | tag |
-| E11 | `TestDefaultOperationIDs` | Table: func `eListPets` → `eListPets`; method value `(*eSvc).List` → `List`; generic `eGen[int]` → `eGen`; closure inside `eRegister` → `eRegister`; `x.Get` and `y.Get` → `Get` and `models.Get`; third clash `GET /a/{id}` → `get_a_id` (§5 O4) | P4.7 | now |
+| E11 | `TestDefaultOperationIDs` | Table: func `eListPets` → `eListPets`; method value `(*eSvc).List` → `List`; generic `eGen[int]` → `eGen`; closure inside `eRegister` → `eRegister`; `x.Get` and `y.Get` → `Get` and `y.Get` (qualifier = last import-path segment: a function's declared package name is not available at run time); third clash `GET /a/{id}` → `get_a_id` (§5 O4) | P4.7 | now |
 | E12 | `TestExplicitIDCollision` | `fizz.ID("dup")` on two routes → error containing `dup`; the second op is absent from the spec; the second gin route still answers 200 | P4.7 | now |
 | E13 | `TestOperationIDNamer` | `WithOperationIDNamer(func(m, p, h string) string)` → used for default IDs; not used when `fizz.ID` is set | P4.7 | tag |
 

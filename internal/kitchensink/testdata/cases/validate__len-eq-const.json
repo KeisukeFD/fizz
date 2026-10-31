@@ -7,7 +7,7 @@
     "paths": {
         "/x": {
             "get": {
-                "operationId": "1",
+                "operationId": "vPost",
                 "responses": {
                     "200": {
                         "description": "OK",
