@@ -51,6 +51,7 @@ type Generator struct {
 	sortTags      bool
 
 	pointersNullable bool
+	annotationStyle  AnnotationStyle
 }
 
 // NewGenerator returns a new OpenAPI generator.
@@ -196,6 +197,28 @@ func (g *Generator) SetSortParams(b bool) {
 // Default to true.
 func (g *Generator) SetPointersAreNullable(b bool) {
 	g.pointersNullable = b
+}
+
+// AnnotationStyle selects how use-site annotations (description,
+// default, enum, deprecated, validation, ...) are attached to a
+// schema that is a $ref.
+type AnnotationStyle int
+
+const (
+	// SiblingAnnotations puts the annotations next to the $ref, as
+	// OpenAPI 3.1+ allows. It is the default.
+	SiblingAnnotations AnnotationStyle = iota
+	// AllOfWrap emits {"allOf":[{"$ref":...}], <annotations>}
+	// instead, for tools that ignore $ref siblings. A nullable
+	// reference is an anyOf wrapper and keeps its annotations beside
+	// the anyOf in both styles.
+	AllOfWrap
+)
+
+// SetAnnotationStyle selects the style of use-site annotations on
+// references. Default to SiblingAnnotations.
+func (g *Generator) SetAnnotationStyle(s AnnotationStyle) {
+	g.annotationStyle = s
 }
 
 // SetSortTags controls whether the generator should

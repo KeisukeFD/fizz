@@ -195,6 +195,13 @@ func (s Schema) MarshalJSON() ([]byte, error) { return marshalJSON(s) }
 // UnmarshalJSON implements json.Unmarshaler for Schema.
 func (s *Schema) UnmarshalJSON(b []byte) error { return unmarshalJSON(b, s) }
 
+// clone returns a shallow copy of s. Pointer, slice and map members
+// are shared with s: callers replace them, never modify them in place.
+func (s *Schema) clone() *Schema {
+	c := *s
+	return &c
+}
+
 // MakeNullable allows the schema to also validate null. A
 // reference is moved into anyOf next to a null type schema,
 // keeping the other keywords of s in place; if s already has an

@@ -196,11 +196,7 @@
     "components": {
         "schemas": {
             "FizzCustomTime": {
-                "type": "object",
-                "description": "This is Z",
-                "examples": [
-                    "2022-02-07T18:00:00"
-                ]
+                "type": "object"
             },
             "FizzT": {
                 "type": "object",
@@ -215,7 +211,11 @@
                         "format": "int64"
                     },
                     "z": {
-                        "$ref": "#/components/schemas/FizzCustomTime"
+                        "$ref": "#/components/schemas/FizzCustomTime",
+                        "description": "This is Z",
+                        "examples": [
+                            "2022-02-07T18:00:00"
+                        ]
                     }
                 }
             },

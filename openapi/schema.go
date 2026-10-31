@@ -3,7 +3,6 @@ package openapi
 import (
 	"fmt"
 	"reflect"
-	"strings"
 )
 
 // newSchemaFromType creates a new OpenAPI schema from
@@ -254,30 +253,6 @@ func (g *Generator) newSchemaFromStruct(t reflect.Type) *Schema {
 	}
 	// Return an inlined schema for types with no name.
 	return sor
-}
-
-// resolveSchema returns either the inlined schema
-// in s or the one referenced in the API components.
-func (g *Generator) resolveSchema(s *Schema) *Schema {
-	if s.Ref == "" {
-		return s
-	}
-	{
-		parts := strings.Split(s.Ref, "/")
-		if len(parts) == 4 {
-			if parts[0] == "#" && // relative ref
-				parts[1] == "components" &&
-				parts[2] == "schemas" &&
-				parts[3] != "" {
-				ref, ok := g.api.Components.Schemas[parts[3]]
-				if ok && ref != nil {
-					return ref
-				}
-				return nil
-			}
-		}
-	}
-	return nil
 }
 
 // typeSetOf returns a TypeSet holding t, or nil if t is empty.

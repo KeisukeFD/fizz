@@ -10,18 +10,6 @@ import (
 	"reflect"
 )
 
-// AnnotationStyle is a stub type.
-// FixedBy: P3.4
-type AnnotationStyle int
-
-// SiblingAnnotations is a stub.
-// FixedBy: P3.4
-const SiblingAnnotations AnnotationStyle = 0
-
-// AllOfWrap is a stub.
-// FixedBy: P3.4
-const AllOfWrap AnnotationStyle = 1
-
 // CollisionError is a stub type.
 // FixedBy: P4.5
 type CollisionError struct {

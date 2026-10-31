@@ -16,14 +16,12 @@ func (g *Generator) newSchemaFromStructField(sf reflect.StructField, required bo
 	if sor == nil {
 		return nil
 	}
-	// Get the underlying schema, it may be a reference
-	// to a component, and update its fields using the
-	// informations in the struct field tags.
-	schema := g.resolveSchema(sor)
+	// The annotations of the field are use-site annotations: they
+	// never touch the shared component a $ref points to. A reference
+	// carries them as siblings, or in an allOf wrapper, an inline
+	// schema is copied first.
+	schema := g.annotationTarget(sor)
 
-	if schema == nil {
-		return sor
-	}
 	// Default value.
 	// See section 'Common Mistakes' at
 	// https://swagger.io/docs/specification/describing-parameters/
@@ -51,17 +49,19 @@ func (g *Generator) newSchemaFromStructField(sf reflect.StructField, required bo
 		}
 	}
 	// Enum.
-	// Must be applied to underlying items schema if the
-	// parameter is an array, instead of the parameter schema.
-	enum := g.enumFromStructField(sf, fname, parent)
-
-	if slices.Contains(schema.Type, "array") && schema.Items != nil {
-		itemsSchema := g.resolveSchema(schema.Items)
-		if itemsSchema != nil {
-			itemsSchema.Enum = enum
+	// Must be applied to the underlying items schema if the
+	// field is an array, instead of the field schema.
+	if enum := g.enumFromStructField(sf, fname, parent); len(enum) > 0 {
+		switch {
+		case isArrayLike(sf.Type) && slices.Contains(schema.Type, "array") && schema.Items != nil:
+			// Copied items wrapper: the original may be shared.
+			schema.Items = g.annotatedItems(schema.Items, enum)
+		case isArrayLike(sf.Type) && (schema.Ref != "" || len(schema.AnyOf) > 0 || len(schema.AllOf) > 0):
+			// The array is a component: constrain its elements here.
+			schema.Items = &Schema{Enum: enum}
+		default:
+			schema.Enum = enum
 		}
-	} else {
-		schema.Enum = enum
 	}
 	// Field description.
 	if desc, ok := sf.Tag.Lookup(descriptionTag); ok {
@@ -104,7 +104,65 @@ func (g *Generator) newSchemaFromStructField(sf reflect.StructField, required bo
 		}
 	}
 
-	return sor
+	return g.finishAnnotations(sor, schema)
+}
+
+// isArrayLike reports whether t, once dereferenced, is a slice or array
+// that is described as a JSON array.
+func isArrayLike(t reflect.Type) bool {
+	for t.Kind() == reflect.Pointer {
+		t = t.Elem()
+	}
+	return (t.Kind() == reflect.Slice || t.Kind() == reflect.Array) && t.Elem().Kind() != reflect.Uint8
+}
+
+// annotationTarget returns the schema that receives the use-site
+// annotations of a field whose schema is sor. It is never a component:
+// sor is a reference or a nullable wrapper (annotated in place, as
+// siblings), a reference annotated in the AllOfWrap style (a fresh
+// allOf wrapper, dropped by finishAnnotations if left bare), or an
+// inline schema (a copy).
+func (g *Generator) annotationTarget(sor *Schema) *Schema {
+	if sor.Ref != "" && g.annotationStyle == AllOfWrap {
+		ref := *sor
+		return &Schema{AllOf: []*Schema{&ref}}
+	}
+	if sor.Ref != "" || len(sor.AnyOf) > 0 {
+		c := *sor
+		return &c
+	}
+	return sor.clone()
+}
+
+// finishAnnotations returns the schema of the field: the annotated
+// target, or sor itself if the target received nothing.
+func (g *Generator) finishAnnotations(sor, target *Schema) *Schema {
+	if len(target.AllOf) == 1 && target.AllOf[0].Ref != "" && sor.Ref != "" {
+		bare := &Schema{AllOf: target.AllOf}
+		if reflect.DeepEqual(target, bare) {
+			return sor
+		}
+		return target
+	}
+	if sor.Ref != "" || len(sor.AnyOf) > 0 {
+		if reflect.DeepEqual(target, sor) {
+			return sor
+		}
+	}
+	return target
+}
+
+// annotatedItems returns a copy of items carrying enum. A reference
+// keeps the component untouched: the enum is its sibling, or the
+// reference is wrapped in an allOf.
+func (g *Generator) annotatedItems(items *Schema, enum []any) *Schema {
+	if items.Ref != "" && g.annotationStyle == AllOfWrap {
+		ref := *items
+		return &Schema{AllOf: []*Schema{&ref}, Enum: enum}
+	}
+	c := items.clone()
+	c.Enum = enum
+	return c
 }
 
 func (g *Generator) enumFromStructField(sf reflect.StructField, fname string, parent reflect.Type) []any {
