@@ -829,6 +829,7 @@ Rules for every task:
 - **P10.7e** Slice header params. The doc says `simple` (comma-split), but tonic does not split. **D25 (user, 2026-10-31):** the fizz bind hook splits simple-style slice header values on `,` and merges repeated header lines, so the runtime matches the doc. Runtime change: mention it in MIGRATION.
 - **P10.7f** Reserved header param names (Accept, Content-Type, Authorization): op warning that points to security schemes / content.
 - **P10.7g** Carried over from earlier: duplicate path+method is silently overwritten (→ op error); `RegisterRequestBody` with nil Content emits `content: null` (→ error).
+- **P10.7h** Equivalent path templates. Routes that differ only in variable names (e.g. `GET /test/:a` + `POST /test/:c`, which gin accepts per method) produce two path keys that OAS forbids. P10.4 found it in the root fixture. Record an op error naming both routes. Red first: a kitchen-sink case.
 
 **P10.8 Second validator (below the line).** S · Haiku (check whether any Go or CLI validator supports 3.2 at that time) + Sonnet
 - Only if one exists: cross-check the corpus and all goldens in a test-only module (`tools/` or `internal/conformance/x/`), so the library go.mod stays unchanged.
