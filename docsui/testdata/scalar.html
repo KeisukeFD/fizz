@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pets</title>
+</head>
+<body>
+  <div id="app"></div>
+  <script type="application/json" id="fizz-docs-config">{"url":"/openapi.json"}</script>
+  <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference@1.76.4/dist/browser/standalone.js" integrity="sha384-hwB9WroDTpZaI38gr&#43;u9CXA6ksz5gUYgD2GxXazKl/agT1L2GWUiRFWGJYNiFu4Q" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script>
+    Scalar.createApiReference("#app", JSON.parse(document.getElementById("fizz-docs-config").textContent));
+  </script>
+</body>
+</html>

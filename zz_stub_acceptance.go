@@ -24,27 +24,6 @@ func (f *Fizz) Document() (*openapi.OpenAPI, error) {
 	return nil, errors.New("stub: P6.4")
 }
 
-// DocsUI is a stub type.
-// FixedBy: P8.1
-type DocsUI struct{}
-
-// Docs is a stub.
-// FixedBy: P8.1
-func (f *Fizz) Docs(path, specURL string, ui ...DocsUI) {
-}
-
-// SwaggerUI is a stub.
-// FixedBy: P8.1
-func SwaggerUI(opts ...docsui.Option) DocsUI {
-	return DocsUI{}
-}
-
-// ScalarUI is a stub.
-// FixedBy: P8.1
-func ScalarUI(opts ...docsui.Option) DocsUI {
-	return DocsUI{}
-}
-
 // EmbeddedSwaggerUI is a stub.
 // FixedBy: P8.3
 func EmbeddedSwaggerUI(opts ...docsui.Option) DocsUI {

@@ -1,0 +1,43 @@
+{{define "swagger" -}}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{.Title}}</title>
+{{- if .CSS}}
+  <link rel="stylesheet" href="{{.CSS}}"{{if .CSSIntegrity}} integrity="{{.CSSIntegrity}}"{{end}} crossorigin="anonymous" referrerpolicy="no-referrer">
+{{- end}}
+</head>
+<body>
+  <div id="ui"></div>
+  <script type="application/json" id="fizz-docs-config"{{if .Nonce}} nonce="{{.Nonce}}"{{end}}>{{.Config}}</script>
+  <script src="{{.JS}}"{{if .JSIntegrity}} integrity="{{.JSIntegrity}}"{{end}} crossorigin="anonymous" referrerpolicy="no-referrer"{{if .Nonce}} nonce="{{.Nonce}}"{{end}}></script>
+  <script{{if .Nonce}} nonce="{{.Nonce}}"{{end}}>
+    window.ui = SwaggerUIBundle(JSON.parse(document.getElementById("fizz-docs-config").textContent));
+  </script>
+</body>
+</html>
+{{- end}}
+
+{{define "scalar" -}}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{.Title}}</title>
+{{- if .CSS}}
+  <link rel="stylesheet" href="{{.CSS}}"{{if .CSSIntegrity}} integrity="{{.CSSIntegrity}}"{{end}} crossorigin="anonymous" referrerpolicy="no-referrer">
+{{- end}}
+</head>
+<body>
+  <div id="app"></div>
+  <script type="application/json" id="fizz-docs-config"{{if .Nonce}} nonce="{{.Nonce}}"{{end}}>{{.Config}}</script>
+  <script src="{{.JS}}"{{if .JSIntegrity}} integrity="{{.JSIntegrity}}"{{end}} crossorigin="anonymous" referrerpolicy="no-referrer"{{if .Nonce}} nonce="{{.Nonce}}"{{end}}></script>
+  <script{{if .Nonce}} nonce="{{.Nonce}}"{{end}}>
+    Scalar.createApiReference("#app", JSON.parse(document.getElementById("fizz-docs-config").textContent));
+  </script>
+</body>
+</html>
+{{- end}}
