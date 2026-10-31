@@ -412,32 +412,43 @@ func init() {
 		Case{
 			Name:     "params/deep-object-nested-value-error",
 			Register: pRegister("GET", "/x", tonic.Handler(pHandler[KDeepNestedIn], 200)),
+			Expect:   []Fragment{{Pointer: kPrm, Absent: true}},
 			Errors:   []string{"deepObject"},
 			FixedBy:  "P7.1",
 		},
 		Case{
 			Name:     "params/deep-object-required-option-error",
 			Register: pRegister("GET", "/x", tonic.Handler(pHandler[KDeepRequiredIn], 200)),
-			Errors:   []string{"required"},
+			Expect:   []Fragment{{Pointer: kPrm, Absent: true}},
+			Errors:   []string{"deepObject", "required"},
 			FixedBy:  "P7.1",
 		},
 		Case{
 			Name:     "params/deep-object-default-tag-error",
 			Register: pRegister("GET", "/x", tonic.Handler(pHandler[KDeepDefaultIn], 200)),
-			Errors:   []string{"default"},
+			Expect:   []Fragment{{Pointer: kPrm, Absent: true}},
+			Errors:   []string{"deepObject", "default"},
+			FixedBy:  "P7.1",
 		},
 		Case{
 			Name:     "params/deep-object-validate-required",
 			Register: pRegister("GET", "/x", tonic.Handler(pHandler[KDeepValidateIn], 200)),
-			Expect:   []Fragment{{Pointer: kPrm + "/required", JSON: `true`}},
+			Expect: []Fragment{
+				{Pointer: kPrm + "/required", JSON: `true`},
+				{Pointer: kPrm + "/style", JSON: `"deepObject"`},
+				{Pointer: kPrm + "/explode", JSON: `true`},
+			},
+			FixedBy: "P7.1",
 		},
 		Case{
 			Name:     "params/deep-object-slice-values",
 			Register: pRegister("GET", "/x", tonic.Handler(pHandler[KDeepSliceIn], 200)),
-			Expect: []Fragment{{
-				Pointer: kPrm + "/schema/additionalProperties",
-				JSON:    `{"type":"array","items":{"type":"string"}}`,
-			}},
+			Expect: []Fragment{
+				{Pointer: kPrm + "/style", JSON: `"deepObject"`},
+				{Pointer: kPrm + "/explode", JSON: `true`},
+				{Pointer: kPrm + "/schema/additionalProperties", JSON: `{"type":"array","items":{"type":"string"}}`},
+			},
+			FixedBy: "P7.1",
 		},
 		Case{
 			// The exact wording is the target text for P4.3.

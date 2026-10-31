@@ -347,6 +347,20 @@ func (g *Generator) newParameterFromField(idx int, t reflect.Type) (*Parameter, 
 		g.error(fieldErr("cookie parameter must be a scalar type", name, field.Type, nil))
 		return nil, nil
 	}
+	deep := g.isDeepObject(field, location)
+	if deep {
+		// Tonic would bind the required and default options and tag
+		// (handler.go:208-216), so they are errors. Required-ness comes
+		// only from validate:"required".
+		switch {
+		case tagRequired:
+			g.error(fieldErr(fmt.Sprintf("invalid %q tag: a %s parameter cannot have the \"required\" option, use the validate tag", BinderTags.Query, styleDeepObject), name, field.Type, nil))
+			return nil, nil
+		case tagDefault != "" || field.Tag.Get(BinderTags.Default) != "":
+			g.error(fieldErr(fmt.Sprintf("a %s parameter cannot have a default value", styleDeepObject), name, field.Type, nil))
+			return nil, nil
+		}
+	}
 	required := tagRequired || g.isStructFieldRequired(field)
 
 	// Path parameters are always required.
@@ -377,7 +391,15 @@ func (g *Generator) newParameterFromField(idx int, t reflect.Type) (*Parameter, 
 		Description: desc,
 		Required:    required,
 		Deprecated:  deprecated,
-		Schema:      g.fieldSchema(field, schemaRequired, name, t, valueForm{param: true}),
+	}
+	if deep {
+		var err error
+		if p.Schema, err = g.deepObjectSchema(field.Type); err != nil {
+			g.error(fieldErr("invalid parameter type", name, field.Type, err))
+			return nil, nil
+		}
+	} else {
+		p.Schema = g.fieldSchema(field, schemaRequired, name, t, valueForm{param: true})
 	}
 	if p.Schema == nil {
 		g.error(fieldErr("unsupported parameter type", name, field.Type, nil))
@@ -406,7 +428,6 @@ func (g *Generator) newParameterFromField(idx int, t reflect.Type) (*Parameter, 
 }
 
 // paramStyles lists the OAS 3.2 styles a parameter location accepts.
-// deepObject is valid for the query but not generated yet (P7.1).
 var paramStyles = map[string][]string{
 	"query":        {"form", "spaceDelimited", "pipeDelimited", "deepObject"},
 	"header":       {"simple"},
@@ -424,10 +445,15 @@ func (g *Generator) applyStyleTags(p *Parameter, field reflect.StructField, loca
 			g.error(fieldErr(fmt.Sprintf("invalid %q tag: style %q is not allowed in %s (want one of %s)",
 				g.tags.Style, v, location, strings.Join(allowed, ", ")), p.Name, field.Type, nil))
 		case v == "deepObject":
-			// Valid, but its generation (explode, object schema and
-			// the errors of the unsupported options) is P7.1. Until
-			// then it is left out, with no error, so that the P7.1
-			// tests stay red.
+			// The object schema was built with the parameter
+			// (deepObjectSchema). Only the exploded form is defined.
+			p.Style = v
+			p.Explode = new(true)
+			if ev, ok := field.Tag.Lookup(BinderTags.Explode); ok {
+				if b, err := strconv.ParseBool(ev); err == nil && !b {
+					g.warn(fmt.Sprintf("parameter %q: explode=false is undefined for style %s, explode stays true", p.Name, styleDeepObject))
+				}
+			}
 		case (v == "spaceDelimited" || v == "pipeDelimited") && !isArrayLike(field.Type):
 			g.error(fieldErr(fmt.Sprintf("invalid %q tag: style %s needs a slice or array", g.tags.Style, v), p.Name, field.Type, nil))
 		default:

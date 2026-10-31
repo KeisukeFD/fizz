@@ -162,13 +162,13 @@ func bGRows() []bGRow {
 			},
 		},
 		{
-			name: "r11-deepobject-struct-value", fixedBy: "P7.1", method: get, path: "/r11",
+			name: "r11-deepobject-struct-value", method: get, path: "/r11",
 			register: func(f *fizz.Fizz) {
 				f.GET("/r11", bGOpts(fizz.ID("r11")), tonic.Handler(bGHandler[bGDeepStructIn], 200))
 			},
 		},
 		{
-			name: "r12-deepobject-required-option", fixedBy: "P7.1", method: get, path: "/r12",
+			name: "r12-deepobject-required-option", method: get, path: "/r12",
 			register: func(f *fizz.Fizz) {
 				f.GET("/r12", bGOpts(fizz.ID("r12")), tonic.Handler(bGHandler[bGDeepRequiredIn], 200))
 			},

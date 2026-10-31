@@ -18,7 +18,9 @@
                             "additionalProperties": {
                                 "type": "string"
                             }
-                        }
+                        },
+                        "style": "deepObject",
+                        "explode": true
                     }
                 ],
                 "responses": {

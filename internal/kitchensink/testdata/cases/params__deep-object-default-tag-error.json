@@ -8,18 +8,6 @@
         "/x": {
             "get": {
                 "operationId": "op",
-                "parameters": [
-                    {
-                        "name": "f",
-                        "in": "query",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK"
