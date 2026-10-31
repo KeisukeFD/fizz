@@ -1,6 +1,7 @@
 package fizz
 
 import (
+	"errors"
 	"net/http"
 	"time"
 
@@ -113,4 +114,18 @@ func (f *Fizz) Generator() *openapi.Generator {
 // during the spec generation.
 func (f *Fizz) Errors() []error {
 	return f.gen.Errors()
+}
+
+// Err returns the errors that Errors reports, other than warnings,
+// joined with errors.Join, or nil if there are none.
+func (f *Fizz) Err() error {
+	var errs []error
+	for _, err := range f.gen.Errors() {
+		var w interface{ IsWarning() bool }
+		if errors.As(err, &w) && w.IsWarning() {
+			continue
+		}
+		errs = append(errs, err)
+	}
+	return errors.Join(errs...)
 }

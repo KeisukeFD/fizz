@@ -3,7 +3,6 @@ package fizz
 import (
 	"context"
 	"errors"
-	"fmt"
 	"path"
 	"reflect"
 	"runtime"
@@ -105,7 +104,15 @@ func (g *RouterGroup) Handle(path, method string, infos []OperationOption, handl
 	// Check that no more that one tonic-wrapped handler
 	// is registered for this operation.
 	if len(wrapped) > 1 {
-		panic(fmt.Sprintf("multiple tonic-wrapped handler used for operation %s %s", method, path))
+		// The operation is not documented, the route is still served.
+		g.gen.RecordError(&openapi.OperationError{
+			Method: method,
+			Path:   openAPIPath(joinPaths(g.group.BasePath(), path)),
+			ID:     oi.ID,
+			Err:    errors.New("multiple tonic-wrapped handlers used for the operation"),
+		})
+		g.group.Handle(method, path, handlers...)
+		return g
 	}
 	// If we have a tonic-wrapped handler, generate the
 	// specification of this operation.
@@ -128,17 +135,14 @@ func (g *RouterGroup) Handle(path, method string, infos []OperationOption, handl
 		operationPath := joinPaths(g.group.BasePath(), path)
 
 		// Add operation to the OpenAPI spec.
+		// On failure the generator has recorded the error (see
+		// Errors) and the route is registered with the original
+		// handlers, undocumented.
 		operation, err := g.gen.AddOperation(openAPIPath(operationPath), method, g.Name, it, hfunc.OutputType(), oi)
-		if err != nil {
-			panic(fmt.Sprintf(
-				"error while generating OpenAPI spec on operation %s %s: %s",
-				method, path, err,
-			))
-		}
 		// If an operation was generated for the handler,
 		// wrap the Tonic-wrapped handled with a closure
 		// to inject it into the Gin context.
-		if operation != nil {
+		if err == nil && operation != nil {
 			for i, h := range handlers {
 				if funcEqual(h, wrapped[0].h) {
 					orig := h // copy the original func

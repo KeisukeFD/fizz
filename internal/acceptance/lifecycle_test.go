@@ -109,7 +109,7 @@ func bGRows() []bGRow {
 			},
 		},
 		{
-			name: "r04-duplicate-explicit-id", fixedBy: "P4.7+P4.8", method: get, path: "/r04b",
+			name: "r04-duplicate-explicit-id", fixedBy: "P4.8", method: get, path: "/r04b",
 			register: func(f *fizz.Fizz) {
 				f.GET("/r04a", bGOpts(fizz.ID("r04")), tonic.Handler(bGHandler[bGEmpty], 200))
 				f.GET("/r04b", bGOpts(fizz.ID("r04")), tonic.Handler(bGHandler[bGEmpty], 200))

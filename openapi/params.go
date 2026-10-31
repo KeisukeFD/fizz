@@ -195,7 +195,11 @@ func (g *Generator) addBodyField(op *Operation, t reflect.Type, f field) {
 		schema.Required = append(schema.Required, f.name)
 		sort.Strings(schema.Required)
 	}
-	schema.Properties[f.name] = g.newSchemaFromField(f, required, t)
+	// A field whose type has no schema was reported: it is left out,
+	// as flattenStructSchema does, rather than emitted as null.
+	if sfs := g.newSchemaFromField(f, required, t); sfs != nil {
+		schema.Properties[f.name] = sfs
+	}
 }
 
 // newParameterFromField create a new operation parameter

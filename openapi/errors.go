@@ -72,3 +72,26 @@ func (w *Warning) Error() string {
 
 // IsWarning reports that w is a warning rather than a failure.
 func (w *Warning) IsWarning() bool { return true }
+
+// OperationError reports a failure that concerns one operation, or
+// wraps an error recorded while the operation was being added. Method
+// and Path identify the operation; ID is its operation ID, if any.
+type OperationError struct {
+	Method, Path, ID string
+	Err              error
+}
+
+// Error implements the builtin error interface for OperationError.
+func (e *OperationError) Error() string {
+	s := e.Method + " " + e.Path
+	if e.ID != "" {
+		s += " (" + e.ID + ")"
+	}
+	if e.Err == nil {
+		return s
+	}
+	return s + ": " + e.Err.Error()
+}
+
+// Unwrap returns the underlying error.
+func (e *OperationError) Unwrap() error { return e.Err }

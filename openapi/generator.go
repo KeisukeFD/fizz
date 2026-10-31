@@ -3,9 +3,11 @@ package openapi
 import (
 	"errors"
 	"fmt"
+	"maps"
 	"net/http"
 	"reflect"
 	"regexp"
+	"slices"
 	"sort"
 	"strconv"
 )
@@ -162,9 +164,20 @@ func (g *Generator) SetSecurityRequirement(security []*SecurityRequirement) {
 }
 
 // SetSecuritySchemes sets the security schemes that can be used
-// inside the operations of the specification.
+// inside the operations of the specification. A scheme that has
+// neither a $ref nor a value cannot be emitted: it is dropped and an
+// error wrapping ErrNilOrRef that names the scheme is recorded.
 func (g *Generator) SetSecuritySchemes(security map[string]*SecuritySchemeOrRef) {
-	g.api.Components.SecuritySchemes = security
+	valid := make(map[string]*SecuritySchemeOrRef, len(security))
+	for _, name := range slices.Sorted(maps.Keys(security)) {
+		s := security[name]
+		if s == nil || (s.Ref == nil && s.Value == nil) {
+			g.error(fmt.Errorf("security scheme %q: %w", name, ErrNilOrRef))
+			continue
+		}
+		valid[name] = s
+	}
+	g.api.Components.SecuritySchemes = valid
 }
 
 // API returns a copy of the internal OpenAPI object.
@@ -173,13 +186,36 @@ func (g *Generator) API() *OpenAPI {
 	return &cpy
 }
 
-// Errors returns the errors thar occurred during
-// the generation of the specification.
+// Errors returns a copy of the errors and warnings recorded during the
+// generation of the specification, in registration order. While an
+// operation is being added, the errors other than warnings are wrapped
+// in an *OperationError that names it.
 func (g *Generator) Errors() []error {
-	return g.errors
+	return slices.Clone(g.errors)
 }
 
+// RecordError appends err to the errors of the generator, as an error
+// found by the caller (a router, a handler constructor) would be. It
+// is not attached to any operation: wrap err in an *OperationError to
+// do so. A nil err is ignored.
+func (g *Generator) RecordError(err error) {
+	if err != nil {
+		g.error(err)
+	}
+}
+
+// error records err. While an operation is being added, an error that
+// is neither a *Warning (which carries its own context) nor already an
+// *OperationError is wrapped in one, so that every error identifies its
+// operation and errors.As still finds the cause.
 func (g *Generator) error(err error) {
+	if g.cur != nil {
+		switch err.(type) {
+		case *Warning, *OperationError:
+		default:
+			err = &OperationError{Method: g.cur.method, Path: g.cur.path, ID: g.cur.id, Err: err}
+		}
+	}
 	g.errors = append(g.errors, err)
 }
 
@@ -342,42 +378,66 @@ func (g *Generator) AddTag(name, desc string) {
 
 // AddOperation add a new operation to the OpenAPI specification
 // using the method and OpenAPI-syntax path ("/a/{id}") of the
-// route and the handler informations.
+// route and the handler informations. A nil info is a zero OperationInfo.
+//
+// The operation is built first and committed (ID reserved, PathItem
+// created, operation set) only if that succeeds. On failure an
+// *OperationError is recorded in Errors and returned, and nothing the
+// operation created remains in the generator: see snapshot.
+// Problems limited to a field or a parameter are recorded and do not
+// fail the operation.
 func (g *Generator) AddOperation(path, method, tag string, in, out reflect.Type, info *OperationInfo) (*Operation, error) {
-	op := &Operation{}
+	if info == nil {
+		info = &OperationInfo{}
+	}
+	g.cur = &opContext{method: method, path: path, id: info.ID}
+	defer func() { g.cur = nil }()
 
-	if info != nil {
-		// Ensure that the provided operation ID is unique.
-		if _, ok := g.operationsIDS[info.ID]; ok {
-			return nil, fmt.Errorf("ID %s is already used by another operation", info.ID)
-		}
+	snap := g.snapshot()
+	op, err := g.buildOperation(path, method, tag, in, out, info)
+	if err != nil {
+		snap.restore(g)
+		err = &OperationError{Method: method, Path: path, ID: info.ID, Err: err}
+		g.error(err)
+		return nil, err
+	}
+	// Commit. Nothing below can fail.
+	if info.ID != "" {
 		g.operationsIDS[info.ID] = struct{}{}
 	}
-	// If a PathItem does not exists for this
-	// path, create a new one.
 	item, ok := g.api.Paths[path]
 	if !ok {
 		item = new(PathItem)
 		g.api.Paths[path] = item
 	}
-	// Create a new operation and set it
-	// to the according method of the PathItem.
-	if info != nil {
-		op.ID = info.ID
-		op.Summary = info.Summary
-		op.Description = info.Description
-		op.Deprecated = info.Deprecated
-		op.Responses = make(Responses)
-		op.XCodeSamples = info.XCodeSamples
-		op.Security = info.Security
-		op.XInternal = info.XInternal
+	setOperationBymethod(item, op, method)
+
+	return op, nil
+}
+
+// buildOperation builds the operation without touching the operation
+// IDs or the paths. It still writes the component schemas, the type
+// registry and their caches, which AddOperation rolls back on failure.
+func (g *Generator) buildOperation(path, method, tag string, in, out reflect.Type, info *OperationInfo) (*Operation, error) {
+	// Ensure that the provided operation ID is unique.
+	if info.ID != "" {
+		if _, ok := g.operationsIDS[info.ID]; ok {
+			return nil, fmt.Errorf("ID %s is already used by another operation", info.ID)
+		}
+	}
+	op := &Operation{
+		ID:           info.ID,
+		Summary:      info.Summary,
+		Description:  info.Description,
+		Deprecated:   info.Deprecated,
+		Responses:    make(Responses),
+		XCodeSamples: info.XCodeSamples,
+		Security:     info.Security,
+		XInternal:    info.XInternal,
 	}
 	if tag != "" {
 		op.Tags = append(op.Tags, tag)
 	}
-	g.cur = &opContext{method: method, path: path, id: op.ID}
-	defer func() { g.cur = nil }()
-
 	// Operations with methods GET/HEAD cannot have a body (DELETE
 	// can, D13). Non parameters fields will be ignored.
 	allowBody := method != http.MethodGet &&
@@ -394,14 +454,10 @@ func (g *Generator) AddOperation(path, method, tag string, in, out reflect.Type,
 			return nil, err
 		}
 	}
-	where := method + " " + path
-	if op.ID != "" {
-		where += " (" + op.ID + ")"
-	}
 	// Generate the default response from the tonic
 	// handler return type. If the handler has no output
 	// type, the response won't have a schema.
-	if err := g.setOperationResponse(op, where, out, strconv.Itoa(info.StatusCode), g.mediaType(), info.StatusDescription, info.Headers, nil, info.DefaultResponseExamples); err != nil {
+	if err := g.setOperationResponse(op, "", out, strconv.Itoa(info.StatusCode), g.mediaType(), info.StatusDescription, info.Headers, nil, info.DefaultResponseExamples); err != nil {
 		return nil, err
 	}
 	// Generate additional responses from the operation
@@ -409,7 +465,7 @@ func (g *Generator) AddOperation(path, method, tag string, in, out reflect.Type,
 	for _, resp := range info.Responses {
 		if resp != nil {
 			if err := g.setOperationResponse(op,
-				where,
+				"",
 				reflect.TypeOf(resp.Model),
 				resp.Code,
 				g.mediaType(),
@@ -422,9 +478,41 @@ func (g *Generator) AddOperation(path, method, tag string, in, out reflect.Type,
 			}
 		}
 	}
-	setOperationBymethod(item, op, method)
-
 	return op, nil
+}
+
+// snapshot is the generator state that building an operation may
+// extend: the component schemas and the registries that decide which
+// schemas exist. It is shallow, since entries are only added or
+// replaced, never mutated in place, once registered. The error list is
+// deliberately not part of it: diagnostics recorded for a failed
+// operation stay visible, and the maps that deduplicate them
+// (warned, registry.reported) are therefore kept too. typeNames holds
+// only the overrides of OverrideTypeName, which no operation writes.
+type snapshot struct {
+	schemas     map[string]*Schema
+	names       map[string]reflect.Type
+	schemaTypes map[reflect.Type]struct{}
+	promoted    map[reflect.Type]bool
+}
+
+func (g *Generator) snapshot() snapshot {
+	return snapshot{
+		schemas:     maps.Clone(g.api.Components.Schemas),
+		names:       maps.Clone(g.registry.names),
+		schemaTypes: maps.Clone(g.schemaTypes),
+		promoted:    maps.Clone(g.promoted),
+	}
+}
+
+// restore puts the generator back in the state of s. The schema map is
+// restored in place, because API copies share it.
+func (s snapshot) restore(g *Generator) {
+	clear(g.api.Components.Schemas)
+	maps.Copy(g.api.Components.Schemas, s.schemas)
+	g.registry.names = s.names
+	g.schemaTypes = s.schemaTypes
+	g.promoted = s.promoted
 }
 
 // setOperationBymethod sets the operation op to the appropriate

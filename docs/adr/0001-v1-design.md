@@ -165,6 +165,7 @@ Each row is a stub until its task lands. Signatures are binding. A task that nee
 | `type CollisionError struct{ Name string; Kept, Rejected reflect.Type }`, `Error()` | P4.5 |
 | `(*Generator).SetRequestBodyNamer(func(opID string, t reflect.Type) string)` | P4.6 |
 | `type OperationError struct{ Method, Path, ID string; Err error }`, `Error()`, `Unwrap()` | P4.8 |
+| `(*Generator).RecordError(err error)` (lets the router and `OpenAPI` record errors that do not come from `AddOperation`) | P4.8 |
 | `(*OpenAPI).Clone() (*OpenAPI, error)` | P5.1 |
 | `(*Generator).SetTagNames(TagNames)` | P6.1 |
 | `(*Generator).SetSchemaNamer(func(reflect.Type) string)` (consumed by P4.5) | P6.1 |

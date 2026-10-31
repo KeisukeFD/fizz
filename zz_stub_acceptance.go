@@ -25,12 +25,6 @@ func WithHooks(openapi.Hooks) Option {
 	return func(*config) {}
 }
 
-// Err is a stub.
-// FixedBy: P4.8
-func (f *Fizz) Err() error {
-	return errors.New("stub: P4.8")
-}
-
 // SpecHandler is a stub.
 // FixedBy: P5.1
 func (f *Fizz) SpecHandler(format string) http.Handler {

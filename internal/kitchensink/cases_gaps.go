@@ -361,7 +361,7 @@ func init() {
 				{Pointer: "/paths/~1b", Absent: true},
 			},
 			Errors:  []string{"dup"},
-			FixedBy: "P4.7",
+			FixedBy: "P4.8",
 		},
 		Case{
 			Name:     "ops/multiple-tonic-handlers-error",

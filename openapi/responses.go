@@ -43,8 +43,13 @@ func isResponseCodeRange(code string) bool {
 }
 
 // setOperationResponse adds a response to the operation that
-// return the type t (where names the operation in errors) with the given media type and status code.
+// return the type t (where, if not empty, names the operation in errors
+// that are not wrapped in an *OperationError) with the given media type and status code.
 func (g *Generator) setOperationResponse(op *Operation, where string, t reflect.Type, code, mt, desc string, headers []*ResponseHeader, example any, examples map[string]any) error {
+	var prefix string
+	if where != "" {
+		prefix = where + ": "
+	}
 	if _, ok := op.Responses[code]; ok {
 		// A response already exists for this code.
 		return fmt.Errorf("response with code %s already exists", code)
@@ -82,7 +87,7 @@ func (g *Generator) setOperationResponse(op *Operation, where string, t reflect.
 	// that the specification can still be served.
 	if example != nil {
 		if err := jsonEncodable(example); err != nil {
-			g.error(fmt.Errorf("%s: response %s: example dropped, it is not JSON-encodable: %w", where, code, err))
+			g.error(fmt.Errorf("%sresponse %s: example dropped, it is not JSON-encodable: %w", prefix, code, err))
 			example = nil
 		}
 	}
@@ -92,7 +97,7 @@ func (g *Generator) setOperationResponse(op *Operation, where string, t reflect.
 		dropped := false
 		for name, val := range examples {
 			if err := jsonEncodable(val); err != nil {
-				g.error(fmt.Errorf("%s: response %s: example %q dropped, it is not JSON-encodable: %w", where, code, name, err))
+				g.error(fmt.Errorf("%sresponse %s: example %q dropped, it is not JSON-encodable: %w", prefix, code, name, err))
 				dropped = true
 				continue
 			}

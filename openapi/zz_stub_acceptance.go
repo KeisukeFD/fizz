@@ -10,25 +10,6 @@ import (
 	"reflect"
 )
 
-// OperationError is a stub type.
-// FixedBy: P4.8
-type OperationError struct {
-	Method, Path, ID string
-	Err              error
-}
-
-// Error is a stub.
-// FixedBy: P4.8
-func (e *OperationError) Error() string {
-	return ""
-}
-
-// Unwrap is a stub.
-// FixedBy: P4.8
-func (e *OperationError) Unwrap() error {
-	return nil
-}
-
 // Clone is a stub.
 // FixedBy: P5.1
 func (o *OpenAPI) Clone() (*OpenAPI, error) {

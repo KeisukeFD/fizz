@@ -255,7 +255,7 @@ func TestBEDefaultOperationIDs(t *testing.T) {
 }
 
 func TestBEExplicitIDCollision(t *testing.T) {
-	at.Pending(t, "P4.7", func(tb testing.TB) {
+	at.Pending(t, "P4.8", func(tb testing.TB) {
 		f := fizz.New()
 		f.GET("/one", []fizz.OperationOption{fizz.ID("dup")}, tonic.Handler(bEListPets, 200))
 		regErr := bESafe(func() {

@@ -1,14 +1,20 @@
 package fizz
 
 import (
+	"errors"
+	"fmt"
+	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/wI2L/fizz/openapi"
 )
 
+var errInvalidContentType = errors.New("invalid content type for the OpenAPI handler")
+
 // OpenAPI returns a Gin HandlerFunc that serves
-// the marshalled OpenAPI specification of the API.
+// the marshalled OpenAPI specification of the API. An invalid content
+// type is recorded in Errors and the handler answers 500.
 func (f *Fizz) OpenAPI(info *openapi.Info, ct string) gin.HandlerFunc {
 	f.gen.SetInfo(info)
 
@@ -36,5 +42,8 @@ func (f *Fizz) OpenAPI(info *openapi.Info, ct string) gin.HandlerFunc {
 			c.Data(200, "application/yaml", b)
 		}
 	}
-	panic("invalid content type, use JSON or YAML")
+	f.gen.RecordError(fmt.Errorf("invalid content type %q for the OpenAPI handler: use json or yaml", ct))
+	return func(c *gin.Context) {
+		_ = c.AbortWithError(http.StatusInternalServerError, errInvalidContentType)
+	}
 }

@@ -421,43 +421,6 @@ func TestSpecHandler(t *testing.T) {
 	golden.Assert(t, "testdata/spec.yaml", specYAML)
 }
 
-// TestInvalidContentTypeOpenAPIHandler tests that the
-// OpenAPI handler will panic if the given content type
-// is invalid.
-func TestInvalidContentTypeOpenAPIHandler(t *testing.T) {
-	fizz := New()
-
-	assert.Panics(t, func() {
-		fizz.GET("/openapi.xml", nil, fizz.OpenAPI(nil, "xml"))
-	})
-}
-
-// TestMultipleTonicHandler tests that adding more than
-// one tonic-wrapped handler to a Fizz operation panics.
-func TestMultipleTonicHandler(t *testing.T) {
-	fizz := New()
-
-	assert.Panics(t, func() {
-		fizz.GET("/:a", nil,
-			tonic.Handler(func(c *gin.Context) error { return nil }, 200),
-			tonic.Handler(func(c *gin.Context) error { return nil }, 200),
-		)
-	})
-}
-
-// TestErrorGen tests that the generator panics if
-// if fails to add an operation to the specification.
-func TestErrorGen(t *testing.T) {
-	type In struct {
-		A string `path:"a" query:"b"`
-	}
-	fizz := New()
-
-	assert.Panics(t, func() {
-		fizz.GET("/a", nil, tonic.Handler(func(c *gin.Context, param *In) error { return nil }, 200))
-	})
-}
-
 func TestJoinPaths(t *testing.T) {
 	jp := joinPaths
 
