@@ -477,7 +477,30 @@ func (g *Generator) newParameterFromField(idx int, t reflect.Type) (*Parameter, 
 	if g.parameterHook(t.Field(idx), p) {
 		return nil, nil
 	}
+	if location == InHeader && !required && !hasDefault && g.bindsEmptyAsInvalid(field.Type, p.Schema) {
+		g.warn(fmt.Sprintf("absent optional header %q is bound as \"\" by tonic and returns 400; add a default or make it a string", name))
+	}
 	return p, nil
+}
+
+// bindsEmptyAsInvalid reports whether the empty string, which tonic binds
+// for an absent header, is not a valid value of a field of type t whose
+// schema is s: a number, an integer, a boolean, or a value with an enum.
+func (g *Generator) bindsEmptyAsInvalid(t reflect.Type, s *Schema) bool {
+	for t.Kind() == reflect.Pointer {
+		t = t.Elem()
+	}
+	switch t.Kind() {
+	case reflect.Bool,
+		reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
+		reflect.Float32, reflect.Float64:
+		return true
+	}
+	if s != nil && s.Ref != "" && g.api.Components != nil {
+		s = g.api.Components.Schemas[strings.TrimPrefix(s.Ref, componentsSchemaPath)]
+	}
+	return s != nil && len(s.Enum) > 0
 }
 
 // singleValueMsg is the error of a slice or array header or path parameter.

@@ -158,3 +158,43 @@ func TestSliceParameterOptionInHeaderOrPathIsError(t *testing.T) {
 		})
 	}
 }
+
+type (
+	hdrNums struct {
+		I   int      `header:"X-I"`
+		U   uint8    `header:"X-U"`
+		F   float32  `header:"X-F"`
+		B   bool     `header:"X-B"`
+		E   string   `header:"X-E" enum:"a,b"`
+		P   *int     `header:"X-P"`
+		S   string   `header:"X-S"`
+		D   int      `header:"X-D" default:"1"`
+		O   int      `header:"X-O,default=1"`
+		R   int      `header:"X-R" validate:"required"`
+		Q   int      `query:"q"`
+		Raw []byte   `header:"X-Raw"`
+		T   struct{} `header:"-"`
+	}
+)
+
+func TestOptionalNonStringHeaderWarns(t *testing.T) {
+	g, op := build(t, reflect.TypeFor[hdrNums]())
+	var warned []string
+	for _, e := range g.Errors() {
+		w, ok := e.(*Warning)
+		if !ok {
+			t.Fatalf("unexpected error %v", e)
+		}
+		warned = append(warned, w.Msg)
+	}
+	var want []string
+	for _, h := range []string{"X-I", "X-U", "X-F", "X-B", "X-E", "X-P"} {
+		want = append(want, `absent optional header "`+h+`" is bound as "" by tonic and returns 400; add a default or make it a string`)
+	}
+	if !slices.Equal(warned, want) {
+		t.Errorf("warnings = %q\nwant %q", warned, want)
+	}
+	if n := len(op.Parameters); n != 12 {
+		t.Errorf("params = %v, want 12 (warnings drop none)", paramKeys(op))
+	}
+}

@@ -13,10 +13,11 @@ import (
 // (for example "query"), not a tag value. It is owned by this package so
 // that bind does not depend on any router or on the openapi package.
 type Tags struct {
-	// Path and Explode are the tonic tags of path parameters and of the
-	// explode option. Empty disables the planning of path parameters, and
-	// reads every explode as unset.
-	Query, Path, Cookie, Style, Explode, Default string
+	// Path, Header and Explode are the tonic tags of path and header
+	// parameters and of the explode option. Empty disables the planning of
+	// path parameters or of header defaults, and reads every explode as
+	// unset.
+	Query, Path, Header, Cookie, Style, Explode, Default string
 }
 
 // Plan is the precomputed decoding recipe for one struct type. It is
@@ -30,6 +31,14 @@ type Plan struct {
 	lists []listField
 	// paths are the label and matrix path parameters.
 	paths []pathField
+	// headers are the scalar header fields that have a default tag.
+	headers []headerField
+}
+
+// headerField is a header parameter whose absence takes the default tag.
+type headerField struct {
+	name string // header name
+	def  string // the default tag value, never empty
 }
 
 // listField is a query array documented as spaceDelimited or
@@ -122,7 +131,7 @@ func PlanFor(t reflect.Type, tags Tags) (*Plan, error) {
 // Empty reports whether p plans no parameter, so that Query and Cookies
 // would leave every field alone. A nil Plan is empty.
 func (p *Plan) Empty() bool {
-	return p == nil || len(p.fields) == 0 && len(p.cookies) == 0 && len(p.lists) == 0 && len(p.paths) == 0
+	return p == nil || len(p.fields) == 0 && len(p.cookies) == 0 && len(p.lists) == 0 && len(p.paths) == 0 && len(p.headers) == 0
 }
 
 func buildPlan(t reflect.Type, tags Tags) (*Plan, error) {
@@ -176,6 +185,12 @@ func (p *Plan) collect(st reflect.Type, prefix []int, tags Tags, active map[refl
 		if tags.Cookie != "" {
 			if v, ok := f.Tag.Lookup(tags.Cookie); ok {
 				p.addCookie(f, v, index, tags)
+				continue
+			}
+		}
+		if tags.Header != "" {
+			if v, ok := f.Tag.Lookup(tags.Header); ok {
+				p.addHeader(f, v, tags)
 				continue
 			}
 		}
@@ -250,6 +265,35 @@ func (p *Plan) addCookie(f reflect.StructField, tag string, index []int, tags Ta
 		}
 	}
 	p.cookies = append(p.cookies, cf)
+}
+
+// addHeader plans a header field that has a default tag. It mirrors the
+// generator: a header is one value, so a slice is not planned (the
+// generator rejects it), and an empty default is no default. The
+// ",default=" option of the header tag is applied by tonic, to an absent or
+// empty header, and wins over the tag, so such a field is left alone.
+func (p *Plan) addHeader(f reflect.StructField, tag string, tags Tags) {
+	name, options, _ := strings.Cut(tag, ",")
+	if name == "" || name == "-" || tags.Default == "" {
+		return
+	}
+	def := f.Tag.Get(tags.Default)
+	if def == "" {
+		return
+	}
+	t := f.Type
+	if t.Kind() == reflect.Pointer {
+		t = t.Elem()
+	}
+	if !isScalar(t) {
+		return
+	}
+	for o := range strings.SplitSeq(options, ",") {
+		if v, ok := strings.CutPrefix(strings.TrimSpace(o), "default="); ok && v != "" {
+			return
+		}
+	}
+	p.headers = append(p.headers, headerField{name: name, def: def})
 }
 
 // addList plans a spaceDelimited or pipeDelimited query array. It mirrors

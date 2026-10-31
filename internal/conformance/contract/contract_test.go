@@ -1,6 +1,8 @@
 package contract_test
 
 import (
+	"fmt"
+	"slices"
 	"strings"
 	"testing"
 
@@ -67,6 +69,37 @@ func TestContractByteHeader(t *testing.T) {
 	}
 }
 
+// TestContractNoDefaultHeaders: an optional non-string header without a
+// default cannot be bound when absent, so the generator records a warning
+// for each of them, and for no other (P10.7i).
+func TestContractNoDefaultHeaders(t *testing.T) {
+	f := contract.NewNoDefaultHeaders()
+	if err := f.Err(); err != nil {
+		t.Fatalf("fizz errors: %v", err)
+	}
+	var got []string
+	for _, e := range f.Errors() {
+		w, ok := e.(interface{ IsWarning() bool })
+		if !ok || !w.IsWarning() {
+			t.Errorf("unexpected error: %v", e)
+			continue
+		}
+		got = append(got, e.Error())
+	}
+	var want []string
+	for _, h := range contract.NoDefaultHeaders {
+		want = append(want, fmt.Sprintf("absent optional header %q is bound as \"\" by tonic and returns 400; add a default or make it a string", h))
+	}
+	for _, w := range want {
+		if !slices.ContainsFunc(got, func(g string) bool { return strings.Contains(g, w) }) {
+			t.Errorf("missing warning %q in %q", w, got)
+		}
+	}
+	if len(got) != len(want) {
+		t.Errorf("got %d warnings, want %d: %q", len(got), len(want), got)
+	}
+}
+
 // TestContractRepro drives the reproduction apps that have parameters.
 // Their handlers do not echo: the contract is that spec-conformant
 // requests are not rejected.
@@ -93,12 +126,6 @@ func TestContractRepro(t *testing.T) {
 // contract.Target.Pending).
 func fixturePending() map[string]string {
 	p := map[string]string{
-		// P10.7i: tonic extracts an absent header as one empty value, so
-		// an optional numeric, boolean or enum header, or a header with a
-		// default, makes the request fail or loses the default.
-		"headerenum required-only":       "P10.7i",
-		"defaults header:X-Lang/default": "P10.7i",
-
 		// P10.7j: spaceDelimited and pipeDelimited are documented, and
 		// tonic splits on commas only.
 		"arrays query:space": "P10.7j",
@@ -113,9 +140,5 @@ func fixturePending() map[string]string {
 		// bind hook does not decode it.
 		"special cookie:csp": "P10.7m",
 	}
-	for _, name := range []string{"X-Str", "X-Int", "X-Num", "X-Bool"} {
-		p["headerscalars header:"+name] = "P10.7i"
-	}
-	p["headerscalars required-only"] = "P10.7i"
 	return p
 }

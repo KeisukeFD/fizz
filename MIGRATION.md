@@ -224,6 +224,7 @@ The runtime follows the styles that the document states. *tonic* binds after the
 
 - A query array tagged `style:"spaceDelimited"` or `style:"pipeDelimited"` (documented `explode: false`, unless you also tag `explode:"true"`) is split on the space or `|` after URL decoding: `?ids=1%202` binds `[1 2]`, not an error or `["1 2"]`. With `explode:"false"`, an element that contains a comma is a 400.
 - A scalar path parameter tagged `style:"label"` binds `v` from `.v`, and one tagged `style:"matrix"` binds `v` from `;name=v` (or from `;name` when empty). A value without that prefix is a 400, where it used to be bound as is. Arrays are not covered: *tonic* reads a path parameter as one value.
+- A `header` field with a `default` tag takes that value when the request does not have the header. *tonic* reads an absent header as one empty value and never applied the `default` tag, so the field used to stay zero (or, for an `int`, `bool` or enum, the request failed with a 400). A header that is present but empty is left as it is, and the `,default=` option of the `header` tag is still applied by *tonic* itself (to an absent or empty header). The caller's `*http.Request` is not modified: the hook works on a copy.
 
 ## Generated document: changes that break your snapshots and clients
 
@@ -364,6 +365,7 @@ Found by checking the output against the official OpenAPI 3.2 examples and the s
 - The `description` tag of a parameter is only on the parameter, no longer repeated in `parameter.schema.description`. Body and field schemas keep their descriptions.
 - The served document (`SpecHandler`, `Fizz.Document`) omits an empty `components` and an empty `paths`. A document with none of paths, components and webhooks keeps `"paths": {}`, which OAS 3.2 requires. `Generator().API()` is unchanged.
 - A slice or array `header` or `path` parameter (a struct field, or a `fizz.Parameter` option whose schema is an array) is a generation error: `tonic binds header/path parameters from a single value; use a query parameter or a string field`. The field is skipped. `[]byte` and `net.IP` are strings, not slices. Real support for these needs a binding layer of fizz's own.
+- An optional `header` parameter of a number, integer, boolean or enum type with no `default` records a generation warning: `absent optional header "X-Id" is bound as "" by tonic and returns 400; add a default or make it a string`. Add a `default` tag (the hook now applies it) or make the field a string.
 - Nullable items (`[]*string` with an `enum`, or `validate:"dive,oneof=..."`) include `null` in their `enum`/`const`, like a nullable top-level schema.
 - The spec model keeps an empty `parameters` on a path item and on a link when decoding and encoding.
 

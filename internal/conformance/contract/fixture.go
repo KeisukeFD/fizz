@@ -31,12 +31,31 @@ type scalarsIn struct {
 }
 
 // headerScalarsIn is apart from scalarsIn: tonic fails when an optional
-// numeric or boolean header is absent (P10.7i).
+// numeric or boolean header is absent and has no default, so these have
+// one, which the bind hook injects (P10.7i). noDefaultHeadersIn is the
+// variant without.
 type headerScalarsIn struct {
 	HS string  `header:"X-Str" json:"X-Str"`
-	HI int     `header:"X-Int" json:"X-Int"`
-	HN float64 `header:"X-Num" json:"X-Num"`
-	HB bool    `header:"X-Bool" json:"X-Bool"`
+	HI int     `header:"X-Int" default:"7" json:"X-Int"`
+	HN float64 `header:"X-Num" default:"1.5" json:"X-Num"`
+	HB bool    `header:"X-Bool" default:"true" json:"X-Bool"`
+}
+
+// noDefaultHeadersIn has optional non-string headers with no default,
+// which tonic cannot bind when they are absent: the generator warns
+// (P10.7i). The string, the one with a default, and the required one do
+// not warn.
+type noDefaultHeadersIn struct {
+	HI   int     `header:"X-Int" json:"X-Int"`
+	HU   uint8   `header:"X-Uint" json:"X-Uint"`
+	HN   float64 `header:"X-Num" json:"X-Num"`
+	HB   bool    `header:"X-Bool" json:"X-Bool"`
+	HE   string  `header:"X-Mode" enum:"fast,slow" json:"X-Mode"`
+	HP   *int    `header:"X-Ptr" json:"X-Ptr"`
+	HS   string  `header:"X-Str" json:"X-Str"`
+	HD   int     `header:"X-Def" default:"3" json:"X-Def"`
+	HR   int     `header:"X-Req" validate:"required" json:"X-Req"`
+	HOpt string  `header:"X-Opt,default=a" json:"X-Opt"`
 }
 
 type arraysIn struct {
@@ -76,7 +95,7 @@ type filterIn struct {
 
 // headerEnumIn is apart from enumsIn for the same reason (P10.7i).
 type headerEnumIn struct {
-	Mode string `header:"X-Mode" enum:"fast,slow" json:"X-Mode"`
+	Mode string `header:"X-Mode" enum:"fast,slow" default:"fast" json:"X-Mode"`
 }
 
 type enumsIn struct {
@@ -174,6 +193,19 @@ type slicePathIn struct {
 // byteHeaderIn is not a slice parameter: []byte is a string.
 type byteHeaderIn struct {
 	B []byte `header:"X-Bytes" json:"X-Bytes"`
+}
+
+// NoDefaultHeaders lists the headers of NewNoDefaultHeaders that get the
+// warning of P10.7i.
+var NoDefaultHeaders = []string{"X-Int", "X-Uint", "X-Num", "X-Bool", "X-Mode", "X-Ptr"}
+
+// NewNoDefaultHeaders returns an app with optional non-string headers that
+// have no default (P10.7i).
+func NewNoDefaultHeaders() *fizz.Fizz {
+	f := fizz.New()
+	f.Generator().SetInfo(&openapi.Info{Title: "Contract fixture: headers without default", Version: "1.0.0"})
+	f.GET("/nodefault", []fizz.OperationOption{fizz.ID("nodefault")}, tonic.Handler(func(c *gin.Context, in *noDefaultHeadersIn) (*noDefaultHeadersIn, error) { return in, nil }, 200))
+	return f
 }
 
 // BadParams lists the variants of NewBadParam.

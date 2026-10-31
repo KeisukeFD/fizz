@@ -28,7 +28,9 @@ type bindState struct {
 // BindHook returns a tonic bind hook that calls next, then binds what tonic
 // does not understand, or rewrites the request for what tonic reads in
 // another form than the document states (tonic binds after the hook, so
-// the request is what changes): spaceDelimited and pipeDelimited query
+// the request is what changes): a header that is absent takes the field's
+// default tag (tonic reads it as one empty value and ignores the default),
+// spaceDelimited and pipeDelimited query
 // arrays (split on the delimiter, as one value per element) and label and
 // matrix path parameters (their prefix is stripped; a value without it is
 // a binding error). It binds the deepObject query parameters of the route
@@ -86,23 +88,36 @@ func BindHook(next tonic.BindHook) tonic.BindHook {
 
 // rewriteRequest puts the values that tonic reads itself in the form it
 // understands, when the document states another one: spaceDelimited and
-// pipeDelimited query arrays, and label and matrix path parameters. Tonic
-// binds after the hook and overwrites what the hook would set, so the
-// request is what changes. c.Request is replaced by a copy whose URL has
-// the rewritten query; c.Params is rewritten in place.
+// pipeDelimited query arrays, label and matrix path parameters, and the
+// default tag of an absent header. Tonic binds after the hook and
+// overwrites what the hook would set, so the request is what changes.
+// c.Request is replaced by a copy whose URL has the rewritten query and
+// whose header has the defaults (the caller's request is not modified);
+// c.Params is rewritten in place.
 func rewriteRequest(c *gin.Context, p *bind.Plan) error {
+	var q string
+	var qChanged bool
 	if c.Request.URL != nil {
-		q, changed, err := bind.RewriteQuery(c.Request.URL.RawQuery, p)
+		var err error
+		q, qChanged, err = bind.RewriteQuery(c.Request.URL.RawQuery, p)
 		if err != nil {
 			return err
 		}
-		if changed {
-			r := c.Request.WithContext(c.Request.Context())
+	}
+	h, hChanged := bind.RewriteHeader(c.Request.Header, p)
+	if qChanged || hChanged {
+		// The caller's request is not modified: it is copied, with the
+		// URL and the header that changed.
+		r := c.Request.WithContext(c.Request.Context())
+		if qChanged {
 			u := *r.URL
 			u.RawQuery = q
 			r.URL = &u
-			c.Request = r
 		}
+		if hChanged {
+			r.Header = h
+		}
+		c.Request = r
 	}
 	for i, prm := range c.Params {
 		v, ok, err := bind.RewritePath(prm.Key, prm.Value, p)
@@ -201,6 +216,7 @@ func bindTagsOf(n openapi.TagNames) bind.Tags {
 	return bind.Tags{
 		Query:   tonic.QueryTag,
 		Path:    tonic.PathTag,
+		Header:  tonic.HeaderTag,
 		Cookie:  pick(n.Cookie, "cookie"),
 		Style:   pick(n.Style, "style"),
 		Explode: tonic.ExplodeTag,
