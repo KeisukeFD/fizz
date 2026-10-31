@@ -36,8 +36,10 @@ func init() {
 		Case{
 			Name:     "sample/crashes",
 			Register: func(*fizz.Fizz) { panic("never run") },
-			FixedBy:  "P7.1",
-			Crashes:  true,
+			// Harness self-test: a task ID that never enters the done
+			// ledger, so the case stays skipped forever.
+			FixedBy: "SELFTEST",
+			Crashes: true,
 		},
 	)
 }
