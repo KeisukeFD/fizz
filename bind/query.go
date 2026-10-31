@@ -131,7 +131,7 @@ func parseKey(raw, name string) (key string, ok bool, err error) {
 }
 
 func (pf *planField) apply(rv reflect.Value, routes []route) error {
-	fv := rv.FieldByIndex(pf.index)
+	fv := fieldByIndex(rv, pf.index)
 	target := fv
 	if pf.ptr {
 		fv.Set(reflect.New(pf.typ))

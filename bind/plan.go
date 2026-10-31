@@ -107,16 +107,42 @@ func buildPlan(t reflect.Type, tags Tags) (*Plan, error) {
 		return nil, fmt.Errorf("bind: PlanFor: %s is not a struct or pointer to struct", t)
 	}
 	p := &Plan{t: st}
-	if err := p.collect(st, nil, tags); err != nil {
+	if err := p.collect(st, nil, tags, map[reflect.Type]bool{st: true}); err != nil {
 		return nil, err
 	}
 	return p, nil
 }
 
-func (p *Plan) collect(st reflect.Type, prefix []int, tags Tags) error {
+// collect plans the fields of st. Like the generator's parameter walk, it
+// descends into every anonymous struct field, or pointer to struct, whatever
+// its tags and whether or not its type is exported; such a field is never a
+// parameter itself. active holds the struct types being walked, so that
+// embedding cycles end. An unexported embedded pointer cannot be allocated
+// through reflection, so its fields are left alone; the generator reports
+// them instead of documenting them.
+func (p *Plan) collect(st reflect.Type, prefix []int, tags Tags, active map[reflect.Type]bool) error {
 	for i := range st.NumField() {
 		f := st.Field(i)
 		index := append(append([]int(nil), prefix...), i)
+		if f.Anonymous {
+			et := f.Type
+			if et.Kind() == reflect.Pointer {
+				if !f.IsExported() {
+					continue
+				}
+				et = et.Elem()
+			}
+			if et.Kind() != reflect.Struct || active[et] {
+				continue
+			}
+			active[et] = true
+			err := p.collect(et, index, tags, active)
+			delete(active, et)
+			if err != nil {
+				return err
+			}
+			continue
+		}
 		if !f.IsExported() {
 			continue
 		}
@@ -127,12 +153,6 @@ func (p *Plan) collect(st reflect.Type, prefix []int, tags Tags) error {
 			}
 		}
 		if f.Tag.Get(tags.Style) != "deepObject" {
-			// Embedded structs without a query tag have promoted fields.
-			if f.Anonymous && f.Type.Kind() == reflect.Struct && f.Tag.Get(tags.Query) == "" {
-				if err := p.collect(f.Type, index, tags); err != nil {
-					return err
-				}
-			}
 			continue
 		}
 		name, _, _ := strings.Cut(f.Tag.Get(tags.Query), ",")
@@ -147,6 +167,21 @@ func (p *Plan) collect(st reflect.Type, prefix []int, tags Tags) error {
 		p.fields = append(p.fields, pf)
 	}
 	return nil
+}
+
+// fieldByIndex is rv.FieldByIndex, allocating the nil pointers it crosses.
+// The plan only crosses exported embedded pointers.
+func fieldByIndex(rv reflect.Value, index []int) reflect.Value {
+	for n, i := range index {
+		if n > 0 && rv.Kind() == reflect.Pointer {
+			if rv.IsNil() {
+				rv.Set(reflect.New(rv.Type().Elem()))
+			}
+			rv = rv.Elem()
+		}
+		rv = rv.Field(i)
+	}
+	return rv
 }
 
 // addCookie plans a cookie field. The generator rejects a cookie parameter

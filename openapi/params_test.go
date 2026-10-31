@@ -12,12 +12,12 @@ type (
 		Keep   string `json:"keep"`
 	}
 
-	pwCycA struct {
-		*pwCycB
+	PwCycA struct {
+		*PwCycB
 		A string `query:"a"`
 	}
-	pwCycB struct {
-		*pwCycA
+	PwCycB struct {
+		*PwCycA
 		B string `header:"b"`
 	}
 
@@ -80,7 +80,7 @@ func TestWalkParamsJSONDashLocationField(t *testing.T) {
 }
 
 func TestWalkParamsEmbeddedCycle(t *testing.T) {
-	op := walk(t, reflect.TypeFor[pwCycA](), true)
+	op := walk(t, reflect.TypeFor[PwCycA](), true)
 	got := paramKeys(op)
 	slices.Sort(got)
 	if !slices.Equal(got, []string{"header:b", "query:a"}) {

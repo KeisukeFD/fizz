@@ -421,7 +421,7 @@ func TestAddOperation(t *testing.T) {
 	type In struct {
 		*In // ignored, recusrive embedding
 		*InEmbed
-		*inEmbedPrivate
+		inEmbedPrivate // unexported, embedded by value so that its fields can be bound
 
 		A int       `path:"a" description:"This is A" deprecated:"oui"`
 		B time.Time `query:"b" validate:"required" description:"This is B"`

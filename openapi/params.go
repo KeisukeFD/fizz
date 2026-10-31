@@ -194,10 +194,23 @@ func (g *Generator) walkParams(op *Operation, t reflect.Type, active map[reflect
 				continue
 			}
 			active[et] = true
+			n := len(op.Parameters)
 			err := g.walkParams(op, et, active)
 			delete(active, et)
 			if err != nil {
 				return err
+			}
+			// reflect cannot allocate an unexported embedded pointer, so
+			// the binder leaves its fields alone: they are not documented.
+			if sf.Type.Kind() == reflect.Pointer && !sf.IsExported() && len(op.Parameters) > n {
+				op.Parameters = op.Parameters[:n]
+				g.error(&FieldError{
+					Message:  "parameters promoted through an unexported embedded pointer cannot be bound; embed the struct by value or export the type",
+					Name:     sf.Name,
+					Field:    sf.Name,
+					TypeName: g.typeName(t),
+					Type:     t,
+				})
 			}
 			continue
 		}

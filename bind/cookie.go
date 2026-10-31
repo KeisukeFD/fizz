@@ -47,7 +47,7 @@ func Cookies(r *http.Request, dst any, p *Plan) error {
 		} else {
 			continue
 		}
-		fv := rv.FieldByIndex(cf.index)
+		fv := fieldByIndex(rv, cf.index)
 		target := fv
 		if cf.ptr {
 			target = reflect.New(cf.typ).Elem()
