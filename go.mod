@@ -9,6 +9,7 @@ require (
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/juju/errors v1.0.0
 	github.com/loopfz/gadgeto v0.9.0
+	github.com/santhosh-tekuri/jsonschema/v6 v6.0.3
 	github.com/stretchr/testify v1.12.1
 	golang.org/x/text v0.43.0
 	gopkg.in/yaml.v2 v2.4.0

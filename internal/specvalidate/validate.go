@@ -1,0 +1,107 @@
+// Package specvalidate validates generated OpenAPI documents against the
+// official OAS 3.2 JSON Schemas, vendored under schemas/3.2 and loaded
+// offline. It is intended for use from tests.
+package specvalidate
+
+import (
+	"bytes"
+	"embed"
+	"errors"
+	"fmt"
+	"strings"
+	"sync"
+
+	"github.com/santhosh-tekuri/jsonschema/v6"
+	"golang.org/x/text/language"
+	"golang.org/x/text/message"
+)
+
+//go:embed schemas/3.2/*.json
+var schemaFS embed.FS
+
+const (
+	// SchemaDate is the dated suffix of the vendored OAS 3.2 schema IDs.
+	SchemaDate = "2025-09-17"
+
+	idPrefix = "https://spec.openapis.org/oas/3.2/"
+	// BaseURL is the $id of the schema-base document, which validates
+	// Schema Objects against the OAS dialect.
+	BaseURL = idPrefix + "schema-base/" + SchemaDate
+)
+
+// embedLoader maps spec.openapis.org OAS 3.2 URLs to embedded files and
+// refuses everything else, so no network access can happen.
+type embedLoader struct{}
+
+func (embedLoader) Load(url string) (any, error) {
+	rest, ok := strings.CutPrefix(url, idPrefix)
+	if !ok {
+		return nil, fmt.Errorf("specvalidate: refusing to load %q (offline)", url)
+	}
+	kind, date, ok := strings.Cut(rest, "/")
+	if !ok || date != SchemaDate {
+		return nil, fmt.Errorf("specvalidate: unknown schema %q", url)
+	}
+	f, err := schemaFS.Open("schemas/3.2/" + kind + "-" + date + ".json")
+	if err != nil {
+		return nil, fmt.Errorf("specvalidate: unknown schema %q: %w", url, err)
+	}
+	defer f.Close()
+	return jsonschema.UnmarshalJSON(f)
+}
+
+var (
+	once     sync.Once
+	compiled *jsonschema.Schema
+	errComp  error
+	printer  = message.NewPrinter(language.English)
+)
+
+func schema() (*jsonschema.Schema, error) {
+	once.Do(func() {
+		c := jsonschema.NewCompiler()
+		c.UseLoader(embedLoader{})
+		compiled, errComp = c.Compile(BaseURL)
+	})
+	return compiled, errComp
+}
+
+// Validate checks doc (a JSON OpenAPI document) against the OAS 3.2
+// schema-base. The error lists each failure with its instance pointer.
+func Validate(doc []byte) error {
+	sch, err := schema()
+	if err != nil {
+		return fmt.Errorf("specvalidate: compile schema: %w", err)
+	}
+	inst, err := jsonschema.UnmarshalJSON(bytes.NewReader(doc))
+	if err != nil {
+		return fmt.Errorf("specvalidate: invalid JSON: %w", err)
+	}
+	err = sch.Validate(inst)
+	if err == nil {
+		return nil
+	}
+	var ve *jsonschema.ValidationError
+	if !errors.As(err, &ve) {
+		return err
+	}
+	var b strings.Builder
+	b.WriteString("document is not a valid OpenAPI 3.2 description:")
+	collect(&b, ve)
+	return errors.New(b.String())
+}
+
+// collect appends one line per leaf cause: "<pointer>: <message>".
+func collect(b *strings.Builder, ve *jsonschema.ValidationError) {
+	if len(ve.Causes) == 0 {
+		var ptr strings.Builder
+		for _, seg := range ve.InstanceLocation {
+			ptr.WriteString("/" + escape(seg))
+		}
+		fmt.Fprintf(b, "\n  %s: %s", ptr.String(), ve.ErrorKind.LocalizedString(printer))
+		return
+	}
+	for _, c := range ve.Causes {
+		collect(b, c)
+	}
+}
