@@ -804,7 +804,7 @@ Gaps found by checking the output against the official OpenAPI 3.2 examples (tra
 - Path-item-level `parameters` and `$ref` to a component parameter are not supported: a shared path parameter is repeated in each operation.
 - Examples on a non-default response media type (for example `text/html`) cannot be set: `WithExample` and `WithExamples` only target the default media type.
 - The description of an inline (anonymous) struct body or response cannot be set. Give the type a name and use a `SchemaCustomizer`, which makes it a component.
-- A request body cannot be a `$ref` to a component or external document. Patch the operation with `CustomizeOperation`.
+- A request body cannot be a `$ref` to a component or external document: `Operation.RequestBody` has no reference form, so neither `CustomizeOperation` nor a `DocumentHook` can express it yet.
 - A `Schema` cannot carry `$id` or `$anchor`.
 - The default (tonic) response has no singular `example`, only `examples`, and declaring the same status code with `Response` is a duplicate error.
 - A required body field loses its `default` tag, with a warning, although OpenAPI allows both.
