@@ -3,6 +3,7 @@ package openapi
 import (
 	"fmt"
 	"reflect"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -135,67 +136,42 @@ func (g *Generator) enumFromStructField(sf reflect.StructField, fname string, pa
 	return enum
 }
 
-// flattenStructSchema recursively flatten the embedded
-// fields of the struct type t to the given schema.
+// flattenStructSchema adds the JSON members of the struct type t,
+// as selected by typeFields (embedded structs promoted), to the
+// given schema.
 func (g *Generator) flattenStructSchema(t, parent reflect.Type, schema *Schema) *Schema {
-	for f := range t.Fields() {
-		ft := f.Type
-
-		// Dereference pointer.
-		if ft.Kind() == reflect.Pointer {
-			ft = ft.Elem()
-		}
-		isUnexported := f.PkgPath != ""
-		mediaTag := mediaTags[g.mediaType()]
-		_, hasTag := f.Tag.Lookup(mediaTag)
-
-		if f.Anonymous && !hasTag {
-			if isUnexported && ft.Kind() != reflect.Struct {
-				// Ignore embedded fields of unexported non-struct types.
-				continue
-			}
-			// Do not ignore embedded fields of unexported struct
-			// types since they may have exported fields.
-			if ft.Kind() == reflect.Struct {
-				// However, if the type of the embedded field is the same
-				// as the topmost parent, skip it to avoid an infinite
-				// recursive loop.
-				if ft == parent {
-					g.error(&FieldError{
-						Message:  "recursive embedding",
-						Name:     f.Name,
-						TypeName: g.typeName(parent),
-						Type:     parent,
-						Parent:   parent,
-					})
-				} else {
-					schema = g.flattenStructSchema(ft, parent, schema)
-				}
-			}
-			continue
-		} else if isUnexported {
-			// Ignore unexported non-embedded fields.
-			continue
-		}
-		fname := fieldNameFromTag(f, mediaTag)
-		if fname == "" {
-			// Field has no name, skip it.
-			continue
-		}
+	mediaTag := mediaTags[g.mediaType()]
+	for f := range g.fieldsOf(t, mediaTag) {
 		var required bool
 		// The required property of a field is not part of its
 		// own schema but specified in the parent schema.
-		if fname != "" && g.isStructFieldRequired(f) {
+		if g.isStructFieldRequired(f.sf) {
 			required = true
-			schema.Required = append(schema.Required, fname)
+			schema.Required = append(schema.Required, f.name)
 			sort.Strings(schema.Required)
 		}
-		sfs := g.newSchemaFromStructField(f, required, fname, t)
-		if sfs != nil {
-			schema.Properties[fname] = sfs
+		if sfs := g.newSchemaFromField(f, required, t); sfs != nil {
+			schema.Properties[f.name] = sfs
 		}
 	}
 	return schema
+}
+
+// newSchemaFromField returns the property schema of f. A field with
+// the ",string" option is encoded as a JSON string by encoding/json,
+// so its schema type becomes string.
+func (g *Generator) newSchemaFromField(f field, required bool, parent reflect.Type) *Schema {
+	sor := g.newSchemaFromStructField(f.sf, required, f.name, parent)
+	if sor == nil || !f.quoted || sor.Ref != "" {
+		return sor
+	}
+	if slices.Contains(sor.Type, "null") {
+		sor.Type = Types("string", "null")
+	} else {
+		sor.Type = Types("string")
+	}
+	sor.Format = ""
+	return sor
 }
 
 // isStructFieldRequired returns whether a struct field
@@ -219,8 +195,9 @@ func (g *Generator) isStructFieldRequired(sf reflect.StructField) bool {
 	return false
 }
 
-// fieldTagName returns the name of a struct field
-// extracted from a serialization tag using its name.
+// fieldNameFromTag returns the name of a struct field extracted from a
+// serialization tag using its name. Only the param walker still uses
+// it; P3.1b replaces it with typeFields.
 func fieldNameFromTag(sf reflect.StructField, tagName string) string {
 	v, ok := sf.Tag.Lookup(tagName)
 	if !ok {

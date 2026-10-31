@@ -190,12 +190,10 @@ func init() {
 			FixedBy:  "P3.1b",
 		},
 		Case{
-			// Stack-overflows today (generator.go:1032): never run.
 			Name:     "fields/embedded-cycle-response",
 			Register: fieldsResp[FCycA]("x"),
 			Expect:   []Fragment{{Pointer: "/components/schemas/KitchensinkFCycA/type", JSON: `"object"`}},
 			FixedBy:  "P3.1a",
-			Crashes:  true,
 		},
 		Case{
 			// Same cycle through the param walker (generator.go:523).

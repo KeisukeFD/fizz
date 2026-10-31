@@ -44,9 +44,8 @@ func TestDifferentialJSONKeys(t *testing.T) {
 		kSample[FEmbedStr]("FEmbedStr"),
 		kSample[FHolder]("FHolder"),
 		kSample[FNullable]("FNullable"),
+		kSample[FCycA]("FCycA"),
 	}
-	// FCycA is left out: its stack overflow cannot be recovered (see
-	// fields/embedded-cycle-response, Crashes).
 	plan.Pending(t, "P3.1a", func(tb testing.TB) {
 		for _, s := range samples {
 			f := fizz.New()

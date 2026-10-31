@@ -40,6 +40,7 @@ type Generator struct {
 	typeNames     map[reflect.Type]string
 	dataTypes     map[reflect.Type]*OverridedDataType
 	operationsIDS map[string]struct{}
+	fieldCache    map[typeFieldsKey][]field
 	errors        []error
 	fullNames     bool
 	sortParams    bool

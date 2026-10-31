@@ -35,10 +35,6 @@
         "G": {
             "$ref": "#/components/schemas/Y"
         },
-        "H": {
-            "type": "number",
-            "format": "float"
-        },
         "I": {
             "type": "string",
             "format": "date"
@@ -97,7 +93,6 @@
     },
     "required": [
         "A",
-        "H",
         "K"
     ]
 }
