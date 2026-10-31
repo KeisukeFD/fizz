@@ -1,0 +1,41 @@
+Third-party material used by the fizz conformance suite
+=======================================================
+
+This directory contains material from the OpenAPI Initiative (OAI). It is
+used only as test data. fizz does not ship it in the library.
+
+1. OAI/learn.openapis.org (examples)
+   Files:    orig/learn/examples/v3.{0,1,2}/*.yaml
+   Commit:   82b82f372aa185a07ea11bc158619895ab21f741
+   Licence:  Creative Commons Attribution 4.0 International (CC BY 4.0)
+             https://creativecommons.org/licenses/by/4.0/
+             Full text: LICENSE-learn-CC-BY-4.0
+   Source:   https://github.com/OAI/learn.openapis.org
+   Copyright the OpenAPI Initiative / The Linux Foundation and contributors.
+
+2. OAI/OpenAPI-Specification (schema test fixtures)
+   Files:    orig/oas/tests/schema/pass/*.yaml, orig/oas/tests/schema/fail/*.yaml
+   Commit:   0f9aa49039215e2ed414cdefe35f718273b77976
+   Licence:  Apache License 2.0
+             https://www.apache.org/licenses/LICENSE-2.0
+             Full text: LICENSE-oas-Apache-2.0
+   Source:   https://github.com/OAI/OpenAPI-Specification
+
+3. OAI/OpenAPI-Specification (specification text)
+   Files:    orig/oas/versions/3.2.1.md
+   Commit:   4f86429f134f7e48b6351563549b4502fc69de52
+   Licence:  Apache License 2.0 (same as above)
+
+Files under orig/ are unmodified copies of the upstream files at the commits
+above. Their path, commit, source path, sha256 and licence are listed in
+MANIFEST.json, which is verified by "go generate" (internal/conformance/internal/fetchoai)
+and by TestManifestMatchesFiles.
+
+Modified copies
+---------------
+
+The upgraded/ directory (added later by task P10.1) contains copies of these
+files that were modified by a deterministic converter, for example to raise
+the "openapi" version to 3.2.1. These are modified versions, not the
+originals. The changes made to each file are listed per file in this NOTICE,
+as required by CC BY 4.0 section 3(a)(1)(B).
