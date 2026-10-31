@@ -19,7 +19,12 @@ func (f *Fizz) OpenAPI(info *openapi.Info, ct string) gin.HandlerFunc {
 	switch ct {
 	case "json":
 		return func(c *gin.Context) {
-			c.JSON(200, f.gen.API())
+			b, err := openapi.MarshalJSON(f.gen.API())
+			if err != nil {
+				_ = c.AbortWithError(500, err)
+				return
+			}
+			c.Data(200, "application/json; charset=utf-8", b)
 		}
 	case "yaml":
 		return func(c *gin.Context) {

@@ -65,9 +65,9 @@ func TestPathsModelMarshal(t *testing.T) {
 		{"example", &Example{DataValue: 1, SerializedValue: "1"}, `{"dataValue":1,"serializedValue":"1"}`},
 		{"response", &Response{Summary: "s"}, `{"summary":"s"}`},
 		{"response links", &Response{Links: map[string]*LinkOrRef{"l": {Value: &Link{OperationID: "o"}}}}, `{"links":{"l":{"operationId":"o"}}}`},
-		{"operation callbacks", &Operation{Callbacks: map[string]*CallbackOrRef{"cb": {Value: &Callback{"{$url}": {Summary: "s"}}}}}, `{"callbacks":{"cb":{"{$url}":{"summary":"s"}}}}`},
+		{"operation callbacks", &Operation{Callbacks: map[string]*CallbackOrRef{"cb": {Value: &Callback{Expressions: map[string]*PathItem{"{$url}": {Summary: "s"}}}}}}, `{"callbacks":{"cb":{"{$url}":{"summary":"s"}}}}`},
 		{"link", &Link{OperationRef: "r", OperationID: "o", Parameters: map[string]any{"p": "$x"}, RequestBody: "b", Description: "d", Server: &Server{URL: "u"}}, `{"operationRef":"r","operationId":"o","parameters":{"p":"$x"},"requestBody":"b","description":"d","server":{"url":"u"}}`},
-		{"callback", &Components{Callbacks: map[string]*CallbackOrRef{"c": {Value: &Callback{"{$url}": {Summary: "s"}}}}, Links: map[string]*LinkOrRef{"l": {Ref: &Reference{Ref: "#/x"}}}}, `{"links":{"l":{"$ref":"#/x"}},"callbacks":{"c":{"{$url}":{"summary":"s"}}}}`},
+		{"callback", &Components{Callbacks: map[string]*CallbackOrRef{"c": {Value: &Callback{Expressions: map[string]*PathItem{"{$url}": {Summary: "s"}}}}}, Links: map[string]*LinkOrRef{"l": {Ref: &Reference{Ref: "#/x"}}}}, `{"links":{"l":{"$ref":"#/x"}},"callbacks":{"c":{"{$url}":{"summary":"s"}}}}`},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

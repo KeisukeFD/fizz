@@ -82,7 +82,7 @@ func TestExtensionKeysSorted(t *testing.T) {
 // H12: the served YAML of an OAuth flow without scopes has scopes: {}
 // and tokenUrl (the wrong OAuthFlow.MarshalYAML is gone).
 func TestOAuthFlowYAML(t *testing.T) {
-	at.Pending(t, "P2.5", func(tb testing.TB) {
+	at.Pending(t, "P2.3", func(tb testing.TB) {
 		f := fizz.New()
 		f.Generator().SetSecuritySchemes(map[string]*openapi.SecuritySchemeOrRef{
 			"oauth": {Value: &openapi.SecurityScheme{

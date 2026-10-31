@@ -1,6 +1,10 @@
 package openapi
 
-import "encoding/json"
+import (
+	"encoding/json/jsontext"
+	"maps"
+	"slices"
+)
 
 // SecuritySchemeOrRef represents a SecurityScheme that can be inlined
 // or referenced in the API description.
@@ -18,6 +22,11 @@ type SecurityScheme struct {
 	OpenIDConnectURL  string      `json:"openIdConnectUrl,omitempty" yaml:"openIdConnectUrl,omitempty"`
 	Flows             *OAuthFlows `json:"flows,omitempty" yaml:"flows,omitempty"`
 	OAuth2MetadataURL string      `json:"oauth2MetadataUrl,omitempty" yaml:"oauth2MetadataUrl,omitempty"`
+
+	// Extensions holds the "x-" specification extensions. Keys are
+	// emitted sorted after the typed members. Use SetExtension to
+	// validate keys.
+	Extensions map[string]any `json:",embed" yaml:",inline"`
 }
 
 // OAuthFlows represents all the supported OAuth flows.
@@ -27,26 +36,56 @@ type OAuthFlows struct {
 	ClientCredentials   *OAuthFlow `json:"clientCredentials,omitempty" yaml:"clientCredentials,omitempty"`
 	AuthorizationCode   *OAuthFlow `json:"authorizationCode,omitempty" yaml:"authorizationCode,omitempty"`
 	DeviceAuthorization *OAuthFlow `json:"deviceAuthorization,omitempty" yaml:"deviceAuthorization,omitempty"`
+
+	// Extensions holds the "x-" specification extensions. Keys are
+	// emitted sorted after the typed members. Use SetExtension to
+	// validate keys.
+	Extensions map[string]any `json:",embed" yaml:",inline"`
 }
 
 // OAuthFlow represents an OAuth security scheme.
 type OAuthFlow struct {
-	AuthorizationURL       string            `json:"authorizationUrl,omitempty" yaml:"authorizationUrl,omitempty"`
-	DeviceAuthorizationURL string            `json:"deviceAuthorizationUrl,omitempty" yaml:"deviceAuthorizationUrl,omitempty"`
-	TokenURL               string            `json:"tokenUrl,omitempty" yaml:"tokenUrl,omitempty"`
-	RefreshURL             string            `json:"refreshUrl,omitempty" yaml:"refreshUrl,omitempty"`
-	Scopes                 map[string]string `json:"scopes,omitempty" yaml:"scopes,omitempty"`
-}
+	AuthorizationURL       string `json:"authorizationUrl,omitempty" yaml:"authorizationUrl,omitempty"`
+	DeviceAuthorizationURL string `json:"deviceAuthorizationUrl,omitempty" yaml:"deviceAuthorizationUrl,omitempty"`
+	TokenURL               string `json:"tokenUrl,omitempty" yaml:"tokenUrl,omitempty"`
+	RefreshURL             string `json:"refreshUrl,omitempty" yaml:"refreshUrl,omitempty"`
+	// Scopes is REQUIRED by the specification and MAY be empty: a
+	// nil map is emitted as {}.
+	Scopes map[string]string `json:"scopes" yaml:"scopes"`
 
-// MarshalYAML implements yaml.Marshaler for OAuthFlow.
-func (f OAuthFlow) MarshalYAML() ([]byte, error) {
-	type flow OAuthFlow
-	if f.Scopes == nil {
-		// The field is REQUIRED and MAY be empty according to the spec.
-		f.Scopes = map[string]string{}
-	}
-	return json.Marshal(flow(f))
+	// Extensions holds the "x-" specification extensions. Keys are
+	// emitted sorted after the typed members. Use SetExtension to
+	// validate keys.
+	Extensions map[string]any `json:",embed" yaml:",inline"`
 }
 
 // SecurityRequirement represents the security object in the API specification.
 type SecurityRequirement map[string][]string
+
+// MarshalJSONTo implements jsonv2.MarshalerTo for SecurityRequirement.
+// A nil scope list is emitted as [], as the specification requires, and
+// the names are sorted.
+func (r SecurityRequirement) MarshalJSONTo(enc *jsontext.Encoder) error {
+	if r == nil {
+		return enc.WriteToken(jsontext.Null)
+	}
+	if err := enc.WriteToken(jsontext.BeginObject); err != nil {
+		return err
+	}
+	for _, name := range slices.Sorted(maps.Keys(r)) {
+		if err := enc.WriteToken(jsontext.String(name)); err != nil {
+			return err
+		}
+		scopes := r[name]
+		if scopes == nil {
+			scopes = []string{}
+		}
+		if err := encodeValue(enc, scopes); err != nil {
+			return err
+		}
+	}
+	return enc.WriteToken(jsontext.EndObject)
+}
+
+// MarshalJSON implements json.Marshaler for SecurityRequirement.
+func (r SecurityRequirement) MarshalJSON() ([]byte, error) { return marshalJSON(r) }

@@ -1,8 +1,8 @@
 package openapi
 
 import (
-	"bytes"
 	"encoding/json"
+	"encoding/json/jsontext"
 	"reflect"
 	"strconv"
 )
@@ -20,32 +20,38 @@ type TypeSet []string
 // Types returns a TypeSet holding the given type names.
 func Types(t ...string) TypeSet { return TypeSet(t) }
 
-// MarshalJSON implements json.Marshaler for TypeSet.
-func (ts TypeSet) MarshalJSON() ([]byte, error) {
+// MarshalJSONTo implements jsonv2.MarshalerTo for TypeSet.
+func (ts TypeSet) MarshalJSONTo(enc *jsontext.Encoder) error {
 	if len(ts) == 1 {
-		return json.Marshal(ts[0])
+		return enc.WriteToken(jsontext.String(ts[0]))
 	}
-	return json.Marshal([]string(ts))
+	return encodeValue(enc, []string(ts))
 }
 
-// UnmarshalJSON implements json.Unmarshaler for TypeSet. It
-// accepts both a string and an array of strings.
-func (ts *TypeSet) UnmarshalJSON(b []byte) error {
-	if b = bytes.TrimSpace(b); len(b) > 0 && b[0] == '"' {
+// UnmarshalJSONFrom implements jsonv2.UnmarshalerFrom for TypeSet.
+// It accepts both a string and an array of strings.
+func (ts *TypeSet) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
+	if dec.PeekKind() == '"' {
 		var s string
-		if err := json.Unmarshal(b, &s); err != nil {
+		if err := decodeValue(dec, &s); err != nil {
 			return err
 		}
 		*ts = TypeSet{s}
 		return nil
 	}
 	var a []string
-	if err := json.Unmarshal(b, &a); err != nil {
+	if err := decodeValue(dec, &a); err != nil {
 		return err
 	}
 	*ts = TypeSet(a)
 	return nil
 }
+
+// MarshalJSON implements json.Marshaler for TypeSet.
+func (ts TypeSet) MarshalJSON() ([]byte, error) { return marshalJSON(ts) }
+
+// UnmarshalJSON implements json.Unmarshaler for TypeSet.
+func (ts *TypeSet) UnmarshalJSON(b []byte) error { return unmarshalJSON(b, ts) }
 
 // MarshalYAML implements yaml.Marshaler for TypeSet.
 func (ts TypeSet) MarshalYAML() (any, error) {
@@ -62,6 +68,11 @@ type Discriminator struct {
 	PropertyName   string            `json:"propertyName" yaml:"propertyName"`
 	Mapping        map[string]string `json:"mapping,omitempty" yaml:"mapping,omitempty"`
 	DefaultMapping string            `json:"defaultMapping,omitzero" yaml:"defaultMapping,omitempty"`
+
+	// Extensions holds the "x-" specification extensions. Keys are
+	// emitted sorted after the typed members. Use SetExtension to
+	// validate keys.
+	Extensions map[string]any `json:",embed" yaml:",inline"`
 }
 
 // XML describes the XML representation of a schema.
@@ -72,13 +83,23 @@ type XML struct {
 	Prefix    string `json:"prefix,omitzero" yaml:"prefix,omitempty"`
 	Attribute bool   `json:"attribute,omitzero" yaml:"attribute,omitempty"`
 	Wrapped   bool   `json:"wrapped,omitzero" yaml:"wrapped,omitempty"`
+
+	// Extensions holds the "x-" specification extensions. Keys are
+	// emitted sorted after the typed members. Use SetExtension to
+	// validate keys.
+	Extensions map[string]any `json:",embed" yaml:",inline"`
 }
 
 // ExternalDocs allows referencing an external resource for
 // extended documentation.
 type ExternalDocs struct {
-	Description string `json:"description,omitzero" yaml:"description,omitempty"`
+	Description string `json:"description,omitempty" yaml:"description,omitempty"`
 	URL         string `json:"url" yaml:"url"`
+
+	// Extensions holds the "x-" specification extensions. Keys are
+	// emitted sorted after the typed members. Use SetExtension to
+	// validate keys.
+	Extensions map[string]any `json:",embed" yaml:",inline"`
 }
 
 // Schema represents the definition of input and output data
@@ -136,35 +157,50 @@ type Schema struct {
 	Discriminator *Discriminator `json:"discriminator,omitempty" yaml:"discriminator,omitempty"`
 	XML           *XML           `json:"xml,omitempty" yaml:"xml,omitempty"`
 	ExternalDocs  *ExternalDocs  `json:"externalDocs,omitempty" yaml:"externalDocs,omitempty"`
+
+	// Extensions holds the "x-" specification extensions. Keys are
+	// emitted sorted after the typed members. Use SetExtension to
+	// validate keys.
+	Extensions map[string]any `json:",embed" yaml:",inline"`
 }
 
 // schemaAlias has the fields of Schema but none of its methods.
 type schemaAlias Schema
 
-// MarshalJSON implements json.Marshaler for Schema.
-func (s Schema) MarshalJSON() ([]byte, error) {
+// MarshalJSONTo implements jsonv2.MarshalerTo for Schema.
+func (s Schema) MarshalJSONTo(enc *jsontext.Encoder) error {
 	if s.Bool != nil {
-		return json.Marshal(*s.Bool)
+		return enc.WriteToken(jsontext.Bool(*s.Bool))
 	}
-	return json.Marshal(schemaAlias(s))
+	return encodeValue(enc, schemaAlias(s))
 }
 
-// UnmarshalJSON implements json.Unmarshaler for Schema. The
+// UnmarshalJSONFrom implements jsonv2.UnmarshalerFrom for Schema. The
 // literals true and false decode to boolean schemas.
-func (s *Schema) UnmarshalJSON(b []byte) error {
-	switch lit := string(bytes.TrimSpace(b)); lit {
-	case "true", "false":
-		v := lit == "true"
+func (s *Schema) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
+	switch dec.PeekKind() {
+	case 't', 'f':
+		tok, err := dec.ReadToken()
+		if err != nil {
+			return err
+		}
+		v := tok.Bool()
 		*s = Schema{Bool: &v}
 		return nil
 	}
 	var a schemaAlias
-	if err := json.Unmarshal(b, &a); err != nil {
+	if err := decodeValue(dec, &a); err != nil {
 		return err
 	}
 	*s = Schema(a)
 	return nil
 }
+
+// MarshalJSON implements json.Marshaler for Schema.
+func (s Schema) MarshalJSON() ([]byte, error) { return marshalJSON(s) }
+
+// UnmarshalJSON implements json.Unmarshaler for Schema.
+func (s *Schema) UnmarshalJSON(b []byte) error { return unmarshalJSON(b, s) }
 
 // MakeNullable allows the schema to also validate null. A
 // reference is moved into anyOf next to a null type schema,

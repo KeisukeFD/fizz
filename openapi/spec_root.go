@@ -14,6 +14,11 @@ type OpenAPI struct {
 	Tags              []*Tag                 `json:"tags,omitempty" yaml:"tags,omitempty"`
 	Security          []*SecurityRequirement `json:"security,omitempty" yaml:"security,omitempty"`
 	XTagGroups        []*XTagGroup           `json:"x-tagGroups,omitempty" yaml:"x-tagGroups,omitempty"`
+
+	// Extensions holds the "x-" specification extensions. Keys are
+	// emitted sorted after the typed members. Use SetExtension to
+	// validate keys.
+	Extensions map[string]any `json:",embed" yaml:",inline"`
 }
 
 // Components holds a set of reusable objects for different
@@ -30,6 +35,11 @@ type Components struct {
 	Callbacks       map[string]*CallbackOrRef       `json:"callbacks,omitempty" yaml:"callbacks,omitempty"`
 	PathItems       map[string]*PathItem            `json:"pathItems,omitempty" yaml:"pathItems,omitempty"`
 	MediaTypes      map[string]*MediaTypeOrRef      `json:"mediaTypes,omitempty" yaml:"mediaTypes,omitempty"`
+
+	// Extensions holds the "x-" specification extensions. Keys are
+	// emitted sorted after the typed members. Use SetExtension to
+	// validate keys.
+	Extensions map[string]any `json:",embed" yaml:",inline"`
 }
 
 // Info represents the metadata of an API.
@@ -42,6 +52,11 @@ type Info struct {
 	License        *License `json:"license,omitempty" yaml:"license,omitempty"`
 	Version        string   `json:"version" yaml:"version"`
 	XLogo          *XLogo   `json:"x-logo,omitempty" yaml:"x-logo,omitempty"`
+
+	// Extensions holds the "x-" specification extensions. Keys are
+	// emitted sorted after the typed members. Use SetExtension to
+	// validate keys.
+	Extensions map[string]any `json:",embed" yaml:",inline"`
 }
 
 // Contact represents the the contact informations
@@ -50,6 +65,11 @@ type Contact struct {
 	Name  string `json:"name,omitempty" yaml:"name,omitempty"`
 	URL   string `json:"url,omitempty" yaml:"url,omitempty"`
 	Email string `json:"email,omitempty" yaml:"email,omitempty"`
+
+	// Extensions holds the "x-" specification extensions. Keys are
+	// emitted sorted after the typed members. Use SetExtension to
+	// validate keys.
+	Extensions map[string]any `json:",embed" yaml:",inline"`
 }
 
 // License represents the license informations
@@ -58,6 +78,11 @@ type License struct {
 	Name       string `json:"name" yaml:"name"`
 	Identifier string `json:"identifier,omitempty" yaml:"identifier,omitempty"`
 	URL        string `json:"url,omitempty" yaml:"url,omitempty"`
+
+	// Extensions holds the "x-" specification extensions. Keys are
+	// emitted sorted after the typed members. Use SetExtension to
+	// validate keys.
+	Extensions map[string]any `json:",embed" yaml:",inline"`
 }
 
 // Server represents a server.
@@ -66,6 +91,11 @@ type Server struct {
 	Name        string                     `json:"name,omitempty" yaml:"name,omitempty"`
 	Description string                     `json:"description,omitempty" yaml:"description,omitempty"`
 	Variables   map[string]*ServerVariable `json:"variables,omitempty" yaml:"variables,omitempty"`
+
+	// Extensions holds the "x-" specification extensions. Keys are
+	// emitted sorted after the typed members. Use SetExtension to
+	// validate keys.
+	Extensions map[string]any `json:",embed" yaml:",inline"`
 }
 
 // ServerVariable represents a server variable for server
@@ -74,6 +104,11 @@ type ServerVariable struct {
 	Enum        []string `json:"enum,omitempty" yaml:"enum,omitempty"`
 	Default     string   `json:"default" yaml:"default"`
 	Description string   `json:"description,omitempty" yaml:"description,omitempty"`
+
+	// Extensions holds the "x-" specification extensions. Keys are
+	// emitted sorted after the typed members. Use SetExtension to
+	// validate keys.
+	Extensions map[string]any `json:",embed" yaml:",inline"`
 }
 
 // Paths represents the relative paths to the individual
@@ -101,6 +136,11 @@ type PathItem struct {
 	// AdditionalOperations holds operations for HTTP methods
 	// that have no dedicated field, keyed by method name.
 	AdditionalOperations map[string]*Operation `json:"additionalOperations,omitempty" yaml:"additionalOperations,omitempty"`
+
+	// Extensions holds the "x-" specification extensions. Keys are
+	// emitted sorted after the typed members. Use SetExtension to
+	// validate keys.
+	Extensions map[string]any `json:",embed" yaml:",inline"`
 }
 
 // Tag represents the metadata of a single tag.
@@ -111,4 +151,9 @@ type Tag struct {
 	ExternalDocs *ExternalDocs `json:"externalDocs,omitempty" yaml:"externalDocs,omitempty"`
 	Parent       string        `json:"parent,omitempty" yaml:"parent,omitempty"`
 	Kind         string        `json:"kind,omitempty" yaml:"kind,omitempty"`
+
+	// Extensions holds the "x-" specification extensions. Keys are
+	// emitted sorted after the typed members. Use SetExtension to
+	// validate keys.
+	Extensions map[string]any `json:",embed" yaml:",inline"`
 }

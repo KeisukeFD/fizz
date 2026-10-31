@@ -1,8 +1,8 @@
 package openapi
 
 import (
-	"bytes"
-	"encoding/json"
+	"encoding/json/jsontext"
+	jsonv2 "encoding/json/v2"
 	"errors"
 )
 
@@ -26,41 +26,51 @@ type OrRef[T any] struct {
 	Value *T
 }
 
-// MarshalJSON implements json.Marshaler. A non-nil Ref wins over
-// Value. It returns ErrNilOrRef when both are nil.
-func (o OrRef[T]) MarshalJSON() ([]byte, error) {
+// MarshalJSONTo implements jsonv2.MarshalerTo. A non-nil Ref wins
+// over Value. It returns ErrNilOrRef when both are nil.
+func (o OrRef[T]) MarshalJSONTo(enc *jsontext.Encoder) error {
 	switch {
 	case o.Ref != nil:
-		return json.Marshal(o.Ref)
+		return encodeValue(enc, o.Ref)
 	case o.Value != nil:
-		return json.Marshal(o.Value)
+		return encodeValue(enc, o.Value)
 	}
-	return nil, ErrNilOrRef
+	return ErrNilOrRef
 }
 
-// UnmarshalJSON implements json.Unmarshaler. The presence of a
-// top-level "$ref" key decides between Ref and Value.
-func (o *OrRef[T]) UnmarshalJSON(b []byte) error {
-	var probe map[string]json.RawMessage
-	if err := json.Unmarshal(bytes.TrimSpace(b), &probe); err != nil {
+// UnmarshalJSONFrom implements jsonv2.UnmarshalerFrom. The presence
+// of a top-level "$ref" key decides between Ref and Value.
+func (o *OrRef[T]) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
+	raw, err := dec.ReadValue()
+	if err != nil {
+		return err
+	}
+	var probe map[string]jsontext.Value
+	if err := jsonv2.Unmarshal(raw, &probe, unmarshalOptions); err != nil {
 		return err
 	}
 	*o = OrRef[T]{}
 	if _, ok := probe["$ref"]; ok {
 		var r Reference
-		if err := json.Unmarshal(b, &r); err != nil {
+		if err := jsonv2.Unmarshal(raw, &r, unmarshalOptions); err != nil {
 			return err
 		}
 		o.Ref = &r
 		return nil
 	}
 	var v T
-	if err := json.Unmarshal(b, &v); err != nil {
+	if err := jsonv2.Unmarshal(raw, &v, unmarshalOptions); err != nil {
 		return err
 	}
 	o.Value = &v
 	return nil
 }
+
+// MarshalJSON implements json.Marshaler by delegating to v2.
+func (o OrRef[T]) MarshalJSON() ([]byte, error) { return marshalJSON(o) }
+
+// UnmarshalJSON implements json.Unmarshaler by delegating to v2.
+func (o *OrRef[T]) UnmarshalJSON(b []byte) error { return unmarshalJSON(b, o) }
 
 // MarshalYAML implements yaml.Marshaler with the same choice logic
 // as MarshalJSON.
