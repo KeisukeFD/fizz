@@ -378,6 +378,12 @@ func (g *Generator) newParameterFromField(idx int, t reflect.Type) (*Parameter, 
 		g.error(fieldErr("cookie parameter must be a scalar type", name, field.Type, nil))
 		return nil, nil
 	}
+	// Outside deepObject tonic binds each value with bindStringValue: a
+	// map or a struct that is not text-bindable has no representation.
+	if location != cookieLocation && !g.isDeepObject(field, location) && !g.isBindable(field.Type) {
+		g.error(fieldErr(fmt.Sprintf("%s parameter must be a scalar type or a slice of scalars (a map or struct is only supported as a %s query parameter)", location, styleDeepObject), name, field.Type, nil))
+		return nil, nil
+	}
 	deep := g.isDeepObject(field, location)
 	if deep {
 		// Tonic would bind the required and default options and tag
@@ -600,6 +606,27 @@ func (g *Generator) isScalar(t reflect.Type) bool {
 		return true
 	}
 	return false
+}
+
+// isBindable reports whether tonic can bind a non-deepObject parameter of
+// type t: a scalar (including types that are described as a string, such
+// as time.Time or an encoding.TextUnmarshaler) or a slice or array of
+// scalars. A map, a plain struct or a nested slice cannot be bound.
+func (g *Generator) isBindable(t reflect.Type) bool {
+	for t.Kind() == reflect.Pointer {
+		t = t.Elem()
+	}
+	if g.datatype(t) != TypeComplex {
+		return true
+	}
+	if t.Kind() != reflect.Slice && t.Kind() != reflect.Array {
+		return false
+	}
+	e := t.Elem()
+	for e.Kind() == reflect.Pointer {
+		e = e.Elem()
+	}
+	return g.datatype(e) != TypeComplex
 }
 
 // requestBodyName returns the component name of the synthesized request
