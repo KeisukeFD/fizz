@@ -9,7 +9,7 @@ type OpenAPI struct {
 	JSONSchemaDialect string                 `json:"jsonSchemaDialect,omitzero"`
 	Servers           []*Server              `json:"servers,omitempty"`
 	Paths             Paths                  `json:"paths,omitzero"`
-	Webhooks          map[string]*PathItem   `json:"webhooks,omitempty"`
+	Webhooks          map[string]*PathItem   `json:"webhooks,omitzero"`
 	Components        *Components            `json:"components,omitzero"`
 	Tags              []*Tag                 `json:"tags,omitempty"`
 	Security          []*SecurityRequirement `json:"security,omitempty"`

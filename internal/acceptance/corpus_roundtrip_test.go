@@ -40,9 +40,7 @@ func TestCorpusParameterRequiredFalse(t *testing.T) {
 // "webhooks": {} is dropped; a document whose only top-level field is an
 // empty webhooks then no longer validates.
 func TestCorpusEmptyWebhooks(t *testing.T) {
-	at.Pending(t, "P10.3b", func(tb testing.TB) {
-		exactRoundTrip[openapi.OpenAPI](tb, `{"openapi":"3.2.1","info":{"title":"t","version":"1"},"webhooks":{}}`)
-	})
+	exactRoundTrip[openapi.OpenAPI](t, `{"openapi":"3.2.1","info":{"title":"t","version":"1"},"webhooks":{}}`)
 }
 
 // Components "pathItems": {} is dropped.
