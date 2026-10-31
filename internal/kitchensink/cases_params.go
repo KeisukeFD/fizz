@@ -168,10 +168,13 @@ func init() {
 			FixedBy: "P3.6",
 		},
 		Case{
+			// PDeleteIn has a path parameter, so its body is named after
+			// the operation (P4.6): OpInput.
 			Name:     "params/delete-body-documented",
 			Register: pRegister("DELETE", "/items/:id", tonic.Handler(pHandler[PDeleteIn], 200)),
 			Expect: []Fragment{
-				{Pointer: "/paths/~1items~1{id}/delete/requestBody/content/application~1json/schema", JSON: `{"$ref":"#/components/schemas/PDeleteIn"}`},
+				{Pointer: "/paths/~1items~1{id}/delete/requestBody/content/application~1json/schema", JSON: `{"$ref":"#/components/schemas/OpInput"}`},
+				{Pointer: "/components/schemas/OpInput/properties/name", JSON: `{"type":"string"}`},
 			},
 			FixedBy: "P4.6",
 		},

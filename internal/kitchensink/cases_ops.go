@@ -125,18 +125,19 @@ func init() {
 			FixedBy: "P4.6",
 		},
 		Case{
-			// A Go type named OXInput is registered first; the body of
-			// operation "oX" would overwrite it.
+			// The Go type OXInput is the component KitchensinkOXInput, and
+			// the body of operation "kitchensinkOX" gets the same name: the
+			// Go type is kept and an error is recorded.
 			Name: "ops/body-name-collision-go-type",
 			Register: func(f *fizz.Fizz) {
 				f.GET("/x", opts(fizz.ID("getX")), tonic.Handler(oGetXInput, 200))
-				f.POST("/x", opts(fizz.ID("oX")), tonic.Handler(oPostXBody, 201))
+				f.POST("/x", opts(fizz.ID("kitchensinkOX")), tonic.Handler(oPostXBody, 201))
 			},
 			Expect: []Fragment{
-				{Pointer: schemas + "OXInput/properties/fromGoType", JSON: `{"type":"string"}`},
-				{Pointer: schemas + "OXInput/properties/fromBody", Absent: true},
+				{Pointer: schemas + "KitchensinkOXInput/properties/fromGoType", JSON: `{"type":"string"}`},
+				{Pointer: schemas + "KitchensinkOXInput/properties/fromBody", Absent: true},
 			},
-			Errors:  []string{"OXInput"},
+			Errors:  []string{"KitchensinkOXInput"},
 			FixedBy: "P4.6",
 		},
 		Case{
@@ -354,8 +355,8 @@ func init() {
 				f.GET("/h", opts(fizz.ID("getH")), tonic.Handler(oGetHolder, 200))
 			},
 			Expect: []Fragment{{
-				Pointer: schemas + "OHolder/properties/owner",
-				JSON:    `{"$ref":"#/components/schemas/OUser","description":"the owner"}`,
+				Pointer: schemas + "KitchensinkOHolder/properties/owner",
+				JSON:    `{"$ref":"#/components/schemas/KitchensinkOUser","description":"the owner"}`,
 			}},
 			FixedBy: "P3.4",
 		},
