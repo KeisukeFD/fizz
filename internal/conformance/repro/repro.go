@@ -28,6 +28,7 @@ import (
 
 	"github.com/wI2L/fizz"
 	"github.com/wI2L/fizz/internal/kitchensink"
+	"github.com/wI2L/fizz/internal/plan"
 )
 
 // Kind tells how a difference relates the served document (got) to the
@@ -236,6 +237,9 @@ func (a Allow) Validate() error {
 	case Limitation:
 		if !taskRE.MatchString(a.Task) {
 			return fmt.Errorf("a limitation needs a plan task ID (P10.9a, P10.7c, ...), got %q", a.Task)
+		}
+		if plan.IsDone(a.Task) {
+			return fmt.Errorf("stale: task %s done; remove or reclassify", a.Task)
 		}
 	default:
 		return fmt.Errorf("category %q is not naming, upstream or limitation", a.Category)

@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/wI2L/fizz/internal/conformance/repro"
+	"github.com/wI2L/fizz/internal/plan"
 )
 
 const (
@@ -76,6 +77,27 @@ func TestSubtreeMatch(t *testing.T) {
 	allow = []repro.Allow{{Pointer: "/a", Kind: repro.Any, Category: repro.Naming, Reason: "r"}}
 	if p := problems(t, got, want, allow); !strings.Contains(p, "needs a pointer ending in /**") {
 		t.Fatalf("kind any on an exact pointer accepted: %s", p)
+	}
+}
+
+// A limitation whose task is done is stale: the fix landed, so the entry
+// must go or be reclassified.
+func TestStaleLimitationFails(t *testing.T) {
+	old := plan.Done
+	t.Cleanup(func() { plan.Done = old })
+	plan.Done = map[string]bool{"P10.9a": true}
+
+	lim := func(task string) repro.Allow {
+		return repro.Allow{Pointer: "/a", Kind: repro.Changed, Category: repro.Limitation, Task: task, Reason: "r"}
+	}
+	if err := lim("P10.9a").Validate(); err == nil || !strings.Contains(err.Error(), "stale: task P10.9a done; remove or reclassify") {
+		t.Fatalf("done task accepted: %v", err)
+	}
+	if err := lim("P10.9b").Validate(); err != nil {
+		t.Fatalf("pending task rejected: %v", err)
+	}
+	if p := problems(t, `{"a":1}`, `{"a":2}`, []repro.Allow{lim("P10.9a")}); !strings.Contains(p, "stale") {
+		t.Fatalf("Check did not report the stale entry: %q", p)
 	}
 }
 
