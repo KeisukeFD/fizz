@@ -34,6 +34,8 @@ func (g *Generator) applyParameters(op *Operation, path string, ps []*Parameter)
 		case p.Schema != nil && len(p.Content) > 0:
 			g.error(fmt.Errorf("Parameter: %q (%s) has both schema and content", p.Name, p.In))
 			continue
+		case g.dropReservedHeader(p.In, p.Name):
+			continue
 		case p.In == "path" && !pathHasParam(path, p.Name):
 			g.error(fmt.Errorf("Parameter: path parameter %q is not in the path template %q", p.Name, path))
 			continue

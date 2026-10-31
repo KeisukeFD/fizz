@@ -373,6 +373,9 @@ func (g *Generator) newParameterFromField(idx int, t reflect.Type) (*Parameter, 
 	if name == "" || name == "-" {
 		return nil, nil
 	}
+	if g.dropReservedHeader(location, name) {
+		return nil, nil
+	}
 	// Cookies are scalar-only: no style or explode is emitted.
 	if location == cookieLocation && !g.isScalar(field.Type) {
 		g.error(fieldErr("cookie parameter must be a scalar type", name, field.Type, nil))
@@ -603,6 +606,32 @@ func (g *Generator) isScalar(t reflect.Type) bool {
 	}
 	switch dt.Type() {
 	case "string", "number", "integer", "boolean":
+		return true
+	}
+	return false
+}
+
+// reservedHeaders are the header names that OAS 3.2 says a header
+// parameter SHALL NOT use: they are described by other objects.
+var reservedHeaders = []string{"Accept", "Content-Type", "Authorization"}
+
+// dropReservedHeader records a warning and reports true when the header
+// parameter name is Accept, Content-Type or Authorization (compared
+// case-insensitively). The parameter must not be emitted: the request
+// content, the media types and the security schemes describe them.
+func (g *Generator) dropReservedHeader(location, name string) bool {
+	if location != InHeader {
+		return false
+	}
+	for _, h := range reservedHeaders {
+		if !strings.EqualFold(name, h) {
+			continue
+		}
+		hint := "the media types of the request and response content describe it"
+		if h == "Authorization" {
+			hint = "use a security scheme instead"
+		}
+		g.warn(fmt.Sprintf("header parameter %q is reserved by OpenAPI and ignored: dropped; %s", name, hint))
 		return true
 	}
 	return false
