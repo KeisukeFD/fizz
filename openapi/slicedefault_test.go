@@ -14,7 +14,6 @@ type (
 		Ptrs  []*int   `query:"ptrs" default:"4,5"`
 		Pair  [2]int   `query:"pair" default:"7,8"`
 		NoExp []string `query:"noexp" explode:"false" default:"a,b"`
-		Hdr   []string `header:"X-List" default:"h1,h2"`
 	}
 	sdBadElem struct {
 		IDs []int `query:"ids" default:"1,x"`
@@ -33,13 +32,12 @@ func TestSliceDefaultIsSplitPerElement(t *testing.T) {
 		t.Fatalf("errors = %s", errorsText(g))
 	}
 	want := map[string]any{
-		"ids":    []any{int64(1), int64(2), int64(3)},
-		"names":  []any{"a", "b"},
-		"one":    []any{"x"},
-		"ptrs":   []any{int64(4), int64(5)},
-		"pair":   []any{int64(7), int64(8)},
-		"noexp":  []any{"a,b"},
-		"X-List": []any{"h1", "h2"},
+		"ids":   []any{int64(1), int64(2), int64(3)},
+		"names": []any{"a", "b"},
+		"one":   []any{"x"},
+		"ptrs":  []any{int64(4), int64(5)},
+		"pair":  []any{int64(7), int64(8)},
+		"noexp": []any{"a,b"},
 	}
 	for _, p := range op.Parameters {
 		w, ok := want[p.Value.Name]

@@ -34,6 +34,9 @@ func (g *Generator) applyParameters(op *Operation, path string, ps []*Parameter)
 		case p.Schema != nil && len(p.Content) > 0:
 			g.error(fmt.Errorf("Parameter: %q (%s) has both schema and content", p.Name, p.In))
 			continue
+		case (p.In == InHeader || p.In == InPath) && g.isArraySchema(p.Schema):
+			g.error(fmt.Errorf("Parameter: %q (%s): %s", p.Name, p.In, singleValueMsg))
+			continue
 		case g.dropReservedHeader(p.In, p.Name):
 			continue
 		case p.In == "path" && !pathHasParam(path, p.Name):
@@ -145,4 +148,13 @@ func (g *Generator) componentParameter(ref string) *Parameter {
 		return pr.Value
 	}
 	return nil
+}
+
+// isArraySchema reports whether s, resolving a reference to a component,
+// is of type array.
+func (g *Generator) isArraySchema(s *Schema) bool {
+	if s != nil && s.Ref != "" && g.api.Components != nil {
+		s = g.api.Components.Schemas[strings.TrimPrefix(s.Ref, componentsSchemaPath)]
+	}
+	return s != nil && slices.Contains(s.Type, "array")
 }

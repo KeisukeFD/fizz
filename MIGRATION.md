@@ -363,6 +363,7 @@ Found by checking the output against the official OpenAPI 3.2 examples and the s
 - A cookie parameter is emitted with `style: cookie` (OAS 3.2: no percent-encoding), which matches how the bind hook reads the raw value. An explicit `style:"form"` tag still wins.
 - The `description` tag of a parameter is only on the parameter, no longer repeated in `parameter.schema.description`. Body and field schemas keep their descriptions.
 - The served document (`SpecHandler`, `Fizz.Document`) omits an empty `components` and an empty `paths`. A document with none of paths, components and webhooks keeps `"paths": {}`, which OAS 3.2 requires. `Generator().API()` is unchanged.
+- A slice or array `header` or `path` parameter (a struct field, or a `fizz.Parameter` option whose schema is an array) is a generation error: `tonic binds header/path parameters from a single value; use a query parameter or a string field`. The field is skipped. `[]byte` and `net.IP` are strings, not slices. Real support for these needs a binding layer of fizz's own.
 - Nullable items (`[]*string` with an `enum`, or `validate:"dive,oneof=..."`) include `null` in their `enum`/`const`, like a nullable top-level schema.
 - The spec model keeps an empty `parameters` on a path item and on a link when decoding and encoding.
 

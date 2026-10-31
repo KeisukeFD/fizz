@@ -42,18 +42,28 @@ func TestContractSliceDefault(t *testing.T) {
 	contract.Run(t, contract.Target{Handler: f, Spec: repro.Serve(t, f), Echo: true})
 }
 
-// TestContractBadParam: a map or struct parameter outside deepObject is a
-// generation error (P10.7b), since tonic cannot bind it.
+// TestContractBadParam: a map or struct parameter outside deepObject (P10.7b),
+// and a slice or array header or path parameter (P10.7e, P10.7l), is a
+// generation error, since tonic cannot bind it.
 func TestContractBadParam(t *testing.T) {
 	for _, variant := range contract.BadParams {
 		t.Run(strings.ReplaceAll(variant, " ", "_"), func(t *testing.T) {
-			plan.Pending(t, "P10.7b", func(tb testing.TB) {
+			plan.Pending(t, contract.BadParamTasks[variant], func(tb testing.TB) {
 				f := contract.NewBadParam(variant)
 				if f.Err() == nil {
 					tb.Errorf("%s parameter: f.Errors() = %v, want an error", variant, f.Errors())
 				}
 			})
 		})
+	}
+}
+
+// TestContractByteHeader: a []byte header is a string, not a slice, so it
+// is accepted (the P10.7e rule uses the same definition as isBindable).
+func TestContractByteHeader(t *testing.T) {
+	f := contract.NewByteHeader()
+	if err := f.Err(); err != nil {
+		t.Fatalf("fizz errors: %v", err)
 	}
 }
 
@@ -83,16 +93,10 @@ func TestContractRepro(t *testing.T) {
 // contract.Target.Pending).
 func fixturePending() map[string]string {
 	p := map[string]string{
-		// P10.7e / D25: a simple-style slice header is documented as
-		// comma-separated, and tonic does not split it.
-		"headerarr header:X-Arr":   "P10.7e",
-		"headernums header:X-Nums": "P10.7e",
-
 		// P10.7i: tonic extracts an absent header as one empty value, so
 		// an optional numeric, boolean or enum header, or a header with a
 		// default, makes the request fail or loses the default.
 		"headerenum required-only":       "P10.7i",
-		"headernums required-only":       "P10.7i",
 		"defaults header:X-Lang/default": "P10.7i",
 
 		// P10.7j: spaceDelimited and pipeDelimited are documented, and
@@ -104,9 +108,6 @@ func fixturePending() map[string]string {
 		// leading delimiter.
 		"label path:pl":  "P10.7k",
 		"matrix path:pm": "P10.7k",
-
-		// P10.7l: a simple-style slice path parameter is not split.
-		"patharr path:pa": "P10.7l",
 
 		// P10.7m: a form cookie is documented as percent-encoded, and the
 		// bind hook does not decode it.

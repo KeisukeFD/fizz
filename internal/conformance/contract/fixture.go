@@ -74,16 +74,6 @@ type filterIn struct {
 	Opts   *filterOpts       `query:"opts" style:"deepObject" json:"opts"`
 }
 
-// One slice header per operation, so that the other one being absent does
-// not fail the request (P10.7i).
-type headerArrIn struct {
-	Arr []string `header:"X-Arr" json:"X-Arr"`
-}
-
-type headerNumsIn struct {
-	Nums []int `header:"X-Nums" json:"X-Nums"`
-}
-
 // headerEnumIn is apart from enumsIn for the same reason (P10.7i).
 type headerEnumIn struct {
 	Mode string `header:"X-Mode" enum:"fast,slow" json:"X-Mode"`
@@ -121,13 +111,9 @@ type matrixIn struct {
 	PM string `path:"pm" style:"matrix" json:"pm"`
 }
 
-type pathArrIn struct {
-	PA []string `path:"pa" json:"pa"`
-}
-
 // New returns the fixture: a fizz app with every parameter shape that fizz
-// documents. It has no map or struct parameter outside deepObject (see
-// NewBadParam).
+// documents. It has no map or struct parameter outside deepObject, and no
+// slice header or path parameter (see NewBadParam).
 func New() *fizz.Fizz {
 	f := fizz.New()
 	f.Generator().SetInfo(&openapi.Info{Title: "Contract fixture", Version: "1.0.0"})
@@ -138,15 +124,12 @@ func New() *fizz.Fizz {
 	f.GET("/defaults", id("defaults"), tonic.Handler(func(c *gin.Context, in *defaultsIn) (*defaultsIn, error) { return in, nil }, 200))
 	f.GET("/filter", id("filter"), tonic.Handler(func(c *gin.Context, in *filterIn) (*filterIn, error) { return in, nil }, 200))
 	f.GET("/headerscalars", id("headerscalars"), tonic.Handler(func(c *gin.Context, in *headerScalarsIn) (*headerScalarsIn, error) { return in, nil }, 200))
-	f.GET("/headerarr", id("headerarr"), tonic.Handler(func(c *gin.Context, in *headerArrIn) (*headerArrIn, error) { return in, nil }, 200))
-	f.GET("/headernums", id("headernums"), tonic.Handler(func(c *gin.Context, in *headerNumsIn) (*headerNumsIn, error) { return in, nil }, 200))
 	f.GET("/headerenum", id("headerenum"), tonic.Handler(func(c *gin.Context, in *headerEnumIn) (*headerEnumIn, error) { return in, nil }, 200))
 	f.GET("/enums/:kind", id("enums"), tonic.Handler(func(c *gin.Context, in *enumsIn) (*enumsIn, error) { return in, nil }, 200))
 	f.GET("/nullable", id("nullable"), tonic.Handler(func(c *gin.Context, in *nullableIn) (*nullableIn, error) { return in, nil }, 200))
 	f.GET("/special/:sp", id("special"), tonic.Handler(func(c *gin.Context, in *specialIn) (*specialIn, error) { return in, nil }, 200))
 	f.GET("/label/:pl", id("label"), tonic.Handler(func(c *gin.Context, in *labelIn) (*labelIn, error) { return in, nil }, 200))
 	f.GET("/matrix/:pm", id("matrix"), tonic.Handler(func(c *gin.Context, in *matrixIn) (*matrixIn, error) { return in, nil }, 200))
-	f.GET("/patharr/:pa", id("patharr"), tonic.Handler(func(c *gin.Context, in *pathArrIn) (*pathArrIn, error) { return in, nil }, 200))
 	return f
 }
 
@@ -172,12 +155,48 @@ type mapHeaderIn struct {
 	M map[string]string `header:"X-Map" json:"X-Map"`
 }
 
+type sliceHeaderIn struct {
+	Arr []string `header:"X-Arr" json:"X-Arr"`
+}
+
+type arrayHeaderIn struct {
+	Arr [2]int `header:"X-Arr" json:"X-Arr"`
+}
+
+type sliceHeaderNumsIn struct {
+	Nums []int `header:"X-Nums" json:"X-Nums"`
+}
+
+type slicePathIn struct {
+	PA []string `path:"pa" json:"pa"`
+}
+
+// byteHeaderIn is not a slice parameter: []byte is a string.
+type byteHeaderIn struct {
+	B []byte `header:"X-Bytes" json:"X-Bytes"`
+}
+
 // BadParams lists the variants of NewBadParam.
-var BadParams = []string{"map query", "struct query", "map header"}
+var BadParams = []string{
+	"map query", "struct query", "map header",
+	"slice header", "array header", "slice header ints", "slice path",
+	"option header array", "option path array",
+}
+
+// BadParamTasks maps a variant of NewBadParam to the plan task that made
+// it a generation error.
+var BadParamTasks = map[string]string{
+	"map query": "P10.7b", "struct query": "P10.7b", "map header": "P10.7b",
+	"slice header": "P10.7e", "array header": "P10.7e", "slice header ints": "P10.7e",
+	"option header array": "P10.7e",
+	"slice path":          "P10.7l", "option path array": "P10.7l",
+}
 
 // NewBadParam returns an app with one parameter that tonic cannot bind and
-// that the document should not offer (P10.7b): a map or struct outside
-// deepObject. The app has no spec error today, which is the drift.
+// that the document should not offer: a map or struct outside deepObject
+// (P10.7b), or a slice or array in a header or in the path, which tonic
+// binds from a single value (P10.7e, P10.7l, D29). The variants with an
+// "option" prefix declare the parameter with fizz.Parameter.
 func NewBadParam(variant string) *fizz.Fizz {
 	f := fizz.New()
 	f.Generator().SetInfo(&openapi.Info{Title: "Contract fixture: bad parameter", Version: "1.0.0"})
@@ -189,8 +208,33 @@ func NewBadParam(variant string) *fizz.Fizz {
 		f.GET("/bad", id, tonic.Handler(func(c *gin.Context, in *structQueryIn) (*structQueryIn, error) { return in, nil }, 200))
 	case "map header":
 		f.GET("/bad", id, tonic.Handler(func(c *gin.Context, in *mapHeaderIn) (*mapHeaderIn, error) { return in, nil }, 200))
+	case "slice header":
+		f.GET("/bad", id, tonic.Handler(func(c *gin.Context, in *sliceHeaderIn) (*sliceHeaderIn, error) { return in, nil }, 200))
+	case "array header":
+		f.GET("/bad", id, tonic.Handler(func(c *gin.Context, in *arrayHeaderIn) (*arrayHeaderIn, error) { return in, nil }, 200))
+	case "slice header ints":
+		f.GET("/bad", id, tonic.Handler(func(c *gin.Context, in *sliceHeaderNumsIn) (*sliceHeaderNumsIn, error) { return in, nil }, 200))
+	case "slice path":
+		f.GET("/bad/:pa", id, tonic.Handler(func(c *gin.Context, in *slicePathIn) (*slicePathIn, error) { return in, nil }, 200))
+	case "option header array", "option path array":
+		in, path := openapi.InHeader, "/bad"
+		if variant == "option path array" {
+			in, path = openapi.InPath, "/bad/:pa"
+		}
+		arr := &openapi.Schema{Type: openapi.Types("array"), Items: &openapi.Schema{Type: openapi.Types("string")}}
+		opts := append(id, fizz.Parameter(&openapi.Parameter{Name: "pa", In: in, Schema: arr}))
+		f.GET(path, opts, tonic.Handler(func(c *gin.Context, in *struct{}) (*struct{}, error) { return in, nil }, 200))
 	default:
 		panic("contract: unknown variant " + variant)
 	}
+	return f
+}
+
+// NewByteHeader returns an app with a []byte header, which is a string
+// parameter and not a slice: it is not a generation error.
+func NewByteHeader() *fizz.Fizz {
+	f := fizz.New()
+	f.Generator().SetInfo(&openapi.Info{Title: "Contract fixture: byte header", Version: "1.0.0"})
+	f.GET("/bytes", []fizz.OperationOption{fizz.ID("bytes")}, tonic.Handler(func(c *gin.Context, in *byteHeaderIn) (*byteHeaderIn, error) { return in, nil }, 200))
 	return f
 }

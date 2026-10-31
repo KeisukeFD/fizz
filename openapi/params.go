@@ -387,6 +387,13 @@ func (g *Generator) newParameterFromField(idx int, t reflect.Type) (*Parameter, 
 		g.error(fieldErr(fmt.Sprintf("%s parameter must be a scalar type or a slice of scalars (a map or struct is only supported as a %s query parameter)", location, styleDeepObject), name, field.Type, nil))
 		return nil, nil
 	}
+	// Tonic binds a header or a path parameter from one string
+	// (c.GetHeader, c.Param) and does not split it: a slice has no
+	// representation (D29). []byte is a string here, as everywhere.
+	if (location == InHeader || location == InPath) && isArrayLike(field.Type) {
+		g.error(fieldErr(singleValueMsg, name, field.Type, nil))
+		return nil, nil
+	}
 	deep := g.isDeepObject(field, location)
 	if deep {
 		// Tonic would bind the required and default options and tag
@@ -472,6 +479,9 @@ func (g *Generator) newParameterFromField(idx int, t reflect.Type) (*Parameter, 
 	}
 	return p, nil
 }
+
+// singleValueMsg is the error of a slice or array header or path parameter.
+const singleValueMsg = "tonic binds header/path parameters from a single value; use a query parameter or a string field"
 
 // paramStyles lists the OAS 3.2 styles a parameter location accepts.
 var paramStyles = map[string][]string{

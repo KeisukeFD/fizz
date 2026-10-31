@@ -16,6 +16,12 @@ type (
 	PSemAuthIn struct {
 		Auth string `header:"Authorization"`
 	}
+	PSliceHeaderIn struct {
+		H []string `header:"X-List"`
+	}
+	PSlicePathIn struct {
+		P []string `path:"p"`
+	}
 )
 
 func init() {
@@ -88,6 +94,28 @@ func init() {
 				{Pointer: "/paths/~1x/get/parameters", Absent: true},
 			},
 			FixedBy: "P10.7f",
+		},
+		Case{
+			// tonic binds a header from one string and does not split it
+			// (D29): a slice header is an operation error and is not
+			// documented.
+			Name:     "params/header-slice-is-error",
+			Register: pRegister("GET", "/x", tonic.Handler(pHandler[PSliceHeaderIn], 200)),
+			Errors:   []string{"tonic binds header/path parameters from a single value; use a query parameter or a string field"},
+			Expect: []Fragment{
+				{Pointer: "/paths/~1x/get/parameters", Absent: true},
+			},
+		},
+		Case{
+			// The same for a path parameter (D29): the parameter is dropped
+			// and, as the path declares it, synthesized as a string.
+			Name:     "params/path-slice-is-error",
+			Register: pRegister("GET", "/x/:p", tonic.Handler(pHandler[PSlicePathIn], 200)),
+			Errors:   []string{"tonic binds header/path parameters from a single value; use a query parameter or a string field"},
+			Warnings: []string{"synthesized as a required string"},
+			Expect: []Fragment{
+				{Pointer: "/paths/~1x~1{p}/get/parameters/0/schema/type", JSON: `"string"`},
+			},
 		},
 	)
 }
