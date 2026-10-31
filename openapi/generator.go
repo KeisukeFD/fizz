@@ -513,6 +513,9 @@ func (g *Generator) OperationIDUsed(id string) bool {
 // IDs or the paths. It still writes the component schemas, the type
 // registry and their caches, which AddOperation rolls back on failure.
 func (g *Generator) buildOperation(path, method, tag string, in, out reflect.Type, info *OperationInfo) (*Operation, error) {
+	if err := g.checkRoute(path, method); err != nil {
+		return nil, err
+	}
 	// Ensure that the provided operation ID is unique.
 	if info.ID != "" {
 		if _, ok := g.operationsIDS[info.ID]; ok {
@@ -582,6 +585,51 @@ func (g *Generator) buildOperation(path, method, tag string, in, out reflect.Typ
 		}
 	}
 	return g.operationHook(op, method, path), nil
+}
+
+// checkRoute rejects a route that the document cannot hold: the same
+// path and method twice, which would silently replace the first
+// operation.
+func (g *Generator) checkRoute(path, method string) error {
+	if item := g.api.Paths[path]; item != nil {
+		if prev := operationAt(item, method); prev != nil {
+			return fmt.Errorf("route %s %s is already registered by operation %s", method, path, opName(prev))
+		}
+	}
+	return nil
+}
+
+// opName describes op for a diagnostic: its ID, or "(no ID)".
+func opName(op *Operation) string {
+	if op.ID == "" {
+		return "(no ID)"
+	}
+	return strconv.Quote(op.ID)
+}
+
+// operationAt returns the operation of item for the method, or nil.
+func operationAt(item *PathItem, method string) *Operation {
+	switch method = strings.ToUpper(method); method {
+	case "GET":
+		return item.GET
+	case "PUT":
+		return item.PUT
+	case "POST":
+		return item.POST
+	case "PATCH":
+		return item.PATCH
+	case "HEAD":
+		return item.HEAD
+	case "OPTIONS":
+		return item.OPTIONS
+	case "TRACE":
+		return item.TRACE
+	case "DELETE":
+		return item.DELETE
+	case "QUERY":
+		return item.Query
+	}
+	return item.AdditionalOperations[method]
 }
 
 // snapshot is the generator state that building an operation may

@@ -84,13 +84,15 @@ func TestRegisterType(t *testing.T) {
 	assert.Len(t, g.API().Components.Schemas, before)
 }
 
+var rbContent = map[string]*MediaType{"application/json": {}}
+
 func TestRegisterOtherComponents(t *testing.T) {
 	g := gen(t)
 	p := &Parameter{Name: "limit", In: "query", Schema: &Schema{Type: Types("integer")}}
 	require.NoError(t, g.RegisterParameter("Limit", p))
 	require.NoError(t, g.RegisterResponse("NotFound", &Response{Description: "nf"}))
 	require.NoError(t, g.RegisterExample("Ex", &Example{Summary: "s"}))
-	require.NoError(t, g.RegisterRequestBody("Body", &RequestBody{Description: "b"}))
+	require.NoError(t, g.RegisterRequestBody("Body", &RequestBody{Description: "b", Content: rbContent}))
 	require.NoError(t, g.RegisterHeader("Rate", &Header{Description: "h"}))
 
 	p.Name = "changed"
@@ -105,7 +107,9 @@ func TestRegisterOtherComponents(t *testing.T) {
 	assert.Error(t, g.RegisterParameter("Limit", p))
 	assert.Error(t, g.RegisterResponse("NotFound", &Response{}))
 	assert.Error(t, g.RegisterExample("Ex", &Example{}))
-	assert.Error(t, g.RegisterRequestBody("Body", &RequestBody{}))
+	assert.Error(t, g.RegisterRequestBody("Body", &RequestBody{Content: rbContent}))
+	assert.Error(t, g.RegisterRequestBody("NoContent", &RequestBody{Description: "b"}))
+	assert.NoError(t, g.RegisterRequestBody("EmptyContent", &RequestBody{Content: map[string]*MediaType{}}))
 	assert.Error(t, g.RegisterHeader("Rate", &Header{}))
 	assert.Error(t, g.RegisterParameter("bad name", p))
 	assert.Error(t, g.RegisterParameter("Nil", nil))
@@ -223,7 +227,7 @@ func TestManualComponentsBumpGeneration(t *testing.T) {
 		"RegisterParameter":    func() { _ = g.RegisterParameter("P", &Parameter{Name: "p", In: "query"}) },
 		"RegisterResponse":     func() { _ = g.RegisterResponse("R", &Response{}) },
 		"RegisterExample":      func() { _ = g.RegisterExample("E", &Example{}) },
-		"RegisterRequestBody":  func() { _ = g.RegisterRequestBody("B", &RequestBody{}) },
+		"RegisterRequestBody":  func() { _ = g.RegisterRequestBody("B", &RequestBody{Content: rbContent}) },
 		"RegisterHeader":       func() { _ = g.RegisterHeader("H", &Header{}) },
 		"SetExtension":         func() { _ = g.SetExtension("x-a", 1) },
 		"SetTag":               func() { g.SetTag(&Tag{Name: "t"}) },

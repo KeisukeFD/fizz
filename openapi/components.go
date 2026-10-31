@@ -103,6 +103,9 @@ func (g *Generator) RegisterExample(name string, e *Example) error {
 // See RegisterParameter.
 func (g *Generator) RegisterRequestBody(name string, rb *RequestBody) error {
 	defer g.mutate()()
+	if rb != nil && rb.Content == nil {
+		return fmt.Errorf("openapi: requestBody %q has nil content: a request body needs content (an empty map is allowed)", name)
+	}
 	g.api.Components.RequestBodies = nonNil(g.api.Components.RequestBodies)
 	return registerComponent(g.api.Components.RequestBodies, "requestBody", name, rb)
 }
