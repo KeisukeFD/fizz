@@ -28,6 +28,12 @@ func (g *Generator) applyParameters(op *Operation, path string, ps []*Parameter)
 		case p.In == "":
 			g.error(fmt.Errorf(`Parameter: %q has no "in" location`, p.Name))
 			continue
+		case !validIn(p.In):
+			g.error(fmt.Errorf("Parameter: %q has an invalid \"in\" location %q (want path, query, querystring, header or cookie)", p.Name, p.In))
+			continue
+		case p.Schema != nil && len(p.Content) > 0:
+			g.error(fmt.Errorf("Parameter: %q (%s) has both schema and content", p.Name, p.In))
+			continue
 		case p.In == "path" && !pathHasParam(path, p.Name):
 			g.error(fmt.Errorf("Parameter: path parameter %q is not in the path template %q", p.Name, path))
 			continue
@@ -46,6 +52,15 @@ func (g *Generator) applyParameters(op *Operation, path string, ps []*Parameter)
 	if g.sortParams {
 		slices.SortStableFunc(op.Parameters, g.compareParams)
 	}
+}
+
+// validIn reports whether in is a parameter location of OAS 3.2.
+func validIn(in string) bool {
+	switch in {
+	case InPath, InQuery, InQueryString, InHeader, InCookie:
+		return true
+	}
+	return false
 }
 
 // pathHasParam reports whether the path template has the parameter name.
@@ -86,8 +101,11 @@ func (g *Generator) mergeParameter(op *Operation, p *Parameter) bool {
 		dst.Deprecated = dst.Deprecated || p.Deprecated
 		dst.AllowEmptyValue = dst.AllowEmptyValue || p.AllowEmptyValue
 		dst.AllowReserved = dst.AllowReserved || p.AllowReserved
+		// A parameter has a schema or a content, never both: the one the
+		// option sets replaces the other.
 		if p.Schema != nil {
 			dst.Schema = p.Schema
+			dst.Content = nil
 		}
 		if p.Style != "" {
 			dst.Style = p.Style
@@ -101,8 +119,9 @@ func (g *Generator) mergeParameter(op *Operation, p *Parameter) bool {
 		if p.Examples != nil {
 			dst.Examples = p.Examples
 		}
-		if p.Content != nil {
+		if len(p.Content) > 0 {
 			dst.Content = p.Content
+			dst.Schema = nil
 		}
 		if len(p.Extensions) > 0 && dst.Extensions == nil {
 			dst.Extensions = make(map[string]any, len(p.Extensions))

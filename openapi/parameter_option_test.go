@@ -53,6 +53,8 @@ func TestParameterOptionErrors(t *testing.T) {
 		{"empty name", &Parameter{In: "query"}, "name"},
 		{"empty in", &Parameter{Name: "z"}, "\"in\""},
 		{"path not in template", &Parameter{Name: "id", In: "path"}, "path template"},
+		{"invalid in", &Parameter{Name: "b", In: "body"}, `"body"`},
+		{"schema and content", &Parameter{Name: "z", In: "query", Schema: &Schema{}, Content: map[string]*MediaType{"application/json": {}}}, "both schema and content"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			g := gen(t)
@@ -69,6 +71,36 @@ func TestParameterOptionErrors(t *testing.T) {
 			}
 		})
 	}
+}
+
+// TestParameterOptionSchemaContentExclusive: a parameter has a schema or
+// a content, never both, so the one an option sets replaces the other.
+func TestParameterOptionSchemaContentExclusive(t *testing.T) {
+	t.Run("content replaces inferred schema", func(t *testing.T) {
+		g := gen(t)
+		op, err := poAdd(g, "/p", &Parameter{Name: "q", In: "query",
+			Content: map[string]*MediaType{"application/json": {}}})
+		if err != nil {
+			t.Fatal(err)
+		}
+		p := poParam(t, op, "q", "query")
+		if p.Schema != nil || len(p.Content) != 1 {
+			t.Errorf("schema = %v, content = %v: want content only", p.Schema, p.Content)
+		}
+	})
+	t.Run("schema replaces content", func(t *testing.T) {
+		g := gen(t)
+		op, err := poAdd(g, "/p",
+			&Parameter{Name: "q", In: "query", Content: map[string]*MediaType{"application/json": {}}},
+			&Parameter{Name: "q", In: "query", Schema: &Schema{Type: Types("integer")}})
+		if err != nil {
+			t.Fatal(err)
+		}
+		p := poParam(t, op, "q", "query")
+		if p.Schema == nil || p.Content != nil {
+			t.Errorf("schema = %v, content = %v: want schema only", p.Schema, p.Content)
+		}
+	})
 }
 
 func TestParameterOptionIsDeepCopied(t *testing.T) {
