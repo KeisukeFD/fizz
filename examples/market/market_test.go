@@ -73,6 +73,24 @@ func TestMarketSpecValid(t *testing.T) {
 	})
 }
 
+// I15
+func TestMarketCurrencyCookie(t *testing.T) {
+	at.Pending(t, "P9.3", func(tb testing.TB) {
+		h := bINewMarket(tb)
+		w := at.Do(h, "GET", "/market?origin=spain")
+		if w.Code != 200 {
+			tb.Fatalf("default currency = %d: %s", w.Code, w.Body)
+		}
+		if got := w.Header().Get("X-Market-Currency"); got != "EUR" {
+			tb.Errorf("default X-Market-Currency = %q, want EUR", got)
+		}
+		w = at.Do(h, "GET", "/market?origin=spain", at.WithCookie("currency", "USD"))
+		if got := w.Header().Get("X-Market-Currency"); got != "USD" {
+			tb.Errorf("X-Market-Currency with cookie = %q, want USD", got)
+		}
+	})
+}
+
 // I14
 func TestMarketFilterEndpoint(t *testing.T) {
 	at.Pending(t, "P9.3", func(tb testing.TB) {

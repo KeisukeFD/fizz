@@ -22,6 +22,13 @@ type ListFruitsParams struct {
 	Origin   *string  `query:"origin" description:"filter by fruit origin"`
 	PriceMin *float64 `query:"price_min" description:"filter by minimum inclusive price" validate:"omitempty,min=1"`
 	PriceMax *float64 `query:"price_max" description:"filter by maximum inclusive price" validate:"omitempty,max=15"`
+
+	// Filter is a deepObject query parameter: filter[origin]=spain.
+	// Only the origin key is supported.
+	Filter map[string]string `query:"filter" style:"deepObject" description:"filter the fruits by property, as filter[origin]=spain"`
+
+	// Currency is read from a cookie and defaults to EUR.
+	Currency string `cookie:"currency" default:"EUR" description:"currency the client displays prices in"`
 }
 
 // CreateFruit add a new fruit to the market.
@@ -68,6 +75,9 @@ func ListFruits(c *gin.Context, params *ListFruitsParams) ([]*Fruit, error) {
 		if params.Origin != nil && f.Origin != *params.Origin {
 			tobasket = false
 		}
+		if o, ok := params.Filter["origin"]; ok && !strings.EqualFold(f.Origin, o) {
+			tobasket = false
+		}
 		if params.PriceMin != nil && f.Price < *params.PriceMin {
 			tobasket = false
 		}
@@ -82,6 +92,7 @@ func ListFruits(c *gin.Context, params *ListFruitsParams) ([]*Fruit, error) {
 	}
 	market.Unlock()
 
+	c.Header("X-Market-Currency", params.Currency)
 	c.Header("X-Market-Listing-Size", strconv.Itoa(len(basket)))
 
 	return basket, nil
