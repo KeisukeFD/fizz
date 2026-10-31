@@ -16,9 +16,22 @@ type CollisionError struct {
 
 // Error implements the error interface.
 func (e *CollisionError) Error() string {
+	if e.Rejected == manualSchemaOwner {
+		return fmt.Sprintf("component name %q is already used by %s: the registered schema is rejected", e.Name, e.Kept)
+	}
+	if e.Kept == manualSchemaOwner {
+		return fmt.Sprintf("component name %q is used by both a registered schema and %s: the registered schema keeps it, %s is inlined",
+			e.Name, e.Rejected, e.Rejected)
+	}
 	return fmt.Sprintf("component name %q is used by both %s and %s: %s keeps it, %s is inlined",
 		e.Name, e.Kept, e.Rejected, e.Kept, e.Rejected)
 }
+
+// manualSchemaOwner is the owner recorded in the registry for a schema
+// added by RegisterSchema, which has no Go type.
+var manualSchemaOwner = reflect.TypeFor[manualSchema]()
+
+type manualSchema struct{}
 
 type collisionKey struct {
 	name     string

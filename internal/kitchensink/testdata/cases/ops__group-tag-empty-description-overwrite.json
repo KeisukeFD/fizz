@@ -1,0 +1,15 @@
+{
+    "openapi": "3.2.1",
+    "info": {
+        "title": "kitchensink",
+        "version": "0"
+    },
+    "paths": {},
+    "components": {},
+    "tags": [
+        {
+            "name": "grp",
+            "description": "First description"
+        }
+    ]
+}

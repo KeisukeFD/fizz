@@ -411,30 +411,36 @@ func (g *Generator) datatype(t reflect.Type) DataType {
 	return DataTypeFromType(t)
 }
 
-// AddTag adds a new tag to the OpenAPI specification.
-// If a tag already exists with the same name, it is
-// overwritten.
+// AddTag adds a tag to the OpenAPI specification. If a tag with the
+// same name exists, an empty description leaves it unchanged, a
+// description on a tag that has none fills it in, and a different
+// non-empty description is rejected: the first one is kept and a
+// *Warning naming the tag is recorded. SetTag replaces a tag outright.
 func (g *Generator) AddTag(name, desc string) {
 	defer g.mutate()()
 	if name == "" {
 		return
 	}
-	// Search for an existing tag with the same name,
-	// and update its description before returning
-	// if one is found.
 	for _, tag := range g.api.Tags {
-		if tag != nil {
-			if tag.Name == name {
-				tag.Description = desc
-				return
-			}
+		if tag == nil || tag.Name != name {
+			continue
 		}
+		switch {
+		case desc == "" || tag.Description == desc:
+		case tag.Description == "":
+			tag.Description = desc
+		default:
+			g.warn(fmt.Sprintf("tag %q: description %q ignored, the first description %q is kept", name, desc, tag.Description))
+		}
+		return
 	}
-	// Add a new tag to the spec.
-	g.api.Tags = append(g.api.Tags, &Tag{
-		Name:        name,
-		Description: desc,
-	})
+	g.appendTag(&Tag{Name: name, Description: desc})
+}
+
+// appendTag adds a new tag to the document, sorted by name if enabled;
+// the caller holds mu.
+func (g *Generator) appendTag(t *Tag) {
+	g.api.Tags = append(g.api.Tags, t)
 	if g.sortTags {
 		sort.SliceStable(g.api.Tags, func(i, j int) bool {
 			if g.api.Tags[i] != nil && g.api.Tags[j] != nil {

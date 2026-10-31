@@ -101,11 +101,10 @@ func TestAddTag(t *testing.T) {
 	assert.Equal(t, tag.Name, "Test")
 	assert.Equal(t, tag.Description, "Test routes")
 
-	// Update tag description.
+	// A conflicting description is a warning: the first one is kept.
 	g.AddTag("Test", "Routes test")
-	// API returns a deep copy: the earlier one is unchanged.
-	assert.Equal(t, "Test routes", tag.Description)
-	assert.Equal(t, "Routes test", g.API().Tags[1].Description)
+	assert.Equal(t, "Test routes", g.API().Tags[1].Description)
+	assert.Len(t, g.Errors(), 1)
 
 	// Add other tag, check sort order.
 	g.AddTag("A", "")

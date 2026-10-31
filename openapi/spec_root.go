@@ -13,6 +13,7 @@ type OpenAPI struct {
 	Components        *Components            `json:"components,omitzero"`
 	Tags              []*Tag                 `json:"tags,omitempty"`
 	Security          []*SecurityRequirement `json:"security,omitempty"`
+	ExternalDocs      *ExternalDocs          `json:"externalDocs,omitzero"`
 	XTagGroups        []*XTagGroup           `json:"x-tagGroups,omitempty"`
 
 	// Extensions holds the "x-" specification extensions. Keys are
