@@ -787,6 +787,14 @@ Rules for every task:
 - Every loss is a red case with FixedBy (a new task ID if needed), never an allowlist.
 - Red first: `TestCorpusRoundTrip`.
 
+**P10.3a… Spec-model fixes found by P10.3** (each is red first in `internal/acceptance/corpus_roundtrip_test.go` and in the listed `TestCorpusRoundTrip` subtests; fixing one means dropping its FixedBy and entries in `roundTripFixedBy`)
+- **P10.3a** `Parameter` (and `Header`) `required: false` is dropped (`omitzero` bool). Files: learn v3.0 petstore, petstore-expanded, v3.1 tictactoe, spectext/parameter-object-examples-5. Likely `openapi/spec_paths.go`.
+- **P10.3b** `OpenAPI.webhooks: {}` is dropped, so a webhooks-only document no longer validates. Files: oas pass/minimal_hooks. Likely `openapi/spec_root.go`.
+- **P10.3c** `Components.pathItems: {}` is dropped. Files: oas pass/comp_pathitems. Likely `openapi/spec_root.go`.
+- **P10.3d** `Operation.parameters: []` is dropped. Files: oas pass/mega. Likely `openapi/spec_paths.go`.
+- **P10.3e** `Schema.properties: {}` is dropped. Files: spectext/example-url-encoded-form-with-json-values-1. Likely `openapi/spec_schema.go`.
+- **P10.3f** a `RequestBody` without `content` is encoded as `content: null`. Files: spectext/base-uri-within-content-1, resolving-relative-self-and-id-1. Likely `openapi/spec_paths.go`.
+
 **P10.4 Gate every golden.** S · Sonnet
 - Files: `internal/conformance/goldens_test.go`.
 - Walks the repo for golden JSON/YAML that is a whole OAS document (`testdata/spec.*`, `openapi/testdata/schemas/*` wrapped as components, kitchensink, acceptance) and runs `MetaProblems`. New goldens are covered automatically.
@@ -887,6 +895,7 @@ Rules for every task:
 | P10.1 | P10.0 | internal/conformance/upgrade, oai/upgraded | anything outside conformance |
 | P10.2 | P10.1 | internal/specvalidate/*, internal/kitchensink/meta.go | P10.3, P10.4, P10.5x |
 | P10.3 | P10.1 | internal/conformance/roundtrip_test.go | P10.2, P10.4, P10.5x |
+| P10.3a–f | P10.3 | openapi/spec_paths.go / spec_root.go / spec_schema.go | each other when they share a file, P10.2, P10.4, P10.5x |
 | P10.4 | P10.2 | internal/conformance/goldens_test.go | P10.3, P10.5x |
 | P10.5a/b/c | P10.1 | internal/conformance/repro/<example>/ (one dir each) | each other, P10.2–P10.4 |
 | P10.6 | P10.5a | internal/conformance/contract | P10.7x |

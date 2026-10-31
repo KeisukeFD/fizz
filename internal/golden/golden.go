@@ -152,6 +152,104 @@ func show(v any, present bool) string {
 	return string(b)
 }
 
+// Difference is one semantic difference between two JSON documents.
+type Difference struct {
+	Pointer   string // RFC 6901 pointer of the differing value
+	Want, Got string // JSON of the values there, "<missing>" if absent
+}
+
+// Diffs compares two JSON documents semantically: object key order is
+// irrelevant and numbers compare by value (1.0 equals 1), though a number
+// never equals a string. It returns every difference, in sorted key order;
+// a missing or added subtree is one difference. An error is returned if
+// either input is not a single JSON value.
+func Diffs(want, got []byte) ([]Difference, error) {
+	wv, ok := decode(want)
+	if !ok {
+		return nil, fmt.Errorf("golden: want is not a single JSON value")
+	}
+	gv, ok := decode(got)
+	if !ok {
+		return nil, fmt.Errorf("golden: got is not a single JSON value")
+	}
+	return collectDiffs(canonNumbers(wv), canonNumbers(gv), "", nil), nil
+}
+
+func collectDiffs(a, b any, ptr string, out []Difference) []Difference {
+	switch av := a.(type) {
+	case map[string]any:
+		if bv, ok := b.(map[string]any); ok {
+			keys := make([]string, 0, len(av)+len(bv))
+			for k := range av {
+				keys = append(keys, k)
+			}
+			for k := range bv {
+				if _, ok := av[k]; !ok {
+					keys = append(keys, k)
+				}
+			}
+			slices.Sort(keys)
+			for _, k := range keys {
+				x, xok := av[k]
+				y, yok := bv[k]
+				p := ptr + "/" + escape(k)
+				if !xok || !yok {
+					out = append(out, Difference{p, show(x, xok), show(y, yok)})
+					continue
+				}
+				out = collectDiffs(x, y, p, out)
+			}
+			return out
+		}
+	case []any:
+		if bv, ok := b.([]any); ok {
+			for i := range max(len(av), len(bv)) {
+				p := ptr + "/" + strconv.Itoa(i)
+				if i >= len(av) || i >= len(bv) {
+					var x, y any
+					if i < len(av) {
+						x = av[i]
+					}
+					if i < len(bv) {
+						y = bv[i]
+					}
+					out = append(out, Difference{p, show(x, i < len(av)), show(y, i < len(bv))})
+					continue
+				}
+				out = collectDiffs(av[i], bv[i], p, out)
+			}
+			return out
+		}
+	default:
+		if reflect.DeepEqual(a, b) {
+			return out
+		}
+	}
+	return append(out, Difference{ptr, show(a, true), show(b, true)})
+}
+
+// canonNumbers rewrites every json.Number to the shortest float64 text
+// of its value, so equal values have equal text.
+func canonNumbers(v any) any {
+	switch x := v.(type) {
+	case map[string]any:
+		for k, e := range x {
+			x[k] = canonNumbers(e)
+		}
+	case []any:
+		for i, e := range x {
+			x[i] = canonNumbers(e)
+		}
+	case json.Number:
+		f, err := strconv.ParseFloat(string(x), 64)
+		if err != nil {
+			return x
+		}
+		return json.Number(strconv.FormatFloat(f, 'g', -1, 64))
+	}
+	return v
+}
+
 // escape applies RFC 6901 escaping to a reference token.
 func escape(s string) string {
 	return strings.NewReplacer("~", "~0", "/", "~1").Replace(s)
