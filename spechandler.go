@@ -12,8 +12,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var errInvalidContentType = errors.New("invalid content type for the OpenAPI handler")
-
 // specEntry is the serialized document of one generation of the
 // generator. The encodings are built on first use, once each.
 type specEntry struct {
@@ -97,7 +95,7 @@ func (f *Fizz) SpecHandler(format string) http.Handler {
 	default:
 		f.gen.RecordError(fmt.Errorf("invalid content type %q for the OpenAPI handler: use json or yaml", format))
 		return http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-			http.Error(w, errInvalidContentType.Error(), http.StatusInternalServerError)
+			http.Error(w, "invalid content type for the OpenAPI handler", http.StatusInternalServerError)
 		})
 	}
 	return http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {

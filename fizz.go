@@ -93,9 +93,7 @@ func NewFromEngine(e *gin.Engine, opts ...Option) *Fizz {
 		},
 	)
 	gen.SetTagNames(cfg.tagNames)
-	if cfg.schemaNamer != nil {
-		gen.SetSchemaNamer(cfg.schemaNamer)
-	}
+	gen.SetSchemaNamer(cfg.schemaNamer)
 	gen.SetRequestBodyNamer(cfg.bodyNamer)
 	gen.SetPointersAreNullable(cfg.pointersNullable)
 	gen.SetAnnotationStyle(cfg.annotationStyle)

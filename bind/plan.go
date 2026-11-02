@@ -1,6 +1,7 @@
 package bind
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"strconv"
@@ -116,7 +117,7 @@ var planCache sync.Map // planKey -> planEntry
 // *Plan.
 func PlanFor(t reflect.Type, tags Tags) (*Plan, error) {
 	if t == nil {
-		return nil, fmt.Errorf("bind: PlanFor: nil type")
+		return nil, errors.New("bind: PlanFor: nil type")
 	}
 	key := planKey{t, tags}
 	if v, ok := planCache.Load(key); ok {

@@ -52,12 +52,14 @@ func stripBrackets(s string) string {
 	return b.String()
 }
 
+var pathSegReplacer = strings.NewReplacer("{", "", "}", "", ":", "", "*", "")
+
 // methodPathID builds an operation ID from the method and the OpenAPI
 // path: GET /users/{id} -> get_users_id.
 func methodPathID(method, path string) string {
 	parts := []string{strings.ToLower(method)}
 	for _, seg := range strings.Split(path, "/") {
-		seg = strings.NewReplacer("{", "", "}", "", ":", "", "*", "").Replace(seg)
+		seg = pathSegReplacer.Replace(seg)
 		if seg != "" {
 			parts = append(parts, seg)
 		}

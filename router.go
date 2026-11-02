@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"runtime"
 	"slices"
+	"strings"
 	"sync"
 
 	"github.com/KeisukeFD/fizz/openapi"
@@ -93,16 +94,16 @@ func (g *RouterGroup) Handle(path, method string, infos []OperationOption, handl
 		info(oi)
 	}
 	type wrap struct {
-		h gin.HandlerFunc
+		i int
 		r *tonic.Route
 	}
 	var wrapped []wrap
 
 	// Find the handlers wrapped with Tonic.
-	for _, h := range handlers {
+	for i, h := range handlers {
 		r, err := tonic.GetRouteByHandler(h)
 		if err == nil {
-			wrapped = append(wrapped, wrap{h: h, r: r})
+			wrapped = append(wrapped, wrap{i: i, r: r})
 		}
 	}
 	// Check that no more that one tonic-wrapped handler
@@ -167,21 +168,20 @@ func (g *RouterGroup) Handle(path, method string, infos []OperationOption, handl
 			plan := g.bindPlan(method, openAPIPath(operationPath), oi.ID, hfunc, oi.InputModel)
 			var warnOnce sync.Once
 			opID, quiet := oi.ID, g.noBindHook
-			for i, h := range handlers {
-				if cerr == nil && funcEqual(h, wrapped[0].h) {
-					orig := h // copy the original func
-					handlers[i] = func(c *gin.Context) {
-						ctx := withOperation(c.Request.Context(), snap)
-						var st *bindState
-						if plan != nil {
-							st = &bindState{plan: plan}
-							ctx = context.WithValue(ctx, ctxBindStateKey{}, st)
-						}
-						c.Request = c.Request.WithContext(ctx)
-						orig(c)
-						if st != nil && !st.ran && !quiet {
-							warnOnce.Do(func() { warnBindHookNotRun(opID) })
-						}
+			if cerr == nil {
+				i := wrapped[0].i
+				orig := handlers[i] // copy the original func
+				handlers[i] = func(c *gin.Context) {
+					ctx := context.WithValue(c.Request.Context(), ctxOperationKey{}, snap)
+					var st *bindState
+					if plan != nil {
+						st = &bindState{plan: plan}
+						ctx = context.WithValue(ctx, ctxBindStateKey{}, st)
+					}
+					c.Request = c.Request.WithContext(ctx)
+					orig(c)
+					if st != nil && !st.ran && !quiet {
+						warnOnce.Do(func() { warnBindHookNotRun(opID) })
 					}
 				}
 			}
@@ -191,11 +191,6 @@ func (g *RouterGroup) Handle(path, method string, infos []OperationOption, handl
 	g.group.Handle(method, path, handlers...)
 
 	return g
-}
-
-// withOperation returns a context that holds the frozen operation op.
-func withOperation(ctx context.Context, op *openapi.Operation) context.Context {
-	return context.WithValue(ctx, ctxOperationKey{}, op)
 }
 
 // OperationFromContext returns the OpenAPI operation of the route
@@ -229,26 +224,8 @@ func joinPaths(abs, rel string) string {
 		return abs
 	}
 	final := path.Join(abs, rel)
-	as := lastChar(rel) == '/' && lastChar(final) != '/'
-	if as {
+	if strings.HasSuffix(rel, "/") && !strings.HasSuffix(final, "/") {
 		return final + "/"
 	}
 	return final
-}
-
-func lastChar(str string) uint8 {
-	if str == "" {
-		panic("empty string")
-	}
-	return str[len(str)-1]
-}
-
-func funcEqual(f1, f2 any) bool {
-	v1 := reflect.ValueOf(f1)
-	v2 := reflect.ValueOf(f2)
-
-	if v1.Kind() == reflect.Func && v2.Kind() == reflect.Func { // prevent panic on call to Pointer()
-		return runtime.FuncForPC(v1.Pointer()).Entry() == runtime.FuncForPC(v2.Pointer()).Entry()
-	}
-	return false
 }

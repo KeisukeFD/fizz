@@ -436,13 +436,6 @@ func TestJoinPaths(t *testing.T) {
 	assert.Equal(t, "/a/b/", jp("/a/", "/b//"))
 }
 
-func TestLastChar(t *testing.T) {
-	assert.Equal(t, uint8('a'), lastChar("hola"))
-	assert.Equal(t, uint8('s'), lastChar("adios"))
-
-	assert.Panics(t, func() { lastChar("") })
-}
-
 func TestOperationContext(t *testing.T) {
 	fizz := New()
 
@@ -491,6 +484,7 @@ func TestOperationContext(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	recorder = httptest.NewRecorder()
 	fizz.ServeHTTP(recorder, req)
 
 	if status := recorder.Code; status != http.StatusOK {
