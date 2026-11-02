@@ -10,6 +10,8 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+
+	"github.com/KeisukeFD/fizz/internal/scalar"
 )
 
 var (
@@ -165,7 +167,7 @@ func (pf *planField) apply(rv reflect.Value, routes []route) error {
 
 // setValue stores rt's values into v, a scalar or a slice of scalars.
 func setValue(v reflect.Value, rt route) error {
-	if v.Kind() == reflect.Slice && !implementsText(v.Type()) {
+	if v.Kind() == reflect.Slice && !scalar.Text(v.Type()) {
 		s := reflect.MakeSlice(v.Type(), 0, len(rt.vals))
 		for _, str := range rt.vals {
 			e := reflect.New(v.Type().Elem()).Elem()
@@ -183,15 +185,11 @@ func setValue(v reflect.Value, rt route) error {
 	return setScalar(v, rt.vals[0], "query parameter", rt.raw)
 }
 
-func implementsText(t reflect.Type) bool {
-	return reflect.PointerTo(t).Implements(textUnmarshaler)
-}
-
 func setScalar(v reflect.Value, s, what, name string) error {
 	fail := func(err error) error {
 		return fmt.Errorf("bind: %s %q: cannot convert %q to %s: %w", what, name, s, v.Type(), err)
 	}
-	if v.CanAddr() && implementsText(v.Type()) {
+	if v.CanAddr() && scalar.Text(v.Type()) {
 		if err := v.Addr().Interface().(encoding.TextUnmarshaler).UnmarshalText([]byte(s)); err != nil {
 			return fail(err)
 		}

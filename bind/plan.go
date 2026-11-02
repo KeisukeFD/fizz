@@ -1,12 +1,13 @@
 package bind
 
 import (
-	"encoding"
 	"fmt"
 	"reflect"
 	"strconv"
 	"strings"
 	"sync"
+
+	"github.com/KeisukeFD/fizz/internal/scalar"
 )
 
 // Tags names the struct tags the planner reads. Each field is the tag key
@@ -247,7 +248,7 @@ func (p *Plan) addCookie(f reflect.StructField, tag string, index []int, tags Ta
 		cf.ptr = true
 		cf.typ = cf.typ.Elem()
 	}
-	if !isScalar(cf.typ) {
+	if !scalar.Is(cf.typ) {
 		return
 	}
 	if tags.Default != "" {
@@ -285,7 +286,7 @@ func (p *Plan) addHeader(f reflect.StructField, tag string, tags Tags) {
 	if t.Kind() == reflect.Pointer {
 		t = t.Elem()
 	}
-	if !isScalar(t) {
+	if !scalar.Is(t) {
 		return
 	}
 	for o := range strings.SplitSeq(options, ",") {
@@ -340,7 +341,7 @@ func (p *Plan) addPath(f reflect.StructField, style string, tags Tags) {
 	if t.Kind() == reflect.Pointer {
 		t = t.Elem()
 	}
-	if !isScalar(t) {
+	if !scalar.Is(t) {
 		return
 	}
 	p.paths = append(p.paths, pathField{name: name, matrix: style == "matrix"})
@@ -359,7 +360,7 @@ func planDeepObject(f reflect.StructField, name string) (planField, error) {
 		if typ.Key().Kind() != reflect.String {
 			return pf, fmt.Errorf("bind: field %s: deepObject map key must be a string, got %s", f.Name, typ.Key())
 		}
-		if !isValueType(typ.Elem()) {
+		if !scalar.IsValue(typ.Elem()) {
 			return pf, fmt.Errorf("bind: field %s: deepObject map value %s must be a scalar or a slice of scalars", f.Name, typ.Elem())
 		}
 		pf.kind = kindMap
@@ -378,7 +379,7 @@ func planDeepObject(f reflect.StructField, name string) (planField, error) {
 			if jn == "" {
 				jn = sf.Name
 			}
-			if !isValueType(sf.Type) {
+			if !scalar.IsValue(sf.Type) {
 				return pf, fmt.Errorf("bind: field %s: deepObject struct member %s has type %s, want a scalar or a slice of scalars", f.Name, sf.Name, sf.Type)
 			}
 			pf.members[jn] = member{index: i, typ: sf.Type}
@@ -387,29 +388,4 @@ func planDeepObject(f reflect.StructField, name string) (planField, error) {
 		return pf, fmt.Errorf("bind: field %s: deepObject type %s must be a map[string]T, a struct or a pointer to one", f.Name, f.Type)
 	}
 	return pf, nil
-}
-
-var textUnmarshaler = reflect.TypeFor[encoding.TextUnmarshaler]()
-
-// isScalar reports whether t can be decoded from one string.
-func isScalar(t reflect.Type) bool {
-	if reflect.PointerTo(t).Implements(textUnmarshaler) {
-		return true
-	}
-	switch t.Kind() {
-	case reflect.String, reflect.Bool,
-		reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
-		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
-		reflect.Float32, reflect.Float64:
-		return true
-	}
-	return false
-}
-
-// isValueType reports whether t is a scalar or a slice of scalars.
-func isValueType(t reflect.Type) bool {
-	if isScalar(t) {
-		return true
-	}
-	return t.Kind() == reflect.Slice && isScalar(t.Elem())
 }

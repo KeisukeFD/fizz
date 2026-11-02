@@ -1,18 +1,17 @@
 package openapi
 
 import (
-	"encoding"
 	"fmt"
 	"reflect"
 	"sort"
 	"strings"
+
+	"github.com/KeisukeFD/fizz/internal/scalar"
 )
 
 // styleDeepObject is the value of the style tag that selects the
 // deepObject serialization of a query parameter.
 const styleDeepObject = "deepObject"
-
-var textUnmarshaler = reflect.TypeFor[encoding.TextUnmarshaler]()
 
 // isDeepObject reports whether field is a query parameter that asks for
 // the deepObject style.
@@ -40,7 +39,7 @@ func (g *Generator) deepObjectSchema(t reflect.Type) (*Schema, error) {
 		if t.Key().Kind() != reflect.String {
 			return nil, fmt.Errorf("%s parameter: map key must be a string, got %s", styleDeepObject, t.Key())
 		}
-		if !deepObjectValue(t.Elem()) {
+		if !scalar.IsValue(t.Elem()) {
 			return nil, fmt.Errorf("%s parameter: map value %s must be a scalar or a slice of scalars", styleDeepObject, t.Elem())
 		}
 		vs := g.newSchemaFromType(t.Elem())
@@ -63,7 +62,7 @@ func (g *Generator) deepObjectSchema(t reflect.Type) (*Schema, error) {
 			if name == "" {
 				name = sf.Name
 			}
-			if !deepObjectValue(sf.Type) {
+			if !scalar.IsValue(sf.Type) {
 				return nil, fmt.Errorf("%s parameter: member %s has type %s, want a scalar or a slice of scalars", styleDeepObject, sf.Name, sf.Type)
 			}
 			ms := g.fieldSchema(sf, false, name, t, valueForm{param: true})
@@ -85,25 +84,4 @@ func (g *Generator) deepObjectSchema(t reflect.Type) (*Schema, error) {
 		return s, nil
 	}
 	return nil, fmt.Errorf("%s parameter: type %s must be a map[string]T, a struct or a pointer to one", styleDeepObject, t)
-}
-
-// deepObjectValue reports whether t is a scalar or a slice of scalars.
-func deepObjectValue(t reflect.Type) bool {
-	return deepObjectScalar(t) || (t.Kind() == reflect.Slice && deepObjectScalar(t.Elem()))
-}
-
-// deepObjectScalar mirrors bind's notion of a scalar: a type that
-// decodes from one string.
-func deepObjectScalar(t reflect.Type) bool {
-	if reflect.PointerTo(t).Implements(textUnmarshaler) {
-		return true
-	}
-	switch t.Kind() {
-	case reflect.String, reflect.Bool,
-		reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
-		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
-		reflect.Float32, reflect.Float64:
-		return true
-	}
-	return false
 }
