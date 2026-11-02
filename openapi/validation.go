@@ -119,7 +119,7 @@ func numberLiteral(k vkind, param string) (json.Number, error) {
 // use minimum/maximum (inclusive) and exclusiveMinimum/exclusiveMaximum;
 // strings, slices and maps use their length keywords, where gt/lt
 // shift the count by one.
-func setBound(s *Schema, _ reflect.Type, k vkind, name, param string, fail func(error) bool) bool {
+func setBound(s *Schema, k vkind, name, param string, fail func(error) bool) bool {
 	lower := name == "min" || name == "gte" || name == "gt"
 	exclusive := name == "gt" || name == "lt"
 	switch k {
@@ -319,32 +319,4 @@ func mergeSchema(dst, src *Schema) {
 	if src.UniqueItems {
 		dst.UniqueItems = true
 	}
-}
-
-// isString returns whether the given reflect type represents a string.
-func isString(typ reflect.Type) bool { return typ.Kind() == reflect.String }
-
-// isMap returns whether the given reflect type represents a string.
-func isMap(typ reflect.Type) bool { return typ.Kind() == reflect.Map }
-
-// isNumber returns whether the given reflect type
-// represents a number.
-func isNumber(typ reflect.Type) bool {
-	switch typ.Kind() {
-	case
-		reflect.Int,
-		reflect.Int8,
-		reflect.Int16,
-		reflect.Int32,
-		reflect.Int64,
-		reflect.Uint,
-		reflect.Uint8,
-		reflect.Uint16,
-		reflect.Uint32,
-		reflect.Uint64,
-		reflect.Float32,
-		reflect.Float64:
-		return true
-	}
-	return false
 }

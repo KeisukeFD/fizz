@@ -166,11 +166,11 @@ func (g *Generator) mapRule(s *Schema, t reflect.Type, r vtag.Rule, sf vfield) b
 		return false
 	}
 	bothBounds := func(dst *Schema) bool {
-		return setBound(dst, t, k, "min", r.Param, fail) && setBound(dst, t, k, "max", r.Param, fail)
+		return setBound(dst, k, "min", r.Param, fail) && setBound(dst, k, "max", r.Param, fail)
 	}
 	switch r.Name {
 	case "min", "gte", "max", "lte", "gt", "lt":
-		return setBound(s, t, k, r.Name, r.Param, fail)
+		return setBound(s, k, r.Name, r.Param, fail)
 	case "len":
 		switch k {
 		case kindString, kindSlice, kindMap:

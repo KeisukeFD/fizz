@@ -258,12 +258,6 @@ func isImportedType(t reflect.Type) DataType {
 	return nil
 }
 
-// stringToType converts val, the value of a default or enum tag of a
-// body field, to t's type. Pointers are dereferenced. See convertValue.
-func stringToType(val string, t reflect.Type) (any, error) {
-	return convertValue(val, t, false)
-}
-
 // convertValue converts val to a value that encodes, as JSON, like a
 // value of type t does. Pointers are dereferenced.
 //

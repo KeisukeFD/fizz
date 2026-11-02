@@ -156,7 +156,7 @@ func (g *Generator) componentStage(t reflect.Type) *Schema {
 // be stored as a component.
 func (g *Generator) reflectComponent(t reflect.Type) *Schema {
 	if t.Kind() == reflect.Struct && g.datatype(t) == TypeComplex {
-		return g.flattenStructSchema(t, t, &Schema{
+		return g.flattenStructSchema(t, &Schema{
 			Type:       Types("object"),
 			Properties: make(map[string]*Schema),
 		})
@@ -276,6 +276,7 @@ func copySchemaTree(s *Schema) *Schema {
 	c.Items = copySchemaTree(s.Items)
 	c.AdditionalProperties = copySchemaTree(s.AdditionalProperties)
 	c.PropertyNames = copySchemaTree(s.PropertyNames)
+	c.UnevaluatedProperties = copySchemaTree(s.UnevaluatedProperties)
 	if s.Properties != nil {
 		c.Properties = make(map[string]*Schema, len(s.Properties))
 		for k, v := range s.Properties {

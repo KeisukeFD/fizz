@@ -14,7 +14,7 @@ import (
 
 // setOperationParams adds the fields of the struct type t
 // to the given operation.
-func (g *Generator) setOperationParams(op *Operation, t, parent reflect.Type, allowBody bool) error {
+func (g *Generator) setOperationParams(op *Operation, t reflect.Type, allowBody bool) error {
 	if t.Kind() != reflect.Struct {
 		return errors.New("input type is not a struct")
 	}
@@ -301,9 +301,6 @@ func (g *Generator) addBodyField(op *Operation, t reflect.Type, f field) {
 	// Select the corresponding media type for the
 	// given field tag, or default to any type.
 	mt := g.mediaType()
-	if mt == "" {
-		mt = anyMediaType
-	}
 	// Create the media type if no fields
 	// have been added yet.
 	if _, ok := op.RequestBody.Content[mt]; !ok {
@@ -720,9 +717,6 @@ func (g *Generator) requestBodyName(opID string, t reflect.Type) string {
 // a *CollisionError is recorded and the schema stays inline.
 func (g *Generator) nameRequestBody(op *Operation, t reflect.Type) {
 	mt := g.mediaType()
-	if mt == "" {
-		mt = anyMediaType
-	}
 	media := op.RequestBody.Content[mt]
 	if media == nil || media.Schema == nil {
 		return

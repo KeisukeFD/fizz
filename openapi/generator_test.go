@@ -239,52 +239,52 @@ func TestNewSchemaFromStructFieldExampleValues(t *testing.T) {
 	typ := reflect.TypeFor[T]()
 
 	// Field A contains string example.
-	sor := g.newSchemaFromStructField(typ.Field(0), false, "A", typ)
+	sor := g.fieldSchema(typ.Field(0), false, "A", typ, valueForm{})
 	assert.NotNil(t, sor)
 	assert.Equal(t, []any{"value"}, sor.Examples)
 
 	// Field APtr contains pointer to string example.
-	sor = g.newSchemaFromStructField(typ.Field(1), false, "APtr", typ)
+	sor = g.fieldSchema(typ.Field(1), false, "APtr", typ, valueForm{})
 	assert.NotNil(t, sor)
 	assert.Equal(t, []any{"value"}, sor.Examples)
 
 	// Field B contains int example.
-	sor = g.newSchemaFromStructField(typ.Field(2), false, "B", typ)
+	sor = g.fieldSchema(typ.Field(2), false, "B", typ, valueForm{})
 	assert.NotNil(t, sor)
 	assert.Equal(t, []any{int64(1)}, sor.Examples)
 
 	// Field BPtr contains pointer to int example.
-	sor = g.newSchemaFromStructField(typ.Field(3), false, "BPtr", typ)
+	sor = g.fieldSchema(typ.Field(3), false, "BPtr", typ, valueForm{})
 	assert.NotNil(t, sor)
 	assert.Equal(t, []any{int64(1)}, sor.Examples)
 
 	// Field C contains float example.
-	sor = g.newSchemaFromStructField(typ.Field(4), false, "C", typ)
+	sor = g.fieldSchema(typ.Field(4), false, "C", typ, valueForm{})
 	assert.NotNil(t, sor)
 	assert.Equal(t, []any{0.1}, sor.Examples)
 
 	// Field CPtr contains pointer to float example.
-	sor = g.newSchemaFromStructField(typ.Field(5), false, "CPtr", typ)
+	sor = g.fieldSchema(typ.Field(5), false, "CPtr", typ, valueForm{})
 	assert.NotNil(t, sor)
 	assert.Equal(t, []any{0.1}, sor.Examples)
 
 	// Field D contains boolean example.
-	sor = g.newSchemaFromStructField(typ.Field(6), false, "D", typ)
+	sor = g.fieldSchema(typ.Field(6), false, "D", typ, valueForm{})
 	assert.NotNil(t, sor)
 	assert.Equal(t, []any{true}, sor.Examples)
 
 	// Field DPtr contains pointer to boolean example.
-	sor = g.newSchemaFromStructField(typ.Field(7), false, "DPtr", typ)
+	sor = g.fieldSchema(typ.Field(7), false, "DPtr", typ, valueForm{})
 	assert.NotNil(t, sor)
 	assert.Equal(t, []any{true}, sor.Examples)
 
 	// Field EPtr contains a double-pointer to boolean example.
-	sor = g.newSchemaFromStructField(typ.Field(8), false, "EPtr", typ)
+	sor = g.fieldSchema(typ.Field(8), false, "EPtr", typ, valueForm{})
 	assert.NotNil(t, sor)
 	assert.Equal(t, []any{false}, sor.Examples)
 
 	// Field FPtr contains a triple-pointer to uint16 value example.
-	sor = g.newSchemaFromStructField(typ.Field(9), false, "FPtr", typ)
+	sor = g.fieldSchema(typ.Field(9), false, "FPtr", typ, valueForm{})
 	assert.NotNil(t, sor)
 	assert.Equal(t, []any{uint16(128)}, sor.Examples)
 }
@@ -303,21 +303,21 @@ func TestNewSchemaFromStructFieldErrors(t *testing.T) {
 	typ := reflect.TypeFor[T]()
 
 	// Field A is required and has a default value.
-	sor := g.newSchemaFromStructField(typ.Field(0), true, "A", typ)
+	sor := g.fieldSchema(typ.Field(0), true, "A", typ, valueForm{})
 	assert.NotNil(t, sor)
 	assert.Len(t, g.Errors(), 1)
 	assert.Implements(t, (*error)(nil), g.Errors()[0])
 	assert.NotEmpty(t, g.Errors()[0].Error())
 
 	// Field B has default value that cannot be converted to type's type.
-	sor = g.newSchemaFromStructField(typ.Field(1), false, "B", typ)
+	sor = g.fieldSchema(typ.Field(1), false, "B", typ, valueForm{})
 	assert.NotNil(t, sor)
 	assert.Len(t, g.Errors(), 2)
 	assert.Implements(t, (*error)(nil), g.Errors()[1])
 	assert.NotEmpty(t, g.Errors()[1].Error())
 
 	// Field C has enum values that cannot be converted to type's type.
-	sor = g.newSchemaFromStructField(typ.Field(2), true, "C", typ)
+	sor = g.fieldSchema(typ.Field(2), true, "C", typ, valueForm{})
 	assert.NotNil(t, sor)
 	// it generates two errors, one per value
 	// that cannot be converted, here "a" and "b".
@@ -326,7 +326,7 @@ func TestNewSchemaFromStructFieldErrors(t *testing.T) {
 	assert.NotEmpty(t, g.Errors()[3].Error())
 
 	// Field D has example value that cannot be parsed to bool.
-	sor = g.newSchemaFromStructField(typ.Field(3), false, "D", typ)
+	sor = g.fieldSchema(typ.Field(3), false, "D", typ, valueForm{})
 	assert.NotNil(t, sor)
 	assert.Len(t, g.Errors(), 5)
 	assert.NotEmpty(t, g.Errors()[4].Error())
@@ -346,7 +346,7 @@ func TestNewSchemaFromStructFieldFormat(t *testing.T) {
 	typ := reflect.TypeFor[T]()
 
 	// Field A is required and has a default value.
-	sor := g.newSchemaFromStructField(typ.Field(0), true, "A", typ)
+	sor := g.fieldSchema(typ.Field(0), true, "A", typ, valueForm{})
 	assert.NotNil(t, sor)
 	assert.Len(t, g.Errors(), 1)
 	assert.Implements(t, (*error)(nil), g.Errors()[0])
@@ -389,7 +389,7 @@ func TestNewSchemaFromEnumField(t *testing.T) {
 
 	for i, tt := range tests {
 		t.Run(tt.fname, func(t *testing.T) {
-			sor := g.newSchemaFromStructField(typ.Field(i), true, tt.fname, typ)
+			sor := g.fieldSchema(typ.Field(i), true, tt.fname, typ, valueForm{})
 			assert.NotNil(t, sor)
 			var enum []any
 			if tt.isSlice {
@@ -706,7 +706,7 @@ func TestSetOperationParamsError(t *testing.T) {
 
 	// Use invalid input type for parameters.
 	typ := reflect.TypeFor[[]string]()
-	err := g.setOperationParams(op, typ, typ, false)
+	err := g.setOperationParams(op, typ, false)
 	assert.NotNil(t, err)
 }
 
@@ -974,7 +974,7 @@ func TestGenerator_parseExampleValue(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.testName, func(t *testing.T) {
-			returned, err := parseExampleValue(tc.typ, tc.inputValue)
+			returned, err := parseExample(tc.typ, tc.inputValue, false)
 			assert.Nil(t, err)
 			assert.Equal(t, tc.outputValue, returned)
 		})
@@ -984,7 +984,7 @@ func TestGenerator_parseExampleValue(t *testing.T) {
 // TestGenerator_parseExampleValueError tests that
 // parseExampleValue raises error on unsupported type.
 func TestGenerator_parseExampleValueError(t *testing.T) {
-	_, err := parseExampleValue(reflect.TypeFor[map[string]string](), "whatever")
+	_, err := parseExample(reflect.TypeFor[map[string]string](), "whatever", false)
 	assert.Error(t, err, "parseExampleValue does not support type")
 }
 

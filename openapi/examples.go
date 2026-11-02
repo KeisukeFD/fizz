@@ -6,12 +6,7 @@ import (
 	"strconv"
 )
 
-// parseExampleValue is used to transform the string representation of the example value to the correct type.
-func parseExampleValue(t reflect.Type, value string) (any, error) {
-	return parseExample(t, value, false)
-}
-
-// parseExample is parseExampleValue for a body field (param false) or a
+// parseExample converts the string representation of an example value to the correct type, for a body field (param false) or a
 // parameter (param true), which differ for time.Duration (D16).
 func parseExample(t reflect.Type, value string, param bool) (any, error) {
 	// If the type implements Exampler use the ParseExample method to create the example

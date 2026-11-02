@@ -43,9 +43,6 @@ var marshalOptions = jsonv2.JoinOptions(
 // rejected.
 var unmarshalOptions = jsonv2.DefaultOptionsV2()
 
-// jsonOptions are the options of the top-level encoders.
-func jsonOptions() jsonv2.Options { return marshalOptions }
-
 func encodeValue(enc *jsontext.Encoder, v any) error {
 	return jsonv2.MarshalEncode(enc, v, marshalOptions)
 }
@@ -66,7 +63,7 @@ func decodeValue(dec *jsontext.Decoder, v any) error {
 // MarshalJSON, or marshal through encoding/json/v2, when a nested
 // object is encoded on its own.
 func MarshalJSON(doc *OpenAPI) ([]byte, error) {
-	return jsonv2.Marshal(doc, jsonOptions())
+	return jsonv2.Marshal(doc, marshalOptions)
 }
 
 // MarshalYAML returns the YAML encoding of doc, in block style with an
@@ -118,7 +115,7 @@ func clearStyle(n *yaml.Node) {
 }
 
 func marshalJSON(v any) ([]byte, error) {
-	return jsonv2.Marshal(v, jsonOptions())
+	return jsonv2.Marshal(v, marshalOptions)
 }
 
 func unmarshalJSON(b []byte, v any) error {

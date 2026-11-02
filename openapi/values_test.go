@@ -102,7 +102,7 @@ func TestDefaultDereferencesPointer(t *testing.T) {
 }
 
 func TestInvalidBoolDefaultIsError(t *testing.T) {
-	_, err := stringToType("maybe", reflect.TypeFor[bool]())
+	_, err := convertValue("maybe", reflect.TypeFor[bool](), false)
 	assert.Error(t, err)
 
 	g := gen(t)

@@ -235,10 +235,10 @@ func TestUnsupportedBodyFieldKeepsOperation(t *testing.T) {
 }
 
 func TestDurationDefaultIsNanoseconds(t *testing.T) {
-	v, err := stringToType("1000000000", reflect.TypeFor[time.Duration]())
+	v, err := convertValue("1000000000", reflect.TypeFor[time.Duration](), false)
 	require.NoError(t, err)
 	assert.Equal(t, int64(time.Second), v)
-	v, err = stringToType("2s", reflect.TypeFor[time.Duration]())
+	v, err = convertValue("2s", reflect.TypeFor[time.Duration](), false)
 	require.NoError(t, err)
 	assert.Equal(t, int64(2*time.Second), v)
 }

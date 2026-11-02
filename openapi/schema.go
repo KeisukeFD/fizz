@@ -245,7 +245,7 @@ func (g *Generator) newSchemaFromStruct(t reflect.Type) *Schema {
 		}
 		g.inlining[t] = true
 		defer delete(g.inlining, t)
-		return g.flattenStructSchema(t, t, &Schema{
+		return g.flattenStructSchema(t, &Schema{
 			Type:       Types("object"),
 			Properties: make(map[string]*Schema),
 		})
@@ -275,7 +275,7 @@ func (g *Generator) newSchemaFromStruct(t reflect.Type) *Schema {
 		g.stack = nil
 		defer func() { g.stack = outer }()
 	}
-	schema = g.flattenStructSchema(t, t, schema)
+	schema = g.flattenStructSchema(t, schema)
 
 	sor := schema
 

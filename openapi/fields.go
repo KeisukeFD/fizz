@@ -13,12 +13,6 @@ import (
 	"strings"
 )
 
-// newSchemaFromStructField returns a new Schema builded
-// from the field's type and its tags.
-func (g *Generator) newSchemaFromStructField(sf reflect.StructField, required bool, fname string, parent reflect.Type) *Schema {
-	return g.fieldSchema(sf, required, fname, parent, valueForm{})
-}
-
 // valueForm tells how the default, enum and example tags of a field are
 // converted.
 type valueForm struct {
@@ -39,8 +33,8 @@ func (vf valueForm) convert(s string, t reflect.Type) (any, error) {
 	return wireForm(v)
 }
 
-// fieldSchema is newSchemaFromStructField with the conversion form of
-// the field's values. required is the requiredness declared by the tag.
+// fieldSchema returns the schema of a struct field, with the conversion
+// form of the field's values. required is the requiredness declared by the tag.
 func (g *Generator) fieldSchema(sf reflect.StructField, required bool, fname string, parent reflect.Type, vf valueForm) *Schema {
 	sor := g.newSchemaFromType(sf.Type)
 	if sor == nil {
@@ -302,7 +296,7 @@ func (g *Generator) enumFromStructField(sf reflect.StructField, fname string, pa
 // flattenStructSchema adds the JSON members of the struct type t,
 // as selected by typeFields (embedded structs promoted), to the
 // given schema.
-func (g *Generator) flattenStructSchema(t, parent reflect.Type, schema *Schema) *Schema {
+func (g *Generator) flattenStructSchema(t reflect.Type, schema *Schema) *Schema {
 	mediaTag := mediaTags[g.mediaType()]
 	for f := range g.fieldsOf(t, mediaTag) {
 		var required bool

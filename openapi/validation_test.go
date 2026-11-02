@@ -13,22 +13,6 @@ import (
 	"github.com/KeisukeFD/fizz/internal/golden"
 )
 
-// TestTesters tests the testers helpers
-// that determines the kind of a type.
-func TestTesters(t *testing.T) {
-	var (
-		s  string
-		m  map[string]string
-		n1 uint
-		n2 int
-	)
-	assert.True(t, isString(rt(s)))
-	assert.True(t, isMap(rt(m)))
-	assert.True(t, isNumber(rt(n1)))
-	assert.True(t, isNumber(rt(n2)))
-	assert.False(t, isNumber(rt(s)))
-}
-
 // TestSchemaValidation tests that the validator.v9
 // tags are properly translated to JSON Schema validation
 // fields for all supported types.

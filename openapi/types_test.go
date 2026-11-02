@@ -185,7 +185,7 @@ func TestCustomDataType(t *testing.T) {
 // converted to the type of a time.Time.
 func TestStringToTimeType(t *testing.T) {
 	now := time.Now()
-	v, err := stringToType(now.Format(time.RFC3339), tofTime)
+	v, err := convertValue(now.Format(time.RFC3339), tofTime, false)
 	if err != nil {
 		t.Error(err)
 	}
@@ -193,8 +193,8 @@ func TestStringToTimeType(t *testing.T) {
 	if !ok {
 		t.Errorf("expected converted value to be of type %T, got %T", now, v)
 	}
-	if vv.Equal(now) {
-		t.Errorf("expected time to equal %s, got %s", now.String(), vv.String())
+	if want := now.Truncate(time.Second); !vv.Equal(want) {
+		t.Errorf("expected time to equal %s, got %s", want.String(), vv.String())
 	}
 }
 
@@ -202,7 +202,7 @@ func TestStringToTimeType(t *testing.T) {
 // converted to the type of a time.Duration.
 func TestStringToDurationType(t *testing.T) {
 	dur := 60 * time.Minute
-	v, err := stringToType(dur.String(), tofDuration)
+	v, err := convertValue(dur.String(), tofDuration, false)
 	if err != nil {
 		t.Error(err)
 	}
@@ -237,7 +237,7 @@ func TestStringToType(t *testing.T) {
 		"9.1":    {rt(float64(9.1)), float64(9.1)},
 	}
 	for from, to := range tests {
-		vv, err := stringToType(from, to.t)
+		vv, err := convertValue(from, to.t, false)
 		if err != nil {
 			t.Error(err)
 		}
@@ -247,7 +247,7 @@ func TestStringToType(t *testing.T) {
 	}
 	// Expect error for unknown unsuported types
 	// in conversion.
-	_, err := stringToType("", reflect.TypeFor[[]string]())
+	_, err := convertValue("", reflect.TypeFor[[]string](), false)
 	if err == nil {
 		t.Errorf("expected error to be non-nil for unsupported type")
 	}

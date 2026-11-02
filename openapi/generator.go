@@ -19,7 +19,6 @@ import (
 const Version = "3.2.1"
 
 const (
-	anyMediaType         = "*/*"
 	componentsSchemaPath = "#/components/schemas/"
 )
 
@@ -556,7 +555,7 @@ func (g *Generator) buildOperation(path, method, tag string, in, out reflect.Typ
 		if in.Kind() != reflect.Struct {
 			return nil, errors.New("input type is not a struct")
 		}
-		if err := g.setOperationParams(op, in, in, allowBody && !hasContents); err != nil {
+		if err := g.setOperationParams(op, in, allowBody && !hasContents); err != nil {
 			return nil, err
 		}
 	}
