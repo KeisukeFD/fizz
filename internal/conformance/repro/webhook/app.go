@@ -5,8 +5,8 @@ package webhook
 import (
 	"reflect"
 
-	"github.com/wI2L/fizz"
-	"github.com/wI2L/fizz/openapi"
+	"github.com/KeisukeFD/fizz"
+	"github.com/KeisukeFD/fizz/openapi"
 )
 
 // Pet is a pet of the store. It is the payload of the newPet webhook.

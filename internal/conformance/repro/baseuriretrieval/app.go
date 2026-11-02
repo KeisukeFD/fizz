@@ -4,8 +4,8 @@
 package baseuriretrieval
 
 import (
-	"github.com/wI2L/fizz"
-	"github.com/wI2L/fizz/openapi"
+	"github.com/KeisukeFD/fizz"
+	"github.com/KeisukeFD/fizz/openapi"
 )
 
 // New returns the app: a fizz whose spec is the document.

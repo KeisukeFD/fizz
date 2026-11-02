@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/wI2L/fizz/internal/acceptance/at"
-	"github.com/wI2L/fizz/internal/golden"
-	"github.com/wI2L/fizz/openapi"
+	"github.com/KeisukeFD/fizz/internal/acceptance/at"
+	"github.com/KeisukeFD/fizz/internal/golden"
+	"github.com/KeisukeFD/fizz/openapi"
 )
 
 // Minimal reproductions of the spec-model losses that the official corpus

@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/wI2L/fizz/openapi"
+	"github.com/KeisukeFD/fizz/openapi"
 )
 
 func readDoc(t *testing.T, path string) *openapi.OpenAPI {

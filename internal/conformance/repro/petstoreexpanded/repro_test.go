@@ -3,7 +3,7 @@ package petstoreexpanded
 import (
 	"testing"
 
-	"github.com/wI2L/fizz/internal/conformance/repro"
+	"github.com/KeisukeFD/fizz/internal/conformance/repro"
 )
 
 // TestReproPetstoreExpanded rebuilds learn.openapis.org

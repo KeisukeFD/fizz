@@ -9,9 +9,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/wI2L/fizz"
-	"github.com/wI2L/fizz/docsui"
-	"github.com/wI2L/fizz/internal/acceptance/at"
+	"github.com/KeisukeFD/fizz"
+	"github.com/KeisukeFD/fizz/docsui"
+	"github.com/KeisukeFD/fizz/internal/acceptance/at"
 )
 
 // C17. The embedded Scalar page disables the default fonts, which Scalar

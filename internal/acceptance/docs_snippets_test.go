@@ -12,7 +12,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/wI2L/fizz/internal/acceptance/at"
+	"github.com/KeisukeFD/fizz/internal/acceptance/at"
 )
 
 // The snippet checker of the documentation (I10, I11). A go block of a

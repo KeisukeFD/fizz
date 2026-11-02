@@ -16,8 +16,8 @@ import (
 	"github.com/loopfz/gadgeto/tonic"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/wI2L/fizz/internal/golden"
-	"github.com/wI2L/fizz/openapi"
+	"github.com/KeisukeFD/fizz/internal/golden"
+	"github.com/KeisukeFD/fizz/openapi"
 )
 
 func TestMain(m *testing.M) {

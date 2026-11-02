@@ -41,7 +41,7 @@ import (
 	"github.com/pb33f/libopenapi"
 	"github.com/pb33f/libopenapi-validator/schema_validation"
 
-	"github.com/wI2L/fizz/internal/conformance/upgrade"
+	"github.com/KeisukeFD/fizz/internal/conformance/upgrade"
 )
 
 // disagreement records a document on which the tool and the expected

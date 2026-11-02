@@ -205,7 +205,7 @@ Harness changes:
 | A01 | `TestRouterAgnostic` | `go list -deps -test` over `./openapi/... ./bind/... ./docsui/...` (patterns with no packages are skipped) → no import path with prefix `github.com/gin-gonic/gin` or `github.com/loopfz/gadgeto`. The failure prints the importer chain | P1.3 | now |
 | A02 | `TestRouterAgnosticSelfCheck` | The same checker on `.` (root) **does** report gin, so the rule is not vacuous | — | now |
 | A03 | `TestNoUUIDDep` | `go list -deps ./openapi` (non-test) has no `github.com/gofrs/uuid` (subtest `gofrs`) or `github.com/google/uuid` (subtest `google`, reached via tonic until P1.3) | P1.2 / P1.3 | now |
-| A04 | `TestModuleInvariants` | go.mod: `module github.com/wI2L/fizz`, `go 1.27`, `github.com/loopfz/gadgeto v0.9.0` | — | now |
+| A04 | `TestModuleInvariants` | go.mod: `module github.com/KeisukeFD/fizz`, `go 1.27`, `github.com/loopfz/gadgeto v0.9.0` | — | now |
 | A05 | `TestToolsModuleIsolated` | `go list -m all` has no `honnef.co/go/tools` or `golang.org/x/vuln` | — | now |
 | A06 | `TestDocsUIEmbeddedSameModule` | `docsui/embedded` exists; no `go.mod` under `docsui/`; `go list -f {{.Module.Path}} ./docsui/embedded` == main module | P8.3 | now |
 | A07 | `TestNoGinTypesInPublicSignatures` | Reflection walk (fields, func params/results, recursively) over `fizz.OperationOption`, `openapi.OperationInfo`, `openapi.Hooks` and every `*Context` hook type → no `PkgPath` under gin or gadgeto | P6.4 | tag |

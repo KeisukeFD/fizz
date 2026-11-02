@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/wI2L/fizz/internal/specvalidate"
-	"github.com/wI2L/fizz/openapi"
+	"github.com/KeisukeFD/fizz/internal/specvalidate"
+	"github.com/KeisukeFD/fizz/openapi"
 )
 
 const minimalDoc = `{

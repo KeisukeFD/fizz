@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/wI2L/fizz/internal/conformance/repro"
-	"github.com/wI2L/fizz/internal/plan"
+	"github.com/KeisukeFD/fizz/internal/conformance/repro"
+	"github.com/KeisukeFD/fizz/internal/plan"
 )
 
 const (

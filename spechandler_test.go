@@ -13,7 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/loopfz/gadgeto/tonic"
 
-	"github.com/wI2L/fizz/openapi"
+	"github.com/KeisukeFD/fizz/openapi"
 )
 
 // buildCounter is an extension value that counts how many times the

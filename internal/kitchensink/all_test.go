@@ -3,8 +3,8 @@ package kitchensink
 import (
 	"testing"
 
-	"github.com/wI2L/fizz/internal/golden"
-	"github.com/wI2L/fizz/internal/plan"
+	"github.com/KeisukeFD/fizz/internal/golden"
+	"github.com/KeisukeFD/fizz/internal/plan"
 )
 
 // TestKitchenSinkGolden asserts the whole document of NewWholeFizz (JSON

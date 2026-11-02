@@ -3,8 +3,8 @@ package kitchensink
 import (
 	"github.com/loopfz/gadgeto/tonic"
 
-	"github.com/wI2L/fizz"
-	"github.com/wI2L/fizz/openapi"
+	"github.com/KeisukeFD/fizz"
+	"github.com/KeisukeFD/fizz/openapi"
 )
 
 // Review findings that the semantic lint (specvalidate.LintSemantics, part

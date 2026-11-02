@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/wI2L/fizz/openapi"
+	"github.com/KeisukeFD/fizz/openapi"
 )
 
 // TestStdlibJSONRoundTrip exercises the encoding/json entry points

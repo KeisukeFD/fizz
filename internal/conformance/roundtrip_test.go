@@ -9,10 +9,10 @@ import (
 
 	"go.yaml.in/yaml/v3"
 
-	"github.com/wI2L/fizz/internal/golden"
-	"github.com/wI2L/fizz/internal/plan"
-	"github.com/wI2L/fizz/internal/specvalidate"
-	"github.com/wI2L/fizz/openapi"
+	"github.com/KeisukeFD/fizz/internal/golden"
+	"github.com/KeisukeFD/fizz/internal/plan"
+	"github.com/KeisukeFD/fizz/internal/specvalidate"
+	"github.com/KeisukeFD/fizz/openapi"
 )
 
 // roundTripFixedBy maps a corpus document (the name of its subtest) to the

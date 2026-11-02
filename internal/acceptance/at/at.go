@@ -18,9 +18,9 @@ import (
 	"go.yaml.in/yaml/v3"
 	"golang.org/x/net/html"
 
-	"github.com/wI2L/fizz"
-	"github.com/wI2L/fizz/internal/kitchensink"
-	"github.com/wI2L/fizz/internal/plan"
+	"github.com/KeisukeFD/fizz"
+	"github.com/KeisukeFD/fizz/internal/kitchensink"
+	"github.com/KeisukeFD/fizz/internal/plan"
 )
 
 // Pending runs fn, which the task fixedBy has yet to make pass.

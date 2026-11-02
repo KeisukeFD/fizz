@@ -1,4 +1,4 @@
-module github.com/wI2L/fizz
+module github.com/KeisukeFD/fizz
 
 go 1.27
 

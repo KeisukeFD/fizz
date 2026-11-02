@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/loopfz/gadgeto/tonic"
 
-	"github.com/wI2L/fizz"
+	"github.com/KeisukeFD/fizz"
 )
 
 // Parameter input types. The P prefix avoids clashes with sibling files.

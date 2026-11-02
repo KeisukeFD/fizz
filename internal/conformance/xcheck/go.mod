@@ -1,11 +1,11 @@
-module github.com/wI2L/fizz/internal/conformance/xcheck
+module github.com/KeisukeFD/fizz/internal/conformance/xcheck
 
 go 1.27
 
 require (
 	github.com/pb33f/libopenapi v0.41.8
 	github.com/pb33f/libopenapi-validator v0.16.2
-	github.com/wI2L/fizz v0.0.0
+	github.com/KeisukeFD/fizz v0.0.0
 )
 
 require (
@@ -24,4 +24,4 @@ require (
 	golang.org/x/text v0.43.0 // indirect
 )
 
-replace github.com/wI2L/fizz => ../../..
+replace github.com/KeisukeFD/fizz => ../../..

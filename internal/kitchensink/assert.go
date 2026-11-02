@@ -11,8 +11,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/wI2L/fizz"
-	"github.com/wI2L/fizz/openapi"
+	"github.com/KeisukeFD/fizz"
+	"github.com/KeisukeFD/fizz/openapi"
 )
 
 // resolve follows an RFC 6901 pointer in v.

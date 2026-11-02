@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/wI2L/fizz/internal/specvalidate"
+	"github.com/KeisukeFD/fizz/internal/specvalidate"
 )
 
 const fixtureDir = "oai/upgraded/oas/tests/schema/"

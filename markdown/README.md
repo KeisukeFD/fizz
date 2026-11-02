@@ -1,14 +1,14 @@
 Markdown Builder
 ================
 
-[![Godoc reference](https://img.shields.io/badge/godoc-reference-blue.svg)](https://godoc.org/github.com/wI2L/fizz/markdown)
+[![Godoc reference](https://img.shields.io/badge/godoc-reference-blue.svg)](https://godoc.org/github.com/KeisukeFD/fizz/markdown)
 
 This is a simple builder to help you create **Mardown** content in Go.
 
 ## Usage
 
 ```go
-import "github.com/wI2L/fizz/markdown"
+import "github.com/KeisukeFD/fizz/markdown"
 
 builder := markdown.Builder{}
 
@@ -16,7 +16,7 @@ builder.
    H1("Markdown Builder").
    P("A simple builder to help your write Markdown in Go").
    H2("Installation").
-   Code("go get -u github.com/wI2L/fizz", "bash").
+   Code("go get -u github.com/KeisukeFD/fizz", "bash").
    H2("Todos").
    BulletedList(
      "write tests",
@@ -36,7 +36,7 @@ md := builder.String()
     ----------------------------------
 
     ```bash
-    go get -u github.com/wI2L/fizz", "bash
+    go get -u github.com/KeisukeFD/fizz", "bash
     ```
 
     Todos

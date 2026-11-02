@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/wI2L/fizz/internal/conformance/upgrade"
-	"github.com/wI2L/fizz/internal/specvalidate"
+	"github.com/KeisukeFD/fizz/internal/conformance/upgrade"
+	"github.com/KeisukeFD/fizz/internal/specvalidate"
 )
 
 // upgradeJSON decodes a JSON document, upgrades it and returns the result and

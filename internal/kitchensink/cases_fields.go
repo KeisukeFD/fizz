@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/loopfz/gadgeto/tonic"
 
-	"github.com/wI2L/fizz"
+	"github.com/KeisukeFD/fizz"
 )
 
 // Field cases (P0.4c). Test types are prefixed F to stay clear of the

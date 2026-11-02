@@ -6,10 +6,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/loopfz/gadgeto/tonic"
 
-	"github.com/wI2L/fizz"
-	"github.com/wI2L/fizz/internal/kitchensink/a/models"
-	"github.com/wI2L/fizz/internal/kitchensink/generic"
-	"github.com/wI2L/fizz/openapi"
+	"github.com/KeisukeFD/fizz"
+	"github.com/KeisukeFD/fizz/internal/kitchensink/a/models"
+	"github.com/KeisukeFD/fizz/internal/kitchensink/generic"
+	"github.com/KeisukeFD/fizz/openapi"
 )
 
 // Whole golden files: the output of NewWholeFizz.

@@ -6,7 +6,7 @@ import (
 
 	"github.com/loopfz/gadgeto/tonic"
 
-	"github.com/wI2L/fizz/openapi"
+	"github.com/KeisukeFD/fizz/openapi"
 )
 
 func TestBinderTagsMatchTonic(t *testing.T) {

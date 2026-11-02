@@ -3,7 +3,7 @@ package baseuriretrieval
 import (
 	"testing"
 
-	"github.com/wI2L/fizz/internal/conformance/repro"
+	"github.com/KeisukeFD/fizz/internal/conformance/repro"
 )
 
 // TestReproBaseURIRetrieval rebuilds the spec-text document

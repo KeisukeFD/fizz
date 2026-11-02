@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/wI2L/fizz/internal/plan"
+	"github.com/KeisukeFD/fizz/internal/plan"
 )
 
 // metaSchemaProblems builds the document of c and returns every

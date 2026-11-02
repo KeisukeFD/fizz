@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/wI2L/fizz/bind"
+	"github.com/KeisukeFD/fizz/bind"
 )
 
 type pathIn struct {

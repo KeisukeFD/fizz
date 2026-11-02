@@ -10,8 +10,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/wI2L/fizz/internal/acceptance/at"
-	"github.com/wI2L/fizz/openapi"
+	"github.com/KeisukeFD/fizz/internal/acceptance/at"
+	"github.com/KeisukeFD/fizz/openapi"
 )
 
 const bIColorRef = "#/components/schemas/AcceptanceBIColor"

@@ -3,8 +3,8 @@ package link
 import (
 	"testing"
 
-	"github.com/wI2L/fizz/internal/conformance/repro"
-	"github.com/wI2L/fizz/internal/plan"
+	"github.com/KeisukeFD/fizz/internal/conformance/repro"
+	"github.com/KeisukeFD/fizz/internal/plan"
 )
 
 // TestReproLink rebuilds learn.openapis.org examples/v3.0/link-example.json.

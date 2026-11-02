@@ -4,7 +4,7 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/wI2L/fizz/internal/specvalidate"
+	"github.com/KeisukeFD/fizz/internal/specvalidate"
 )
 
 // MetaProblems checks doc against the OAS 3.2 meta-schema, the three

@@ -258,9 +258,9 @@ package main
 import (
 	"log"
 
-	"github.com/wI2L/fizz"
-	"github.com/wI2L/fizz/internal/kitchensink"
-	"github.com/wI2L/fizz/openapi"
+	"github.com/KeisukeFD/fizz"
+	"github.com/KeisukeFD/fizz/internal/kitchensink"
+	"github.com/KeisukeFD/fizz/openapi"
 )
 
 func main() {

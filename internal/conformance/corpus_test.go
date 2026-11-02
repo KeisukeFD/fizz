@@ -9,8 +9,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/wI2L/fizz/internal/conformance/upgrade"
-	"github.com/wI2L/fizz/internal/specvalidate"
+	"github.com/KeisukeFD/fizz/internal/conformance/upgrade"
+	"github.com/KeisukeFD/fizz/internal/specvalidate"
 )
 
 func buildCorpus(t *testing.T) *upgrade.Corpus {

@@ -3,7 +3,7 @@ package fizz
 import (
 	"fmt"
 
-	"github.com/wI2L/fizz/openapi"
+	"github.com/KeisukeFD/fizz/openapi"
 )
 
 // OperationOption represents an option-pattern function

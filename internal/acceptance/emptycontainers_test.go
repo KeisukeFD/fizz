@@ -7,9 +7,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/loopfz/gadgeto/tonic"
 
-	"github.com/wI2L/fizz"
-	"github.com/wI2L/fizz/internal/specvalidate"
-	"github.com/wI2L/fizz/openapi"
+	"github.com/KeisukeFD/fizz"
+	"github.com/KeisukeFD/fizz/internal/specvalidate"
+	"github.com/KeisukeFD/fizz/openapi"
 )
 
 // P10.9c and P10.9n: the served document omits an empty "components" and an

@@ -12,13 +12,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/loopfz/gadgeto/tonic"
 
-	"github.com/wI2L/fizz"
-	"github.com/wI2L/fizz/internal/acceptance/at"
-	boxfix "github.com/wI2L/fizz/internal/acceptance/fixtures/naming/fixtures"
-	xmodels "github.com/wI2L/fizz/internal/acceptance/fixtures/naming/x"
-	ymodels "github.com/wI2L/fizz/internal/acceptance/fixtures/naming/y"
-	"github.com/wI2L/fizz/internal/specvalidate"
-	"github.com/wI2L/fizz/openapi"
+	"github.com/KeisukeFD/fizz"
+	"github.com/KeisukeFD/fizz/internal/acceptance/at"
+	boxfix "github.com/KeisukeFD/fizz/internal/acceptance/fixtures/naming/fixtures"
+	xmodels "github.com/KeisukeFD/fizz/internal/acceptance/fixtures/naming/x"
+	ymodels "github.com/KeisukeFD/fizz/internal/acceptance/fixtures/naming/y"
+	"github.com/KeisukeFD/fizz/internal/specvalidate"
+	"github.com/KeisukeFD/fizz/openapi"
 )
 
 // Batch E: naming and operation IDs.

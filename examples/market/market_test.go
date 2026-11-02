@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/wI2L/fizz/internal/acceptance/at"
-	"github.com/wI2L/fizz/internal/kitchensink"
+	"github.com/KeisukeFD/fizz/internal/acceptance/at"
+	"github.com/KeisukeFD/fizz/internal/kitchensink"
 )
 
 func bINewMarket(tb testing.TB) http.Handler {

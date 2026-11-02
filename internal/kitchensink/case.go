@@ -15,9 +15,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/wI2L/fizz"
-	"github.com/wI2L/fizz/internal/golden"
-	"github.com/wI2L/fizz/internal/plan"
+	"github.com/KeisukeFD/fizz"
+	"github.com/KeisukeFD/fizz/internal/golden"
+	"github.com/KeisukeFD/fizz/internal/plan"
 )
 
 // Fragment is a hand-written expectation on the generated document.

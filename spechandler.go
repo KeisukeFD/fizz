@@ -8,8 +8,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/KeisukeFD/fizz/openapi"
 	"github.com/gin-gonic/gin"
-	"github.com/wI2L/fizz/openapi"
 )
 
 var errInvalidContentType = errors.New("invalid content type for the OpenAPI handler")

@@ -9,8 +9,8 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/wI2L/fizz/bind"
-	"github.com/wI2L/fizz/internal/acceptance/at"
+	"github.com/KeisukeFD/fizz/bind"
+	"github.com/KeisukeFD/fizz/internal/acceptance/at"
 )
 
 // Batch B rows of P7.2a (ACCEPTANCE.md B31-B34): the bind package API on a

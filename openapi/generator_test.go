@@ -13,7 +13,7 @@ import (
 	"github.com/Pallinder/go-randomdata"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/wI2L/fizz/internal/golden"
+	"github.com/KeisukeFD/fizz/internal/golden"
 )
 
 var genConfig = &SpecGenConfig{

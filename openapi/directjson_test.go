@@ -3,7 +3,7 @@ package openapi_test
 import (
 	"testing"
 
-	"github.com/wI2L/fizz/openapi"
+	"github.com/KeisukeFD/fizz/openapi"
 )
 
 // TestDirectJSONMethods calls the encoding/json (v1) methods of every spec

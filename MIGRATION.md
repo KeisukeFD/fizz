@@ -2,7 +2,7 @@
 
 v0.30 is a rewrite of the generator. The way you register routes is the same: `fizz.New()`, `NewFromEngine(e)`, `GET`, `Group`, `fizz.ID`, `fizz.Response` and the other options keep their names and signatures. What changed is the **document** (OpenAPI 3.0.1 became 3.2.1, and many schemas changed), the **OpenAPI model** in package `openapi`, and how **errors** are reported.
 
-The module path is the same, `github.com/wI2L/fizz`. The release is `v0.30.x`, then `v1.0.0` once it is stable: expect small API corrections between the two.
+The module path changed from `github.com/wI2L/fizz` to `github.com/KeisukeFD/fizz`: update your imports (and `go get github.com/KeisukeFD/fizz`). The release is `v0.30.x`, then `v1.0.0` once it is stable: expect small API corrections between the two.
 
 Contents: [Requirements](#requirements) · [Go API](#go-api-changes-that-can-break-your-build) · [Generated document](#generated-document-changes-that-break-your-snapshots-and-clients) · [Recipes](#recipes) · [Checklist](#checklist)
 

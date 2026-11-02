@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/wI2L/fizz/internal/acceptance/at"
+	"github.com/KeisukeFD/fizz/internal/acceptance/at"
 )
 
 // Batch I (docs): I12 and I15. I10 and I11 live in docs_snippets_test.go with

@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/wI2L/fizz/internal/acceptance/at"
-	"github.com/wI2L/fizz/internal/plan"
+	"github.com/KeisukeFD/fizz/internal/acceptance/at"
+	"github.com/KeisukeFD/fizz/internal/plan"
 )
 
 // fakeT stands in for the *testing.T that Pending reports to: Skip and

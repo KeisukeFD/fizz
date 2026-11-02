@@ -16,7 +16,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/wI2L/fizz/internal/specvalidate"
+	"github.com/KeisukeFD/fizz/internal/specvalidate"
 )
 
 // TargetVersion is the OpenAPI version every upgraded document carries.

@@ -15,7 +15,7 @@ import (
 	google "github.com/google/uuid"
 	"github.com/loopfz/gadgeto/tonic"
 
-	"github.com/wI2L/fizz"
+	"github.com/KeisukeFD/fizz"
 )
 
 // Test types for the type-mapping cases. All are prefixed T to stay clear

@@ -8,9 +8,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/wI2L/fizz/internal/conformance/upgrade"
-	"github.com/wI2L/fizz/internal/kitchensink"
-	"github.com/wI2L/fizz/internal/plan"
+	"github.com/KeisukeFD/fizz/internal/conformance/upgrade"
+	"github.com/KeisukeFD/fizz/internal/kitchensink"
+	"github.com/KeisukeFD/fizz/internal/plan"
 )
 
 // nonDocumentGoldens lists testdata JSON/YAML files (slash-separated, from

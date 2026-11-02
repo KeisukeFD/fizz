@@ -6,8 +6,8 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/wI2L/fizz"
-	"github.com/wI2L/fizz/internal/plan"
+	"github.com/KeisukeFD/fizz"
+	"github.com/KeisukeFD/fizz/internal/plan"
 )
 
 // kDiffSample is a kitchen-sink sample type with a fizz registration

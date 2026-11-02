@@ -5,7 +5,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/wI2L/fizz/openapi"
+	"github.com/KeisukeFD/fizz/openapi"
 )
 
 func TestWithHooksComposesInOrder(t *testing.T) {

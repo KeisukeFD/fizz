@@ -11,7 +11,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/wI2L/fizz/internal/acceptance/at"
+	"github.com/KeisukeFD/fizz/internal/acceptance/at"
 )
 
 // bARoot returns the repository root (the directory holding go.mod).

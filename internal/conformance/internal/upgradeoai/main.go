@@ -11,7 +11,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/wI2L/fizz/internal/conformance/upgrade"
+	"github.com/KeisukeFD/fizz/internal/conformance/upgrade"
 )
 
 func main() {

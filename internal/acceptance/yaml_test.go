@@ -12,11 +12,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/loopfz/gadgeto/tonic"
 
-	"github.com/wI2L/fizz"
-	"github.com/wI2L/fizz/internal/acceptance/at"
-	"github.com/wI2L/fizz/internal/kitchensink"
-	"github.com/wI2L/fizz/internal/plan"
-	"github.com/wI2L/fizz/openapi"
+	"github.com/KeisukeFD/fizz"
+	"github.com/KeisukeFD/fizz/internal/acceptance/at"
+	"github.com/KeisukeFD/fizz/internal/kitchensink"
+	"github.com/KeisukeFD/fizz/internal/plan"
+	"github.com/KeisukeFD/fizz/openapi"
 )
 
 // Batch G (YAML): the served YAML document must be the served JSON

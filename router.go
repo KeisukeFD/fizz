@@ -9,9 +9,9 @@ import (
 	"slices"
 	"sync"
 
+	"github.com/KeisukeFD/fizz/openapi"
 	"github.com/gin-gonic/gin"
 	"github.com/loopfz/gadgeto/tonic"
-	"github.com/wI2L/fizz/openapi"
 )
 
 // Group creates a new group of routes.

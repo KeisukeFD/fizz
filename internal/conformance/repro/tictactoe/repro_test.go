@@ -3,7 +3,7 @@ package tictactoe
 import (
 	"testing"
 
-	"github.com/wI2L/fizz/internal/conformance/repro"
+	"github.com/KeisukeFD/fizz/internal/conformance/repro"
 )
 
 // TestReproTicTacToe rebuilds learn.openapis.org examples/v3.1/tictactoe.json.

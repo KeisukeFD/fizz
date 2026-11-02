@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/wI2L/fizz/openapi/internal/vtag"
+	"github.com/KeisukeFD/fizz/openapi/internal/vtag"
 )
 
 // updateSchemaValidation fills the JSON Schema validation keywords of

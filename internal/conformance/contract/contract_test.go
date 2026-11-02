@@ -6,17 +6,17 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/wI2L/fizz"
-	"github.com/wI2L/fizz/internal/conformance/contract"
-	"github.com/wI2L/fizz/internal/conformance/repro"
-	"github.com/wI2L/fizz/internal/conformance/repro/apiwithexamples"
-	"github.com/wI2L/fizz/internal/conformance/repro/baseuriretrieval"
-	"github.com/wI2L/fizz/internal/conformance/repro/petstore"
-	"github.com/wI2L/fizz/internal/conformance/repro/petstoreexpanded"
-	"github.com/wI2L/fizz/internal/conformance/repro/query32"
-	"github.com/wI2L/fizz/internal/conformance/repro/tags32"
-	"github.com/wI2L/fizz/internal/conformance/repro/uspto"
-	"github.com/wI2L/fizz/internal/plan"
+	"github.com/KeisukeFD/fizz"
+	"github.com/KeisukeFD/fizz/internal/conformance/contract"
+	"github.com/KeisukeFD/fizz/internal/conformance/repro"
+	"github.com/KeisukeFD/fizz/internal/conformance/repro/apiwithexamples"
+	"github.com/KeisukeFD/fizz/internal/conformance/repro/baseuriretrieval"
+	"github.com/KeisukeFD/fizz/internal/conformance/repro/petstore"
+	"github.com/KeisukeFD/fizz/internal/conformance/repro/petstoreexpanded"
+	"github.com/KeisukeFD/fizz/internal/conformance/repro/query32"
+	"github.com/KeisukeFD/fizz/internal/conformance/repro/tags32"
+	"github.com/KeisukeFD/fizz/internal/conformance/repro/uspto"
+	"github.com/KeisukeFD/fizz/internal/plan"
 )
 
 // TestContractFixture drives the fixture app from its own spec.

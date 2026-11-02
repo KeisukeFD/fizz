@@ -9,7 +9,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/wI2L/fizz/bind"
+	"github.com/KeisukeFD/fizz/bind"
 )
 
 var tags = bind.Tags{Query: "query", Cookie: "cookie", Style: "style", Default: "default"}

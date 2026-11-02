@@ -3,7 +3,7 @@ package tags32
 import (
 	"testing"
 
-	"github.com/wI2L/fizz/internal/conformance/repro"
+	"github.com/KeisukeFD/fizz/internal/conformance/repro"
 )
 
 // TestReproTags32 rebuilds learn.openapis.org examples/v3.2/3.2-tags-example.json.

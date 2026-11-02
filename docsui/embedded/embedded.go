@@ -7,7 +7,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/wI2L/fizz/docsui"
+	"github.com/KeisukeFD/fizz/docsui"
 )
 
 //go:embed assets

@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/wI2L/fizz"
+	"github.com/KeisukeFD/fizz"
 )
 
 const doc = `{"a":{"b/c":[1,{"d":"x"}],"n":null}}`

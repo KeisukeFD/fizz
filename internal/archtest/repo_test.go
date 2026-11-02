@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/wI2L/fizz/internal/acceptance/at"
+	"github.com/KeisukeFD/fizz/internal/acceptance/at"
 )
 
 // A04: go.mod invariants.
@@ -19,7 +19,7 @@ func TestModuleInvariants(t *testing.T) {
 	}
 	mod := string(b)
 	for name, re := range map[string]string{
-		"module path":    `(?m)^module github\.com/wI2L/fizz\s*$`,
+		"module path":    `(?m)^module github\.com/KeisukeFD/fizz\s*$`,
 		"go directive":   `(?m)^go 1\.27(\.\d+)?\s*$`,
 		"gadgeto v0.9.0": `(?m)^\s*github\.com/loopfz/gadgeto v0\.9\.0\s*(//.*)?$`,
 	} {

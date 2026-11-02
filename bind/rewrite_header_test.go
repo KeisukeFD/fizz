@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/wI2L/fizz/bind"
+	"github.com/KeisukeFD/fizz/bind"
 )
 
 type headerIn struct {

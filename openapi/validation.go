@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/wI2L/fizz/openapi/internal/vtag"
+	"github.com/KeisukeFD/fizz/openapi/internal/vtag"
 )
 
 // vkind is the class of a Go type that decides how a validate rule

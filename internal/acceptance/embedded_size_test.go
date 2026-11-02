@@ -14,7 +14,7 @@ import (
 
 const bEmbSrc = `package main
 
-import "github.com/wI2L/fizz"
+import "github.com/KeisukeFD/fizz"
 
 func main() {
 	f := fizz.New()

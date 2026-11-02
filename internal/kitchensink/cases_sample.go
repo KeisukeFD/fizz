@@ -4,8 +4,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/loopfz/gadgeto/tonic"
 
-	"github.com/wI2L/fizz"
-	"github.com/wI2L/fizz/internal/kitchensink/a/models"
+	"github.com/KeisukeFD/fizz"
+	"github.com/KeisukeFD/fizz/internal/kitchensink/a/models"
 )
 
 func getItem(*gin.Context, *struct{}) (*models.Item, error) { return &models.Item{}, nil }

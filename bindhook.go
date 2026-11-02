@@ -8,8 +8,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/loopfz/gadgeto/tonic"
 
-	"github.com/wI2L/fizz/bind"
-	"github.com/wI2L/fizz/openapi"
+	"github.com/KeisukeFD/fizz/bind"
+	"github.com/KeisukeFD/fizz/openapi"
 )
 
 // ctxBindStateKey is the key of the request context value that holds the

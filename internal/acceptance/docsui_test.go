@@ -20,10 +20,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/wI2L/fizz"
-	"github.com/wI2L/fizz/docsui"
-	"github.com/wI2L/fizz/internal/acceptance/at"
-	"github.com/wI2L/fizz/internal/golden"
+	"github.com/KeisukeFD/fizz"
+	"github.com/KeisukeFD/fizz/docsui"
+	"github.com/KeisukeFD/fizz/internal/acceptance/at"
+	"github.com/KeisukeFD/fizz/internal/golden"
 )
 
 var bCSRIRe = regexp.MustCompile(`^sha384-[A-Za-z0-9+/]{64}$`)
@@ -426,7 +426,7 @@ func TestBCDocsGodoc(t *testing.T) {
 		if files == nil {
 			tb.Fatal("package fizz not found")
 		}
-		p, err := doc.NewFromFiles(fset, bCFiles(files.Files), "github.com/wI2L/fizz")
+		p, err := doc.NewFromFiles(fset, bCFiles(files.Files), "github.com/KeisukeFD/fizz")
 		if err != nil {
 			tb.Fatal(err)
 		}

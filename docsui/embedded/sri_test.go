@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/wI2L/fizz/docsui"
+	"github.com/KeisukeFD/fizz/docsui"
 )
 
 // pinned maps every pinned asset URL to its SRI constant.

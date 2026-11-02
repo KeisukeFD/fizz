@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/wI2L/fizz/internal/acceptance/at"
-	"github.com/wI2L/fizz/internal/conformance/contract"
+	"github.com/KeisukeFD/fizz/internal/acceptance/at"
+	"github.com/KeisukeFD/fizz/internal/conformance/contract"
 )
 
 // TestContractMarket drives the market from the spec it serves (P10.6). It

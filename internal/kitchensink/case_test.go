@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/wI2L/fizz"
+	"github.com/KeisukeFD/fizz"
 )
 
 func TestCaseCustomNew(t *testing.T) {

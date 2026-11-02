@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/wI2L/fizz/bind"
+	"github.com/KeisukeFD/fizz/bind"
 )
 
 var rwTags = bind.Tags{Query: "query", Path: "path", Cookie: "cookie", Style: "style", Explode: "explode", Default: "default"}

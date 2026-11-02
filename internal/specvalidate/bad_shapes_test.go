@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/wI2L/fizz/internal/specvalidate"
+	"github.com/KeisukeFD/fizz/internal/specvalidate"
 )
 
 // doc wraps the given paths and components JSON in a 3.2.1 document.

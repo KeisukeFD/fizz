@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/wI2L/fizz/openapi"
+	"github.com/KeisukeFD/fizz/openapi"
 )
 
 // numberSeeds are numbers that a float64 cannot hold.

@@ -13,7 +13,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/wI2L/fizz/internal/plan"
+	"github.com/KeisukeFD/fizz/internal/plan"
 )
 
 var bAFixedBy = regexp.MustCompile(`^FixedBy: (P\d+\.\d+[a-z]?(?:\+P\d+\.\d+[a-z]?)*)$`)

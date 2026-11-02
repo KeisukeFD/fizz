@@ -7,8 +7,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/wI2L/fizz/docsui"
-	"github.com/wI2L/fizz/docsui/embedded"
+	"github.com/KeisukeFD/fizz/docsui"
+	"github.com/KeisukeFD/fizz/docsui/embedded"
 )
 
 type docsRenderer int

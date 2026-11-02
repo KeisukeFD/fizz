@@ -3,7 +3,7 @@ package fizz
 import (
 	"reflect"
 
-	"github.com/wI2L/fizz/openapi"
+	"github.com/KeisukeFD/fizz/openapi"
 )
 
 // config holds the settings built from the Options passed
