@@ -215,15 +215,6 @@ var BadParams = []string{
 	"option header array", "option path array",
 }
 
-// BadParamTasks maps a variant of NewBadParam to the plan task that made
-// it a generation error.
-var BadParamTasks = map[string]string{
-	"map query": "P10.7b", "struct query": "P10.7b", "map header": "P10.7b",
-	"slice header": "P10.7e", "array header": "P10.7e", "slice header ints": "P10.7e",
-	"option header array": "P10.7e",
-	"slice path":          "P10.7l", "option path array": "P10.7l",
-}
-
 // NewBadParam returns an app with one parameter that tonic cannot bind and
 // that the document should not offer: a map or struct outside deepObject
 // (P10.7b), or a slice or array in a header or in the path, which tonic

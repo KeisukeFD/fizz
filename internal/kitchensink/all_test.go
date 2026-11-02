@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/KeisukeFD/fizz/internal/golden"
-	"github.com/KeisukeFD/fizz/internal/plan"
 )
 
 // TestKitchenSinkGolden asserts the whole document of NewWholeFizz (JSON
@@ -22,18 +21,14 @@ func TestKitchenSinkGolden(t *testing.T) {
 	golden.Assert(t, wholeGoldenYAML, serveSpec(t, f, "yaml"))
 }
 
-// TestKitchenSinkMeta runs the meta-schema gate on the whole fixture. It
-// is red until P4.5: the generic component name
-// "GenericPage[...LegacyPet]" breaks ^[a-zA-Z0-9._-]+$ (validate and
-// component-names).
+// TestKitchenSinkMeta runs the meta-schema gate on the whole fixture.
 func TestKitchenSinkMeta(t *testing.T) {
-	plan.Pending(t, "P4.5", func(tb testing.TB) {
-		doc, err := BuildSpec(NewWholeFizz())
-		if err != nil {
-			tb.Fatal(err)
-		}
-		for _, p := range MetaProblems(doc) {
-			tb.Error(p)
-		}
-	})
+	doc, err := BuildSpec(NewWholeFizz())
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, p := range MetaProblems(doc) {
+		t.Error(p)
+	}
+
 }

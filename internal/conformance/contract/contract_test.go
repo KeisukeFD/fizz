@@ -16,7 +16,6 @@ import (
 	"github.com/KeisukeFD/fizz/internal/conformance/repro/query32"
 	"github.com/KeisukeFD/fizz/internal/conformance/repro/tags32"
 	"github.com/KeisukeFD/fizz/internal/conformance/repro/uspto"
-	"github.com/KeisukeFD/fizz/internal/plan"
 )
 
 // TestContractFixture drives the fixture app from its own spec.
@@ -27,7 +26,6 @@ func TestContractFixture(t *testing.T) {
 		Handler: f,
 		Spec:    spec,
 		Echo:    true,
-		Pending: fixturePending(),
 	})
 }
 
@@ -36,10 +34,7 @@ func TestContractFixture(t *testing.T) {
 func TestContractSliceDefault(t *testing.T) {
 	f := contract.NewSliceDefault()
 	if err := f.Err(); err != nil {
-		plan.Pending(t, "P10.7c", func(tb testing.TB) {
-			tb.Fatalf("fizz errors: %v", err)
-		})
-		return
+		t.Fatalf("fizz errors: %v", err)
 	}
 	contract.Run(t, contract.Target{Handler: f, Spec: repro.Serve(t, f), Echo: true})
 }
@@ -50,12 +45,10 @@ func TestContractSliceDefault(t *testing.T) {
 func TestContractBadParam(t *testing.T) {
 	for _, variant := range contract.BadParams {
 		t.Run(strings.ReplaceAll(variant, " ", "_"), func(t *testing.T) {
-			plan.Pending(t, contract.BadParamTasks[variant], func(tb testing.TB) {
-				f := contract.NewBadParam(variant)
-				if f.Err() == nil {
-					tb.Errorf("%s parameter: f.Errors() = %v, want an error", variant, f.Errors())
-				}
-			})
+			f := contract.NewBadParam(variant)
+			if f.Err() == nil {
+				t.Errorf("%s parameter: f.Errors() = %v, want an error", variant, f.Errors())
+			}
 		})
 	}
 }
@@ -119,26 +112,4 @@ func TestContractRepro(t *testing.T) {
 			contract.Run(t, contract.Target{Handler: f, Spec: spec})
 		})
 	}
-}
-
-// fixturePending lists the drifts that the fixture reproduces, each with
-// the plan task that fixes it. Keys are "<operationId> <in>:<name>" (see
-// contract.Target.Pending).
-func fixturePending() map[string]string {
-	p := map[string]string{
-		// P10.7j: spaceDelimited and pipeDelimited are documented, and
-		// tonic splits on commas only.
-		"arrays query:space": "P10.7j",
-		"arrays query:pipe":  "P10.7j",
-
-		// P10.7k: label and matrix path parameters are bound with their
-		// leading delimiter.
-		"label path:pl":  "P10.7k",
-		"matrix path:pm": "P10.7k",
-
-		// P10.7m: a form cookie is documented as percent-encoded, and the
-		// bind hook does not decode it.
-		"special cookie:csp": "P10.7m",
-	}
-	return p
 }

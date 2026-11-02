@@ -89,15 +89,14 @@ func bBWantFilter(tb testing.TB, w *httptest.ResponseRecorder, want map[string]a
 // B25: a user hook set before New is composed, not replaced and not
 // stacked: it runs once per request and deepObject still binds.
 func TestBBUserHookComposed(t *testing.T) {
-	at.Pending(t, "P7.2b", func(tb testing.TB) {
-		h := bBNewApp("composed")
-		bBCount.Store(0)
-		w := at.Do(h, "GET", "/map?filter[a]=b")
-		if n := bBCount.Load(); n != 1 {
-			tb.Errorf("user hook ran %d times, want 1", n)
-		}
-		bBWantFilter(tb, w, map[string]any{"a": "b"})
-	})
+	h := bBNewApp("composed")
+	bBCount.Store(0)
+	w := at.Do(h, "GET", "/map?filter[a]=b")
+	if n := bBCount.Load(); n != 1 {
+		t.Errorf("user hook ran %d times, want 1", n)
+	}
+	bBWantFilter(t, w, map[string]any{"a": "b"})
+
 }
 
 // B26 guard: an error from the user hook short-circuits as a 400.
@@ -116,34 +115,33 @@ func TestBBUserHookErrorShortCircuits(t *testing.T) {
 // deepObject cannot bind. Fizz warns once, naming "bind hook" and the
 // operation ID, however many requests follow.
 func TestBBReplacedHookWarnsOnce(t *testing.T) {
-	at.Pending(t, "P7.2b", func(tb testing.TB) {
-		prevHook, prevMode, prevWriter := tonic.GetBindHook(), gin.Mode(), gin.DefaultWriter
-		tb.Cleanup(func() {
-			tonic.SetBindHook(prevHook)
-			gin.SetMode(prevMode)
-			gin.DefaultWriter = prevWriter
-		})
-		var buf bytes.Buffer
-		gin.SetMode(gin.DebugMode)
-		gin.DefaultWriter = &buf
+	prevHook, prevMode, prevWriter := tonic.GetBindHook(), gin.Mode(), gin.DefaultWriter
+	t.Cleanup(func() {
+		tonic.SetBindHook(prevHook)
+		gin.SetMode(prevMode)
+		gin.DefaultWriter = prevWriter
+	})
+	var buf bytes.Buffer
+	gin.SetMode(gin.DebugMode)
+	gin.DefaultWriter = &buf
 
-		h := bBNewApp("replacedOp")
-		tonic.SetBindHook(tonic.DefaultBindingHook)
+	h := bBNewApp("replacedOp")
+	tonic.SetBindHook(tonic.DefaultBindingHook)
 
-		for range 2 {
-			bBWantFilter(tb, at.Do(h, "GET", "/map?filter[a]=b"), nil)
-		}
-		n := 0
-		for _, line := range strings.Split(buf.String(), "\n") {
-			if strings.Contains(line, "bind hook") {
-				n++
-				if !strings.Contains(line, "replacedOp") {
-					tb.Errorf("warning does not name the operation ID: %q", line)
-				}
+	for range 2 {
+		bBWantFilter(t, at.Do(h, "GET", "/map?filter[a]=b"), nil)
+	}
+	n := 0
+	for _, line := range strings.Split(buf.String(), "\n") {
+		if strings.Contains(line, "bind hook") {
+			n++
+			if !strings.Contains(line, "replacedOp") {
+				t.Errorf("warning does not name the operation ID: %q", line)
 			}
 		}
-		if n != 1 {
-			tb.Errorf("bind hook warning logged %d times, want 1; output:\n%s", n, buf.String())
-		}
-	})
+	}
+	if n != 1 {
+		t.Errorf("bind hook warning logged %d times, want 1; output:\n%s", n, buf.String())
+	}
+
 }

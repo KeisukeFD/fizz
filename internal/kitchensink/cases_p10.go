@@ -8,7 +8,7 @@ import (
 )
 
 // Review findings that the semantic lint (specvalidate.LintSemantics, part
-// of MetaProblems) catches in fizz output. Each is red until its P10.7 task.
+// of MetaProblems) catches in fizz output.
 type (
 	PSemQueryIn struct {
 		Q string `query:"q"`
@@ -44,7 +44,6 @@ func init() {
 				{Pointer: "/paths/~1x/get/parameters/0/schema", Absent: true},
 				{Pointer: "/paths/~1x/get/parameters/0/content/application~1json", JSON: `{}`},
 			},
-			FixedBy: "P10.7a",
 		},
 		Case{
 			// Parameter Object, in: only query, querystring, header, path
@@ -64,7 +63,6 @@ func init() {
 			Expect: []Fragment{
 				{Pointer: "/paths/~1x/get/parameters", Absent: true},
 			},
-			FixedBy: "P10.7a",
 		},
 		Case{
 			// Paths Object: templated paths that differ only in variable
@@ -81,7 +79,6 @@ func init() {
 				{Pointer: "/paths/~1x~1{a}/get/operationId", JSON: `"getX"`},
 				{Pointer: "/paths/~1x~1{c}", Absent: true},
 			},
-			FixedBy: "P10.7h",
 		},
 		Case{
 			// Parameter Object, name: a header parameter named
@@ -93,7 +90,6 @@ func init() {
 			Expect: []Fragment{
 				{Pointer: "/paths/~1x/get/parameters", Absent: true},
 			},
-			FixedBy: "P10.7f",
 		},
 		Case{
 			// tonic binds a header from one string and does not split it

@@ -10,17 +10,9 @@ import (
 	"go.yaml.in/yaml/v3"
 
 	"github.com/KeisukeFD/fizz/internal/golden"
-	"github.com/KeisukeFD/fizz/internal/plan"
 	"github.com/KeisukeFD/fizz/internal/specvalidate"
 	"github.com/KeisukeFD/fizz/openapi"
 )
-
-// roundTripFixedBy maps a corpus document (the name of its subtest) to the
-// plan tasks that fix its round-trip losses, joined with "+". A document
-// that is absent must round-trip exactly. This is never an allowlist: each
-// task is a spec-model bug listed in docs/plan/PLAN-v2.md (P10.3a...), and
-// once the task is in plan.Done its documents must pass.
-var roundTripFixedBy = map[string]string{}
 
 // diffJSON reports the semantic differences between want and got (at most
 // maxDiffs of them), or "" when they are equal. Key order and number
@@ -106,25 +98,13 @@ func TestCorpusRoundTrip(t *testing.T) {
 	if len(names) == 0 {
 		t.Fatal("no corpus documents")
 	}
-	used := map[string]bool{}
 	for _, name := range names {
 		sub := strings.TrimPrefix(strings.TrimSuffix(name, ".json"), "upgraded/")
-		fixedBy := roundTripFixedBy[sub]
-		if fixedBy != "" {
-			used[sub] = true
-		}
 		t.Run(sub, func(t *testing.T) {
-			plan.Pending(t, fixedBy, func(tb testing.TB) {
-				if p := roundTripProblems(c.Files[name]); len(p) > 0 {
-					tb.Fatal(strings.Join(p, "\n"))
-				}
-			})
+			if p := roundTripProblems(c.Files[name]); len(p) > 0 {
+				t.Fatal(strings.Join(p, "\n"))
+			}
 		})
-	}
-	for sub := range roundTripFixedBy {
-		if !used[sub] {
-			t.Errorf("roundTripFixedBy entry %s matches no corpus document", sub)
-		}
 	}
 }
 

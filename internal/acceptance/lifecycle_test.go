@@ -18,8 +18,7 @@ import (
 	"github.com/KeisukeFD/fizz/openapi"
 )
 
-// Batch G (lifecycle, errors, context): the tests that compile against
-// today's API. tonic.Handler writes a process-global map, so none of
+// Batch G (lifecycle, errors, context). tonic.Handler writes a process-global map, so none of
 // these tests runs in parallel.
 
 type (
@@ -75,10 +74,9 @@ func bGGinTestMode(t testing.TB) {
 
 // bGRow is one row of TestNoPanicsOnBadInput.
 type bGRow struct {
-	name    string
-	fixedBy string // "" when the row passes today
-	method  string
-	path    string // the route, and the substring Errors() must contain
+	name   string
+	method string
+	path   string // the route, and the substring Errors() must contain
 	// want overrides path as the substring Errors() must contain.
 	want     string
 	register func(f *fizz.Fizz)
@@ -90,47 +88,47 @@ func bGRows() []bGRow {
 	get := http.MethodGet
 	return []bGRow{
 		{
-			name: "r01-omitempty", fixedBy: "P4.2+P4.8", method: get, path: "/r01",
+			name: "r01-omitempty", method: get, path: "/r01",
 			register: func(f *fizz.Fizz) {
 				f.GET("/r01", bGOpts(fizz.ID("r01")), tonic.Handler(bGHandler[bGOmitIn], 200))
 			},
 		},
 		{
-			name: "r02-response-code-clash", fixedBy: "P4.8", method: get, path: "/r02",
+			name: "r02-response-code-clash", method: get, path: "/r02",
 			register: func(f *fizz.Fizz) {
 				f.GET("/r02", bGOpts(fizz.ID("r02"), fizz.Response("200", "again", nil, nil, nil)),
 					tonic.Handler(bGHandler[bGEmpty], 200))
 			},
 		},
 		{
-			name: "r03-conflicting-locations", fixedBy: "P4.8", method: get, path: "/r03/1",
+			name: "r03-conflicting-locations", method: get, path: "/r03/1",
 			want: "/r03/",
 			register: func(f *fizz.Fizz) {
 				f.GET("/r03/:id", bGOpts(fizz.ID("r03")), tonic.Handler(bGHandler[bGConflictIn], 200))
 			},
 		},
 		{
-			name: "r04-duplicate-explicit-id", fixedBy: "P4.8", method: get, path: "/r04b",
+			name: "r04-duplicate-explicit-id", method: get, path: "/r04b",
 			register: func(f *fizz.Fizz) {
 				f.GET("/r04a", bGOpts(fizz.ID("r04")), tonic.Handler(bGHandler[bGEmpty], 200))
 				f.GET("/r04b", bGOpts(fizz.ID("r04")), tonic.Handler(bGHandler[bGEmpty], 200))
 			},
 		},
 		{
-			name: "r05-two-tonic-handlers", fixedBy: "P4.8", method: get, path: "/r05",
+			name: "r05-two-tonic-handlers", method: get, path: "/r05",
 			register: func(f *fizz.Fizz) {
 				f.GET("/r05", bGOpts(fizz.ID("r05")),
 					tonic.Handler(bGHandler[bGEmpty], 200), tonic.Handler(bGHandler[bGEmpty], 200))
 			},
 		},
 		{
-			name: "r06-chan-body-field", fixedBy: "P3.3+P4.8", method: http.MethodPost, path: "/r06",
+			name: "r06-chan-body-field", method: http.MethodPost, path: "/r06",
 			register: func(f *fizz.Fizz) {
 				f.POST("/r06", bGOpts(fizz.ID("r06")), tonic.Handler(bGHandler[bGChanBody], 200))
 			},
 		},
 		{
-			name: "r07-nan-example", fixedBy: "P2.5", method: get, path: "/r07",
+			name: "r07-nan-example", method: get, path: "/r07",
 			register: func(f *fizz.Fizz) {
 				f.GET("/r07", bGOpts(fizz.ID("r07"),
 					fizz.ResponseWithExamples("400", "bad", new(bGOut), nil, map[string]any{"bad": math.NaN()})),
@@ -144,19 +142,19 @@ func bGRows() []bGRow {
 			},
 		},
 		{
-			name: "r08-bool-default", fixedBy: "P3.6+P4.8", method: get, path: "/r08",
+			name: "r08-bool-default", method: get, path: "/r08",
 			register: func(f *fizz.Fizz) {
 				f.GET("/r08", bGOpts(fizz.ID("r08")), tonic.Handler(bGHandler[bGBadBoolIn], 200))
 			},
 		},
 		{
-			name: "r09-duration-default", fixedBy: "P3.6+P4.8", method: get, path: "/r09",
+			name: "r09-duration-default", method: get, path: "/r09",
 			register: func(f *fizz.Fizz) {
 				f.GET("/r09", bGOpts(fizz.ID("r09")), tonic.Handler(bGHandler[bGDurationIn], 200))
 			},
 		},
 		{
-			name: "r10-cookie-on-struct", fixedBy: "P4.2c+P4.8", method: get, path: "/r10",
+			name: "r10-cookie-on-struct", method: get, path: "/r10",
 			register: func(f *fizz.Fizz) {
 				f.GET("/r10", bGOpts(fizz.ID("r10")), tonic.Handler(bGHandler[bGCookieIn], 200))
 			},
@@ -175,7 +173,7 @@ func bGRows() []bGRow {
 		},
 		{
 			// The error names the scheme: it has no route of its own.
-			name: "r13-empty-security-scheme", fixedBy: "P4.8", method: get, path: "/r13", want: "r13scheme",
+			name: "r13-empty-security-scheme", method: get, path: "/r13", want: "r13scheme",
 			register: func(f *fizz.Fizz) {
 				f.GET("/r13", bGOpts(fizz.ID("r13")), tonic.Handler(bGHandler[bGEmpty], 200))
 				f.Generator().SetSecuritySchemes(map[string]*openapi.SecuritySchemeOrRef{"r13scheme": {}})
@@ -193,27 +191,24 @@ func TestNoPanicsOnBadInput(t *testing.T) {
 	f := fizz.New()
 	for _, r := range bGRows() {
 		t.Run(r.name, func(t *testing.T) {
-			// Pending with an empty task turns failures and panics into
-			// plain failures: that is the unwrapped form for passing rows.
-			at.Pending(t, r.fixedBy, func(tb testing.TB) {
-				tb.Helper()
-				r.register(f) // a panic fails the row
-				if w := at.Do(f, r.method, r.path); w.Code == http.StatusNotFound {
-					tb.Errorf("%s %s: gin route not registered (404)", r.method, r.path)
-				}
-				want := r.want
-				if want == "" {
-					want = r.path
-				}
-				if !slices.ContainsFunc(f.Errors(), func(err error) bool {
-					return strings.Contains(err.Error(), want)
-				}) {
-					tb.Errorf("no Errors() entry contains %q; errors: %v", want, f.Errors())
-				}
-				if r.extra != nil {
-					r.extra(tb, f)
-				}
-			})
+			t.Helper()
+			r.register(f) // a panic fails the row
+			if w := at.Do(f, r.method, r.path); w.Code == http.StatusNotFound {
+				t.Errorf("%s %s: gin route not registered (404)", r.method, r.path)
+			}
+			want := r.want
+			if want == "" {
+				want = r.path
+			}
+			if !slices.ContainsFunc(f.Errors(), func(err error) bool {
+				return strings.Contains(err.Error(), want)
+			}) {
+				t.Errorf("no Errors() entry contains %q; errors: %v", want, f.Errors())
+			}
+			if r.extra != nil {
+				r.extra(t, f)
+			}
+
 		})
 	}
 }
@@ -230,42 +225,40 @@ func bGErrorsFizz(t testing.TB) *fizz.Fizz {
 }
 
 func TestErrorsReturnsCopy(t *testing.T) {
-	at.Pending(t, "P4.8", func(tb testing.TB) {
-		f := bGErrorsFizz(tb)
-		first := f.Errors()
-		want := make([]string, len(first))
-		for i, e := range first {
-			want[i] = e.Error()
+	f := bGErrorsFizz(t)
+	first := f.Errors()
+	want := make([]string, len(first))
+	for i, e := range first {
+		want[i] = e.Error()
+	}
+	first[0] = nil
+	got := f.Errors()
+	if len(got) != len(want) {
+		t.Fatalf("Errors() length changed: got %d, want %d", len(got), len(want))
+	}
+	for i, e := range got {
+		if e == nil || e.Error() != want[i] {
+			t.Fatalf("Errors()[%d] changed after the caller mutated a previous result", i)
 		}
-		first[0] = nil
-		got := f.Errors()
-		if len(got) != len(want) {
-			tb.Fatalf("Errors() length changed: got %d, want %d", len(got), len(want))
-		}
-		for i, e := range got {
-			if e == nil || e.Error() != want[i] {
-				tb.Fatalf("Errors()[%d] changed after the caller mutated a previous result", i)
-			}
-		}
-	})
+	}
+
 }
 
 func TestFailedOpLeavesNoTrace(t *testing.T) {
-	at.Pending(t, "P4.8", func(tb testing.TB) {
-		bGGinTestMode(tb)
-		f := fizz.New()
-		f.GET("/clash", bGOpts(fizz.ID("x"), fizz.Response("200", "again", nil, nil, nil)),
-			tonic.Handler(bGHandler[bGEmpty], 200))
-		at.Absent(tb, at.Spec(tb, f), "/paths/~1clash")
+	bGGinTestMode(t)
+	f := fizz.New()
+	f.GET("/clash", bGOpts(fizz.ID("x"), fizz.Response("200", "again", nil, nil, nil)),
+		tonic.Handler(bGHandler[bGEmpty], 200))
+	at.Absent(t, at.Spec(t, f), "/paths/~1clash")
 
-		f.GET("/second", bGOpts(fizz.ID("x")), tonic.Handler(bGHandler[bGEmpty], 200))
-		for _, err := range f.Errors() {
-			if s := err.Error(); strings.Contains(s, "/second") || strings.Contains(s, "already used") {
-				tb.Errorf("reusing ID x after a failed operation recorded: %v", err)
-			}
+	f.GET("/second", bGOpts(fizz.ID("x")), tonic.Handler(bGHandler[bGEmpty], 200))
+	for _, err := range f.Errors() {
+		if s := err.Error(); strings.Contains(s, "/second") || strings.Contains(s, "already used") {
+			t.Errorf("reusing ID x after a failed operation recorded: %v", err)
 		}
-		at.Frag(tb, at.Spec(tb, f), "/paths/~1second/get/operationId", `"x"`)
-	})
+	}
+	at.Frag(t, at.Spec(t, f), "/paths/~1second/get/operationId", `"x"`)
+
 }
 
 // bGSpecFizz serves the JSON spec on /openapi.json.
@@ -292,25 +285,24 @@ func TestSpecCacheInvalidation(t *testing.T) {
 }
 
 func TestAPIReturnsDeepClone(t *testing.T) {
-	at.Pending(t, "P5.1", func(tb testing.TB) {
-		bGGinTestMode(tb)
-		f := bGSpecFizz()
-		f.Generator().SetInfo(&openapi.Info{Title: "orig", Version: "0"})
-		f.GET("/x", bGOpts(fizz.ID("x")), tonic.Handler(bGHandler[bGEmpty], 200))
-		before := at.Do(f, http.MethodGet, "/openapi.json").Body.String()
+	bGGinTestMode(t)
+	f := bGSpecFizz()
+	f.Generator().SetInfo(&openapi.Info{Title: "orig", Version: "0"})
+	f.GET("/x", bGOpts(fizz.ID("x")), tonic.Handler(bGHandler[bGEmpty], 200))
+	before := at.Do(f, http.MethodGet, "/openapi.json").Body.String()
 
-		a := f.Generator().API()
-		a.Paths["/x"] = nil
-		a.Info.Title = "mutated"
+	a := f.Generator().API()
+	a.Paths["/x"] = nil
+	a.Info.Title = "mutated"
 
-		if got := f.Generator().API(); got.Paths["/x"] == nil || got.Info.Title != "orig" {
-			tb.Errorf("next API() sees the caller's mutation: path nil=%t, title=%q",
-				got.Paths["/x"] == nil, got.Info.Title)
-		}
-		if after := at.Do(f, http.MethodGet, "/openapi.json").Body.String(); after != before {
-			tb.Errorf("served document changed after mutating API():\nbefore %s\nafter  %s", before, after)
-		}
-	})
+	if got := f.Generator().API(); got.Paths["/x"] == nil || got.Info.Title != "orig" {
+		t.Errorf("next API() sees the caller's mutation: path nil=%t, title=%q",
+			got.Paths["/x"] == nil, got.Info.Title)
+	}
+	if after := at.Do(f, http.MethodGet, "/openapi.json").Body.String(); after != before {
+		t.Errorf("served document changed after mutating API():\nbefore %s\nafter  %s", before, after)
+	}
+
 }
 
 // bGOpRecord is what a handler observed about its operation.
@@ -342,50 +334,48 @@ func bGOpHandler(rec *bGOpRecord, mutate bool) gin.HandlerFunc {
 }
 
 func TestOperationInRequestContext(t *testing.T) {
-	at.Pending(t, "P5.1", func(tb testing.TB) {
-		bGGinTestMode(tb)
-		var rec bGOpRecord
-		f := fizz.New()
-		f.GET("/ctx", bGOpts(fizz.ID("getCtx")), bGOpHandler(&rec, false))
-		if w := at.Do(f, http.MethodGet, "/ctx"); w.Code != http.StatusOK {
-			tb.Fatalf("status %d: %s", w.Code, w.Body)
-		}
-		if rec.ctxErr != nil || rec.ctxOp == nil {
-			tb.Fatalf("operation not in the request context: %v", rec.ctxErr)
-		}
-		if rec.ctxOp.ID != "getCtx" {
-			tb.Errorf("operation ID %q, want getCtx", rec.ctxOp.ID)
-		}
-		if rec.keysHoldOperation {
-			tb.Error("c.Keys holds a *openapi.Operation; it must travel in the request context")
-		}
-	})
+	bGGinTestMode(t)
+	var rec bGOpRecord
+	f := fizz.New()
+	f.GET("/ctx", bGOpts(fizz.ID("getCtx")), bGOpHandler(&rec, false))
+	if w := at.Do(f, http.MethodGet, "/ctx"); w.Code != http.StatusOK {
+		t.Fatalf("status %d: %s", w.Code, w.Body)
+	}
+	if rec.ctxErr != nil || rec.ctxOp == nil {
+		t.Fatalf("operation not in the request context: %v", rec.ctxErr)
+	}
+	if rec.ctxOp.ID != "getCtx" {
+		t.Errorf("operation ID %q, want getCtx", rec.ctxOp.ID)
+	}
+	if rec.keysHoldOperation {
+		t.Error("c.Keys holds a *openapi.Operation; it must travel in the request context")
+	}
+
 }
 
 func TestOperationFromContextIsClone(t *testing.T) {
-	at.Pending(t, "P5.1", func(tb testing.TB) {
-		bGGinTestMode(tb)
-		var rec bGOpRecord
-		f := bGSpecFizz()
-		bGNoContextFallback(f.Engine())
-		f.GET("/clone", bGOpts(fizz.ID("getClone"), fizz.Summary("orig")), bGOpHandler(&rec, true))
-		before := at.Do(f, http.MethodGet, "/openapi.json").Body.String()
-		if w := at.Do(f, http.MethodGet, "/clone"); w.Code != http.StatusOK {
-			tb.Fatalf("status %d: %s", w.Code, w.Body)
-		}
-		if rec.ctxOp == nil || rec.ctxOp2 == nil {
-			tb.Fatalf("operation not in the request context: %v", rec.ctxErr)
-		}
-		if rec.ctxOp == rec.ctxOp2 {
-			tb.Error("two calls returned the same pointer, want distinct clones")
-		}
-		if after := at.Do(f, http.MethodGet, "/openapi.json").Body.String(); after != before {
-			tb.Errorf("spec changed after the handler mutated its operation:\nbefore %s\nafter  %s", before, after)
-		}
-		if rec.ginErr != nil || rec.ginOp == nil {
-			tb.Errorf("OperationFromContext(*gin.Context) with ContextWithFallback=false: %v", rec.ginErr)
-		}
-	})
+	bGGinTestMode(t)
+	var rec bGOpRecord
+	f := bGSpecFizz()
+	bGNoContextFallback(f.Engine())
+	f.GET("/clone", bGOpts(fizz.ID("getClone"), fizz.Summary("orig")), bGOpHandler(&rec, true))
+	before := at.Do(f, http.MethodGet, "/openapi.json").Body.String()
+	if w := at.Do(f, http.MethodGet, "/clone"); w.Code != http.StatusOK {
+		t.Fatalf("status %d: %s", w.Code, w.Body)
+	}
+	if rec.ctxOp == nil || rec.ctxOp2 == nil {
+		t.Fatalf("operation not in the request context: %v", rec.ctxErr)
+	}
+	if rec.ctxOp == rec.ctxOp2 {
+		t.Error("two calls returned the same pointer, want distinct clones")
+	}
+	if after := at.Do(f, http.MethodGet, "/openapi.json").Body.String(); after != before {
+		t.Errorf("spec changed after the handler mutated its operation:\nbefore %s\nafter  %s", before, after)
+	}
+	if rec.ginErr != nil || rec.ginOp == nil {
+		t.Errorf("OperationFromContext(*gin.Context) with ContextWithFallback=false: %v", rec.ginErr)
+	}
+
 }
 
 // bGNoContextFallback clears Engine.ContextWithFallback. gin v1.7.7
@@ -400,7 +390,6 @@ func bGNoContextFallback(e *gin.Engine) {
 // G09: a DocumentHook that is slow while serving does not hold the lock
 // of the generator, so a route can be registered meanwhile.
 func TestSlowDocumentHookDoesNotBlockRegistration(t *testing.T) {
-	// Not wrapped in at.Pending: synctest.Test needs the real *testing.T.
 	synctest.Test(t, func(t *testing.T) {
 		release := make(chan struct{})
 		f := fizz.New(fizz.WithHooks(openapi.Hooks{Document: func(*openapi.OpenAPI) error {

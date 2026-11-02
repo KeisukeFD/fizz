@@ -148,30 +148,26 @@ func bB400(tb testing.TB, w *httptest.ResponseRecorder, sub ...string) {
 
 // B01
 func TestBBDeepObjectMapBinds(t *testing.T) {
-	at.Pending(t, "P7.2b", func(tb testing.TB) {
-		bBOK(tb, at.Do(bBNewApp(), "GET", "/map?filter[name]=x&filter[age]=3"), `{"Filter":{"name":"x","age":"3"}}`)
-	})
+	bBOK(t, at.Do(bBNewApp(), "GET", "/map?filter[name]=x&filter[age]=3"), `{"Filter":{"name":"x","age":"3"}}`)
+
 }
 
 // B02
 func TestBBDeepObjectDottedKeys(t *testing.T) {
-	at.Pending(t, "P7.2b", func(tb testing.TB) {
-		bBOK(tb, at.Do(bBNewApp(), "GET", "/map?filter[a.b]=x&filter[attr.sss]=v"), `{"Filter":{"a.b":"x","attr.sss":"v"}}`)
-	})
+	bBOK(t, at.Do(bBNewApp(), "GET", "/map?filter[a.b]=x&filter[attr.sss]=v"), `{"Filter":{"a.b":"x","attr.sss":"v"}}`)
+
 }
 
 // B03
 func TestBBDeepObjectEncodedBrackets(t *testing.T) {
-	at.Pending(t, "P7.2b", func(tb testing.TB) {
-		bBOK(tb, at.Do(bBNewApp(), "GET", "/map?filter%5Bname%5D=x"), `{"Filter":{"name":"x"}}`)
-	})
+	bBOK(t, at.Do(bBNewApp(), "GET", "/map?filter%5Bname%5D=x"), `{"Filter":{"name":"x"}}`)
+
 }
 
 // B04
 func TestBBDeepObjectNestedKey400(t *testing.T) {
-	at.Pending(t, "P7.2b", func(tb testing.TB) {
-		bB400(tb, at.Do(bBNewApp(), "GET", "/map?filter[a][b]=x"), "filter[a][b]")
-	})
+	bB400(t, at.Do(bBNewApp(), "GET", "/map?filter[a][b]=x"), "filter[a][b]")
+
 }
 
 // B05 guard: no keys leaves the map nil (not empty). Passes today.
@@ -181,53 +177,48 @@ func TestBBDeepObjectNoKeysNilMap(t *testing.T) {
 
 // B06
 func TestBBDeepObjectValidateRequired(t *testing.T) {
-	at.Pending(t, "P7.2b", func(tb testing.TB) {
-		h := bBNewApp()
-		bB400(tb, at.Do(h, "GET", "/req"))
-		bBOK(tb, at.Do(h, "GET", "/req?filter[k]=v"), `{"Filter":{"k":"v"}}`)
-	})
+	h := bBNewApp()
+	bB400(t, at.Do(h, "GET", "/req"))
+	bBOK(t, at.Do(h, "GET", "/req?filter[k]=v"), `{"Filter":{"k":"v"}}`)
+
 }
 
 // B07
 func TestBBDeepObjectValueConversion(t *testing.T) {
-	at.Pending(t, "P7.2b", func(tb testing.TB) {
-		h := bBNewApp()
-		bBOK(tb, at.Do(h, "GET", "/int?filter[a]=3"), `{"Filter":{"a":3}}`)
-		bB400(tb, at.Do(h, "GET", "/int?filter[a]=x"), "filter[a]")
-	})
+	h := bBNewApp()
+	bBOK(t, at.Do(h, "GET", "/int?filter[a]=3"), `{"Filter":{"a":3}}`)
+	bB400(t, at.Do(h, "GET", "/int?filter[a]=x"), "filter[a]")
+
 }
 
 // B08 (§5 O14): repeated keys collect into slices, and are an error
 // for scalar values.
 func TestBBDeepObjectRepeatedKeys(t *testing.T) {
-	at.Pending(t, "P7.2b", func(tb testing.TB) {
-		h := bBNewApp()
-		bBOK(tb, at.Do(h, "GET", "/slice?filter[t]=a&filter[t]=b"), `{"Filter":{"t":["a","b"]}}`)
-		bB400(tb, at.Do(h, "GET", "/map?filter[t]=a&filter[t]=b"))
-	})
+	h := bBNewApp()
+	bBOK(t, at.Do(h, "GET", "/slice?filter[t]=a&filter[t]=b"), `{"Filter":{"t":["a","b"]}}`)
+	bB400(t, at.Do(h, "GET", "/map?filter[t]=a&filter[t]=b"))
+
 }
 
 // B09 (§5 O14): struct targets, exact json names, unknown keys ignored.
 func TestBBDeepObjectStructTarget(t *testing.T) {
-	at.Pending(t, "P7.2b", func(tb testing.TB) {
-		h := bBNewApp()
-		bBOK(tb, at.Do(h, "GET", "/struct?filter[name]=x&filter[age]=3&filter[tags]=a&filter[zzz]=1"),
-			`{"Filter":{"name":"x","age":3,"tags":["a"]}}`)
-		bB400(tb, at.Do(h, "GET", "/struct?filter[age]=x"))
-		bBOK(tb, at.Do(h, "GET", "/struct"), `{"Filter":null}`)
-		// Case-sensitive, unlike encoding/json: the key is ignored and
-		// the struct stays zero-valued.
-		bBOK(tb, at.Do(h, "GET", "/struct?filter[NAME]=x"), `{"Filter":{"name":"","age":0,"tags":null}}`)
-	})
+	h := bBNewApp()
+	bBOK(t, at.Do(h, "GET", "/struct?filter[name]=x&filter[age]=3&filter[tags]=a&filter[zzz]=1"),
+		`{"Filter":{"name":"x","age":3,"tags":["a"]}}`)
+	bB400(t, at.Do(h, "GET", "/struct?filter[age]=x"))
+	bBOK(t, at.Do(h, "GET", "/struct"), `{"Filter":null}`)
+	// Case-sensitive, unlike encoding/json: the key is ignored and
+	// the struct stays zero-valued.
+	bBOK(t, at.Do(h, "GET", "/struct?filter[NAME]=x"), `{"Filter":{"name":"","age":0,"tags":null}}`)
+
 }
 
 // B10: validation runs after the hook, so dive/keys sees the bound map.
 func TestBBDeepObjectDiveRunsAfterBind(t *testing.T) {
-	at.Pending(t, "P7.2b", func(tb testing.TB) {
-		h := bBNewApp()
-		bB400(tb, at.Do(h, "GET", "/dive?filter[a]=x"))
-		bBOK(tb, at.Do(h, "GET", "/dive?filter[ab]=x"), `{"Filter":{"ab":"x"}}`)
-	})
+	h := bBNewApp()
+	bB400(t, at.Do(h, "GET", "/dive?filter[a]=x"))
+	bBOK(t, at.Do(h, "GET", "/dive?filter[ab]=x"), `{"Filter":{"ab":"x"}}`)
+
 }
 
 // B11 (§5 O14): malformed keys, one row each.
@@ -237,9 +228,8 @@ func TestBBDeepObjectMalformedKeys(t *testing.T) {
 		{"unclosed-bracket", "filter[a=x"},
 	} {
 		t.Run(row.name, func(t *testing.T) {
-			at.Pending(t, "P7.2b", func(tb testing.TB) {
-				bB400(tb, at.Do(bBNewApp(), "GET", "/map?"+row.query))
-			})
+			bB400(t, at.Do(bBNewApp(), "GET", "/map?"+row.query))
+
 		})
 	}
 	// Guard: a bare name already fails today, in tonic's own conversion
@@ -255,81 +245,76 @@ func TestBBDeepObjectMalformedKeys(t *testing.T) {
 
 // B12
 func TestBBDeepObjectWithRegularParams(t *testing.T) {
-	at.Pending(t, "P7.2b", func(tb testing.TB) {
-		bBOK(tb, at.Do(bBNewApp(), "GET", "/mix?page=2&filter[a]=b"), `{"Page":2,"Filter":{"a":"b"}}`)
-	})
+	bBOK(t, at.Do(bBNewApp(), "GET", "/mix?page=2&filter[a]=b"), `{"Page":2,"Filter":{"a":"b"}}`)
+
 }
 
 // B13: the hook calls next first, so the JSON body still binds.
 func TestBBDeepObjectWithJSONBody(t *testing.T) {
-	at.Pending(t, "P7.2b", func(tb testing.TB) {
-		w := at.Do(bBNewApp(), "POST", "/body?filter[a]=b", at.WithBody("application/json", `{"name":"n"}`))
-		bBOK(tb, w, `{"name":"n","Filter":{"a":"b"}}`)
-	})
+	w := at.Do(bBNewApp(), "POST", "/body?filter[a]=b", at.WithBody("application/json", `{"name":"n"}`))
+	bBOK(t, w, `{"name":"n","Filter":{"a":"b"}}`)
+
 }
 
 // B14: the binding error reaches the error hook as a tonic.BindError.
 func TestBBDeepObjectErrorIsBindError(t *testing.T) {
-	at.Pending(t, "P7.2b", func(tb testing.TB) {
-		prev := tonic.GetErrorHook()
-		tb.Cleanup(func() { tonic.SetErrorHook(prev) })
-		var called, isBind bool
-		tonic.SetErrorHook(func(c *gin.Context, err error) (int, any) {
-			called = true
-			_, isBind = err.(tonic.BindError)
-			return http.StatusBadRequest, gin.H{"error": err.Error()}
-		})
-		at.Do(bBNewApp(), "GET", "/map?filter[a][b]=x")
-		if !called {
-			tb.Fatal("error hook was not called")
-		}
-		if !isBind {
-			tb.Error("error is not a tonic.BindError")
-		}
+	prev := tonic.GetErrorHook()
+	t.Cleanup(func() { tonic.SetErrorHook(prev) })
+	var called, isBind bool
+	tonic.SetErrorHook(func(c *gin.Context, err error) (int, any) {
+		called = true
+		_, isBind = err.(tonic.BindError)
+		return http.StatusBadRequest, gin.H{"error": err.Error()}
 	})
+	at.Do(bBNewApp(), "GET", "/map?filter[a][b]=x")
+	if !called {
+		t.Fatal("error hook was not called")
+	}
+	if !isBind {
+		t.Error("error is not a tonic.BindError")
+	}
+
 }
 
 // B15: 32 concurrent requests, each echoing its own key.
 func TestBBDeepObjectConcurrentRequests(t *testing.T) {
-	at.Pending(t, "P7.2b", func(tb testing.TB) {
-		h := bBNewApp()
-		var wg sync.WaitGroup
-		for i := range 32 {
-			wg.Go(func() {
-				// Errorf only: Fatalf must not run off the test goroutine.
-				w := at.Do(h, "GET", fmt.Sprintf("/map?filter[k]=%d", i))
-				want := fmt.Sprintf(`{"Filter":{"k":"%d"}}`, i)
-				var got, wantV any
-				_ = json.Unmarshal(w.Body.Bytes(), &got)
-				_ = json.Unmarshal([]byte(want), &wantV)
-				if w.Code != 200 || !reflect.DeepEqual(got, wantV) {
-					tb.Errorf("request %d: %d %s, want %s", i, w.Code, w.Body.String(), want)
-				}
-			})
-		}
-		wg.Wait()
-	})
+	h := bBNewApp()
+	var wg sync.WaitGroup
+	for i := range 32 {
+		wg.Go(func() {
+			// Errorf only: Fatalf must not run off the test goroutine.
+			w := at.Do(h, "GET", fmt.Sprintf("/map?filter[k]=%d", i))
+			want := fmt.Sprintf(`{"Filter":{"k":"%d"}}`, i)
+			var got, wantV any
+			_ = json.Unmarshal(w.Body.Bytes(), &got)
+			_ = json.Unmarshal([]byte(want), &wantV)
+			if w.Code != 200 || !reflect.DeepEqual(got, wantV) {
+				t.Errorf("request %d: %d %s, want %s", i, w.Code, w.Body.String(), want)
+			}
+		})
+	}
+	wg.Wait()
+
 }
 
 // B16: a handler input that differs from InputModel skips the plan and
 // warns, naming InputModel and the operation ID.
 func TestBBInputModelMismatchSkipsPlan(t *testing.T) {
-	at.Pending(t, "P7.2b", func(tb testing.TB) {
-		f := fizz.New()
-		bBHandle(f, "GET", "/mismatch",
-			tonic.Handler(func(c *gin.Context, in *bBMixIn) (*bBMixIn, error) { return in, nil }, 200),
-			fizz.ID("mismatchOp"), fizz.InputModel(&bBMapIn{}))
-		found := false
-		for _, err := range f.Errors() {
-			if s := err.Error(); strings.Contains(s, "InputModel") && strings.Contains(s, "mismatchOp") {
-				found = true
-			}
+	f := fizz.New()
+	bBHandle(f, "GET", "/mismatch",
+		tonic.Handler(func(c *gin.Context, in *bBMixIn) (*bBMixIn, error) { return in, nil }, 200),
+		fizz.ID("mismatchOp"), fizz.InputModel(&bBMapIn{}))
+	found := false
+	for _, err := range f.Errors() {
+		if s := err.Error(); strings.Contains(s, "InputModel") && strings.Contains(s, "mismatchOp") {
+			found = true
 		}
-		if !found {
-			tb.Errorf("no warning naming InputModel and mismatchOp in %v", f.Errors())
-		}
-		bBOK(tb, at.Do(f, "GET", "/mismatch?filter[a]=b"), `{"Page":0,"Filter":null}`)
-	})
+	}
+	if !found {
+		t.Errorf("no warning naming InputModel and mismatchOp in %v", f.Errors())
+	}
+	bBOK(t, at.Do(f, "GET", "/mismatch?filter[a]=b"), `{"Page":0,"Filter":null}`)
+
 }
 
 // B17 guard (D13 rationale): tonic binds a DELETE body. Passes today.
@@ -346,77 +331,70 @@ func TestBBGetBodyNotBoundByTonic(t *testing.T) {
 
 // B19
 func TestBBCookieBinds(t *testing.T) {
-	at.Pending(t, "P7.2c", func(tb testing.TB) {
-		w := at.Do(bBNewApp(), "GET", "/cookie", at.WithCookie("session", "abc"), at.WithCookie("n", "5"))
-		bBOK(tb, w, `{"Session":"abc","Lang":"en","N":5}`)
-	})
+	w := at.Do(bBNewApp(), "GET", "/cookie", at.WithCookie("session", "abc"), at.WithCookie("n", "5"))
+	bBOK(t, w, `{"Session":"abc","Lang":"en","N":5}`)
+
 }
 
 // B20
 func TestBBCookieDefaultWhenAbsent(t *testing.T) {
-	at.Pending(t, "P7.2c", func(tb testing.TB) {
-		h := bBNewApp()
-		bBOK(tb, at.Do(h, "GET", "/cookie"), `{"Session":"","Lang":"en","N":0}`)
-		bBOK(tb, at.Do(h, "GET", "/cookie", at.WithCookie("lang", "fr")), `{"Session":"","Lang":"fr","N":0}`)
-	})
+	h := bBNewApp()
+	bBOK(t, at.Do(h, "GET", "/cookie"), `{"Session":"","Lang":"en","N":0}`)
+	bBOK(t, at.Do(h, "GET", "/cookie", at.WithCookie("lang", "fr")), `{"Session":"","Lang":"fr","N":0}`)
+
 }
 
 // B21
 func TestBBCookieRequired400(t *testing.T) {
-	at.Pending(t, "P7.2c", func(tb testing.TB) {
-		h := bBNewApp()
-		bB400(tb, at.Do(h, "GET", "/cookiereq"))
-		bBOK(tb, at.Do(h, "GET", "/cookiereq", at.WithCookie("token", "t")), `{"Token":"t"}`)
-	})
+	h := bBNewApp()
+	bB400(t, at.Do(h, "GET", "/cookiereq"))
+	bBOK(t, at.Do(h, "GET", "/cookiereq", at.WithCookie("token", "t")), `{"Token":"t"}`)
+
 }
 
 // The ,default= and ,required options of the cookie tag are bound as the
 // spec documents them, like tonic's query and header options.
 func TestBBCookieTagOptions(t *testing.T) {
-	at.Pending(t, "P7.2c", func(tb testing.TB) {
-		h := bBNewApp()
-		bBOK(tb, at.Do(h, "GET", "/cookieopts"), `{"Lang":"es","Both":"opt"}`)
-		bBOK(tb, at.Do(h, "GET", "/cookieopts", at.WithCookie("lang", "fr"), at.WithCookie("both", "x")), `{"Lang":"fr","Both":"x"}`)
-		// Present but empty: the default is not applied.
-		bBOK(tb, at.Do(h, "GET", "/cookieopts", at.WithCookie("lang", ""), at.WithCookie("both", "x")), `{"Lang":"","Both":"x"}`)
-		w := at.Do(h, "GET", "/cookieoptreq")
-		bB400(tb, w)
-		if !strings.Contains(w.Body.String(), `cookie \"t\"`) {
-			tb.Errorf("error does not mention cookie t: %s", w.Body.String())
-		}
-		bBOK(tb, at.Do(h, "GET", "/cookieoptreq", at.WithCookie("t", "v")), `{"T":"v"}`)
-		// tonic treats an empty value like an absent one for required.
-		bB400(tb, at.Do(h, "GET", "/cookieoptreq", at.WithCookie("t", "")))
-	})
+	h := bBNewApp()
+	bBOK(t, at.Do(h, "GET", "/cookieopts"), `{"Lang":"es","Both":"opt"}`)
+	bBOK(t, at.Do(h, "GET", "/cookieopts", at.WithCookie("lang", "fr"), at.WithCookie("both", "x")), `{"Lang":"fr","Both":"x"}`)
+	// Present but empty: the default is not applied.
+	bBOK(t, at.Do(h, "GET", "/cookieopts", at.WithCookie("lang", ""), at.WithCookie("both", "x")), `{"Lang":"","Both":"x"}`)
+	w := at.Do(h, "GET", "/cookieoptreq")
+	bB400(t, w)
+	if !strings.Contains(w.Body.String(), `cookie \"t\"`) {
+		t.Errorf("error does not mention cookie t: %s", w.Body.String())
+	}
+	bBOK(t, at.Do(h, "GET", "/cookieoptreq", at.WithCookie("t", "v")), `{"T":"v"}`)
+	// tonic treats an empty value like an absent one for required.
+	bB400(t, at.Do(h, "GET", "/cookieoptreq", at.WithCookie("t", "")))
+
 }
 
 var bBWordN = regexp.MustCompile(`\bn\b`)
 
 // B22: the error names the cookie.
 func TestBBCookieBadType400(t *testing.T) {
-	at.Pending(t, "P7.2c", func(tb testing.TB) {
-		w := at.Do(bBNewApp(), "GET", "/cookie", at.WithCookie("n", "abc"))
-		bB400(tb, w)
-		if !bBWordN.MatchString(w.Body.String()) {
-			tb.Errorf("error does not mention cookie n: %s", w.Body.String())
-		}
-	})
+	w := at.Do(bBNewApp(), "GET", "/cookie", at.WithCookie("n", "abc"))
+	bB400(t, w)
+	if !bBWordN.MatchString(w.Body.String()) {
+		t.Errorf("error does not mention cookie n: %s", w.Body.String())
+	}
+
 }
 
 // B23 (§5 O15): present-but-empty keeps "", the default applies only
 // when absent. session is sent too, so the test is not vacuous before
 // cookies are bound at all (without it the assertion passes today).
 func TestBBCookieEmptyVsAbsent(t *testing.T) {
-	at.Pending(t, "P7.2c", func(tb testing.TB) {
-		w := at.Do(bBNewApp(), "GET", "/cookie", at.WithCookie("session", "s"), at.WithCookie("lang", ""))
-		bBOK(tb, w, `{"Session":"s","Lang":"","N":0}`)
-	})
+	w := at.Do(bBNewApp(), "GET", "/cookie", at.WithCookie("session", "s"), at.WithCookie("lang", ""))
+	bBOK(t, w, `{"Session":"s","Lang":"","N":0}`)
+
 }
 
 // B24 (§5 O15): cookie values are raw, with no URL decoding.
 func TestBBCookieRawValue(t *testing.T) {
-	at.Pending(t, "P7.2c", func(tb testing.TB) {
-		w := at.Do(bBNewApp(), "GET", "/cookie", at.WithCookie("session", "a%20b"))
-		bBOK(tb, w, `{"Session":"a%20b","Lang":"en","N":0}`)
-	})
+	w := at.Do(bBNewApp(), "GET", "/cookie", at.WithCookie("session", "a%20b"))
+	bBOK(t, w, `{"Session":"a%20b","Lang":"en","N":0}`)
+
 }

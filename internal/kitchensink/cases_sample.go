@@ -24,22 +24,5 @@ func init() {
 				{Pointer: "/paths/~1items/get/requestBody", Absent: true},
 			},
 		},
-		Case{
-			Name: "sample/fixed-by",
-			Register: func(f *fizz.Fizz) {
-				f.GET("/items", []fizz.OperationOption{fizz.ID("getItem")}, tonic.Handler(getItem, 200))
-			},
-			// 3.2 target: the document declares 3.2.x (today: 3.0.1).
-			Expect:  []Fragment{{Pointer: "/openapi", JSON: `"3.2.1"`}},
-			FixedBy: "P2.6",
-		},
-		Case{
-			Name:     "sample/crashes",
-			Register: func(*fizz.Fizz) { panic("never run") },
-			// Harness self-test: a task ID that never enters the done
-			// ledger, so the case stays skipped forever.
-			FixedBy: "SELFTEST",
-			Crashes: true,
-		},
 	)
 }

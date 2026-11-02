@@ -34,46 +34,42 @@ func bPOParam(js string) fizz.OperationOption {
 
 // D05.
 func TestParameterMergeByNameIn(t *testing.T) {
-	at.Pending(t, "P6.6b", func(tb testing.TB) {
-		f := fizz.New()
-		bPOGet(f, bPOParam(`{"name":"q","in":"query","description":"m","deprecated":true}`))
-		doc := at.Spec(tb, f)
-		at.Frag(tb, doc, bPOParams, `[{"name":"q","in":"query","description":"m","deprecated":true,"schema":{"type":"string"}}]`)
-	})
+	f := fizz.New()
+	bPOGet(f, bPOParam(`{"name":"q","in":"query","description":"m","deprecated":true}`))
+	doc := at.Spec(t, f)
+	at.Frag(t, doc, bPOParams, `[{"name":"q","in":"query","description":"m","deprecated":true,"schema":{"type":"string"}}]`)
+
 }
 
 // D06.
 func TestParameterAppendsWhenNew(t *testing.T) {
-	at.Pending(t, "P6.6b", func(tb testing.TB) {
-		f := fizz.New()
-		bPOGet(f, bPOParam(`{"name":"X-Trace","in":"header","schema":{"type":"string"}}`))
-		doc := at.Spec(tb, f)
-		at.Frag(tb, doc, bPOParams+"/1", `{"name":"X-Trace","in":"header","schema":{"type":"string"}}`)
-		at.Absent(tb, doc, bPOParams+"/2")
-	})
+	f := fizz.New()
+	bPOGet(f, bPOParam(`{"name":"X-Trace","in":"header","schema":{"type":"string"}}`))
+	doc := at.Spec(t, f)
+	at.Frag(t, doc, bPOParams+"/1", `{"name":"X-Trace","in":"header","schema":{"type":"string"}}`)
+	at.Absent(t, doc, bPOParams+"/2")
+
 }
 
 // D07.
 func TestParameterMergeLastWriterWins(t *testing.T) {
-	at.Pending(t, "P6.6b", func(tb testing.TB) {
-		f := fizz.New()
-		bPOGet(f,
-			bPOParam(`{"name":"q","in":"query","description":"a"}`),
-			bPOParam(`{"name":"q","in":"query","description":"b"}`))
-		doc := at.Spec(tb, f)
-		at.Frag(tb, doc, bPOParams+"/0/description", `"b"`)
-		at.Absent(tb, doc, bPOParams+"/1")
-	})
+	f := fizz.New()
+	bPOGet(f,
+		bPOParam(`{"name":"q","in":"query","description":"a"}`),
+		bPOParam(`{"name":"q","in":"query","description":"b"}`))
+	doc := at.Spec(t, f)
+	at.Frag(t, doc, bPOParams+"/0/description", `"b"`)
+	at.Absent(t, doc, bPOParams+"/1")
+
 }
 
 // D08.
 func TestParameterMergeKeyIncludesIn(t *testing.T) {
-	at.Pending(t, "P6.6b", func(tb testing.TB) {
-		f := fizz.New()
-		bPOGet(f, bPOParam(`{"name":"q","in":"header","description":"h","schema":{"type":"string"}}`))
-		doc := at.Spec(tb, f)
-		at.Frag(tb, doc, bPOParams+"/0", `{"name":"q","in":"query","schema":{"type":"string"}}`)
-		at.Frag(tb, doc, bPOParams+"/1/in", `"header"`)
-		at.Frag(tb, doc, bPOParams+"/1/description", `"h"`)
-	})
+	f := fizz.New()
+	bPOGet(f, bPOParam(`{"name":"q","in":"header","description":"h","schema":{"type":"string"}}`))
+	doc := at.Spec(t, f)
+	at.Frag(t, doc, bPOParams+"/0", `{"name":"q","in":"query","schema":{"type":"string"}}`)
+	at.Frag(t, doc, bPOParams+"/1/in", `"header"`)
+	at.Frag(t, doc, bPOParams+"/1/description", `"h"`)
+
 }

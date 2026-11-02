@@ -15,7 +15,6 @@ import (
 	"github.com/KeisukeFD/fizz"
 	"github.com/KeisukeFD/fizz/internal/acceptance/at"
 	"github.com/KeisukeFD/fizz/internal/kitchensink"
-	"github.com/KeisukeFD/fizz/internal/plan"
 	"github.com/KeisukeFD/fizz/openapi"
 )
 
@@ -103,28 +102,24 @@ func bGNavigate(tb testing.TB, doc any, keys ...string) any {
 }
 
 func TestYAMLParityServed(t *testing.T) {
-	at.Pending(t, "P2.5", func(tb testing.TB) {
-		f := bGYAMLFizz(tb, bGParityRegister)
-		j := at.Do(f, http.MethodGet, "/openapi.json")
-		y := at.Do(f, http.MethodGet, "/openapi.yaml")
-		if j.Code != http.StatusOK || y.Code != http.StatusOK {
-			tb.Fatalf("status json=%d yaml=%d", j.Code, y.Code)
-		}
-		fromJSON := at.FromJSON[any](j.Body.String())
-		fromYAML := at.YAMLToAny(tb, y.Body.Bytes())
-		if !reflect.DeepEqual(fromJSON, fromYAML) {
-			tb.Errorf("YAML and JSON documents differ:\njson %v\nyaml %v", fromJSON, fromYAML)
-		}
-		if plan.IsDone("P2.6") {
-			doc, err := json.Marshal(fromYAML)
-			if err != nil {
-				tb.Fatal(err)
-			}
-			for _, p := range kitchensink.MetaProblems(doc) {
-				tb.Error("yaml document: " + p)
-			}
-		}
-	})
+	f := bGYAMLFizz(t, bGParityRegister)
+	j := at.Do(f, http.MethodGet, "/openapi.json")
+	y := at.Do(f, http.MethodGet, "/openapi.yaml")
+	if j.Code != http.StatusOK || y.Code != http.StatusOK {
+		t.Fatalf("status json=%d yaml=%d", j.Code, y.Code)
+	}
+	fromJSON := at.FromJSON[any](j.Body.String())
+	fromYAML := at.YAMLToAny(t, y.Body.Bytes())
+	if !reflect.DeepEqual(fromJSON, fromYAML) {
+		t.Errorf("YAML and JSON documents differ:\njson %v\nyaml %v", fromJSON, fromYAML)
+	}
+	doc, err := json.Marshal(fromYAML)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, p := range kitchensink.MetaProblems(doc) {
+		t.Error("yaml document: " + p)
+	}
 }
 
 // TestYAMLAmbiguousStrings passes today (gin quotes such strings); it
@@ -149,20 +144,19 @@ func TestYAMLAmbiguousStrings(t *testing.T) {
 }
 
 func TestYAMLIgnoresUserMarshalYAML(t *testing.T) {
-	at.Pending(t, "P2.5", func(tb testing.TB) {
-		f := bGYAMLFizz(tb, func(f *fizz.Fizz) {
-			f.GET("/x", bGOpts(fizz.ID("x"),
-				fizz.Response("400", "bad", new(bGYAMLOnly), nil, bGYAMLOnly{A: "json-value"})),
-				tonic.Handler(bGHandler[bGEmpty], 200))
-		})
-		body := at.Do(f, http.MethodGet, "/openapi.yaml").Body.String()
-		if strings.Contains(body, "yaml-only") {
-			tb.Error("served YAML contains the output of the example's MarshalYAML")
-		}
-		if !strings.Contains(body, "json-value") {
-			tb.Error("served YAML lacks the JSON value of the example")
-		}
+	f := bGYAMLFizz(t, func(f *fizz.Fizz) {
+		f.GET("/x", bGOpts(fizz.ID("x"),
+			fizz.Response("400", "bad", new(bGYAMLOnly), nil, bGYAMLOnly{A: "json-value"})),
+			tonic.Handler(bGHandler[bGEmpty], 200))
 	})
+	body := at.Do(f, http.MethodGet, "/openapi.yaml").Body.String()
+	if strings.Contains(body, "yaml-only") {
+		t.Error("served YAML contains the output of the example's MarshalYAML")
+	}
+	if !strings.Contains(body, "json-value") {
+		t.Error("served YAML lacks the JSON value of the example")
+	}
+
 }
 
 // bGFlowStart matches a flow collection used as a value or sequence
@@ -197,12 +191,11 @@ func TestYAMLBlockStyle(t *testing.T) {
 }
 
 func TestYAMLContentType(t *testing.T) {
-	at.Pending(t, "P2.5", func(tb testing.TB) {
-		f := bGYAMLFizz(tb, bGParityRegister)
-		w := at.Do(f, http.MethodGet, "/openapi.yaml")
-		mt, _, err := mime.ParseMediaType(w.Header().Get("Content-Type"))
-		if err != nil || mt != "application/yaml" {
-			tb.Errorf("Content-Type = %q, want application/yaml", w.Header().Get("Content-Type"))
-		}
-	})
+	f := bGYAMLFizz(t, bGParityRegister)
+	w := at.Do(f, http.MethodGet, "/openapi.yaml")
+	mt, _, err := mime.ParseMediaType(w.Header().Get("Content-Type"))
+	if err != nil || mt != "application/yaml" {
+		t.Errorf("Content-Type = %q, want application/yaml", w.Header().Get("Content-Type"))
+	}
+
 }

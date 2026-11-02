@@ -25,7 +25,8 @@
 // listed fragment. This is agreement, not a disagreement.
 //
 // The module is separate (own go.mod) so the library go.mod and go.sum stay
-// unchanged. It runs in the non-blocking xcheck CI job.
+// unchanged. Run it by hand with
+// "cd internal/conformance/xcheck && go test ./...".
 package xcheck
 
 import (

@@ -57,36 +57,34 @@ func bBPC(h tonic.BindHook) uintptr { return reflect.ValueOf(h).Pointer() }
 // B29: WithoutBindHook leaves tonic's hook alone, and deepObject does not
 // bind.
 func TestBBWithoutBindHook(t *testing.T) {
-	at.Pending(t, "P7.2b", func(tb testing.TB) {
-		h := bBNewApp("without")
-		if got, want := bBPC(tonic.GetBindHook()), bBPC(tonic.DefaultBindingHook); got != want {
-			tb.Fatal("tonic bind hook is not tonic.DefaultBindingHook")
-		}
-		if f := bBFilter(tb, at.Do(h, "GET", "/map?filter[a]=b")); f != nil {
-			tb.Errorf("Filter = %v, want null", f)
-		}
-	})
+	h := bBNewApp("without")
+	if got, want := bBPC(tonic.GetBindHook()), bBPC(tonic.DefaultBindingHook); got != want {
+		t.Fatal("tonic bind hook is not tonic.DefaultBindingHook")
+	}
+	if f := bBFilter(t, at.Do(h, "GET", "/map?filter[a]=b")); f != nil {
+		t.Errorf("Filter = %v, want null", f)
+	}
+
 }
 
 // B30 (runs after B29): InstallBindHook binds deepObject on the next
 // request, and a second call does not wrap again.
 func TestBBInstallBindHookExplicit(t *testing.T) {
-	at.Pending(t, "P7.2b", func(tb testing.TB) {
-		prev := tonic.GetBindHook()
-		tb.Cleanup(func() { tonic.SetBindHook(prev) })
-		tonic.SetBindHook(bBCountingHook)
+	prev := tonic.GetBindHook()
+	t.Cleanup(func() { tonic.SetBindHook(prev) })
+	tonic.SetBindHook(bBCountingHook)
 
-		h := bBNewApp("explicit")
-		fizz.InstallBindHook()
-		fizz.InstallBindHook()
+	h := bBNewApp("explicit")
+	fizz.InstallBindHook()
+	fizz.InstallBindHook()
 
-		bBCount.Store(0)
-		f, _ := bBFilter(tb, at.Do(h, "GET", "/map?filter[a]=b")).(map[string]any)
-		if !reflect.DeepEqual(f, map[string]any{"a": "b"}) {
-			tb.Errorf("Filter = %v, want map[a:b]", f)
-		}
-		if n := bBCount.Load(); n != 1 {
-			tb.Errorf("counting hook ran %d times, want 1", n)
-		}
-	})
+	bBCount.Store(0)
+	f, _ := bBFilter(t, at.Do(h, "GET", "/map?filter[a]=b")).(map[string]any)
+	if !reflect.DeepEqual(f, map[string]any{"a": "b"}) {
+		t.Errorf("Filter = %v, want map[a:b]", f)
+	}
+	if n := bBCount.Load(); n != 1 {
+		t.Errorf("counting hook ran %d times, want 1", n)
+	}
+
 }

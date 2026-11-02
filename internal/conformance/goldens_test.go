@@ -10,19 +10,7 @@ import (
 
 	"github.com/KeisukeFD/fizz/internal/conformance/upgrade"
 	"github.com/KeisukeFD/fizz/internal/kitchensink"
-	"github.com/KeisukeFD/fizz/internal/plan"
 )
-
-// nonDocumentGoldens lists testdata JSON/YAML files (slash-separated, from
-// the module root) that are neither a whole OAS document nor a schema
-// golden, each with a one-word reason. A new golden that is none of the
-// three fails TestAllGoldensValid, so it cannot slip through ungated.
-var nonDocumentGoldens = map[string]string{}
-
-// goldenFixedBy lists goldens that currently fail MetaProblems, keyed by
-// slash-separated path from the module root, with the task that fixes them.
-// The golden is red until that task is in plan.Done, then it must pass.
-var goldenFixedBy = map[string]string{}
 
 // skipDirs are never walked. internal/conformance/oai is covered by the
 // corpus tests.
@@ -55,7 +43,6 @@ func moduleRoot(t *testing.T) string {
 func TestAllGoldensValid(t *testing.T) {
 	root := moduleRoot(t)
 	var docs, schemas int
-	seenNonDoc := map[string]bool{}
 
 	err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
@@ -113,10 +100,7 @@ func TestAllGoldensValid(t *testing.T) {
 			upgrade.StubDanglingRefs(wrapped)
 			doc, err = json.Marshal(wrapped)
 		default:
-			if _, ok := nonDocumentGoldens[rel]; !ok {
-				t.Errorf("%s: neither an OAS document, a schema golden, nor listed in nonDocumentGoldens", rel)
-			}
-			seenNonDoc[rel] = true
+			t.Errorf("%s: neither an OAS document nor a schema golden", rel)
 			return nil
 		}
 		if err != nil {
@@ -125,12 +109,9 @@ func TestAllGoldensValid(t *testing.T) {
 		}
 
 		t.Run(rel, func(t *testing.T) {
-			plan.Pending(t, goldenFixedBy[rel], func(tb testing.TB) {
-				tb.Helper()
-				for _, p := range kitchensink.MetaProblems(doc) {
-					tb.Error(p)
-				}
-			})
+			for _, p := range kitchensink.MetaProblems(doc) {
+				t.Error(p)
+			}
 		})
 		return nil
 	})
@@ -138,11 +119,6 @@ func TestAllGoldensValid(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for rel := range nonDocumentGoldens {
-		if !seenNonDoc[rel] {
-			t.Errorf("nonDocumentGoldens entry %s matches no file", rel)
-		}
-	}
 	if docs == 0 || schemas == 0 {
 		t.Fatalf("empty walk: %d documents, %d schema goldens", docs, schemas)
 	}

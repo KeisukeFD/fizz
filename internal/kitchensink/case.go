@@ -1,23 +1,19 @@
 // Package kitchensink is a catalogue of small registration cases, each
 // carrying hand-written expectations of the OAS 3.2 target output.
 //
-// Cases for bugs that are not fixed yet set FixedBy; the runner skips
-// them (after registering, so crashes stay visible) and reports a skip
-// count. Domain files (cases_types.go, cases_fields.go, ...) add cases
-// from an init function through register.
+// Domain files (cases_types.go, cases_fields.go, ...) add cases from an
+// init function through register.
 package kitchensink
 
 import (
 	"fmt"
 	"path/filepath"
-	"slices"
 	"strconv"
 	"strings"
 	"testing"
 
 	"github.com/KeisukeFD/fizz"
 	"github.com/KeisukeFD/fizz/internal/golden"
-	"github.com/KeisukeFD/fizz/internal/plan"
 )
 
 // Fragment is a hand-written expectation on the generated document.
@@ -51,12 +47,6 @@ type Case struct {
 	// Panics, when non-empty, requires Register to panic with a message
 	// containing it. By default a panic is a failure.
 	Panics string
-	// FixedBy names the plan task that fixes the case (for example
-	// "P3.1a"). Such cases are skipped once registered.
-	FixedBy string
-	// Crashes marks cases that cannot be recovered (stack overflow).
-	// They are skipped before Register runs; FixedBy must be set too.
-	Crashes bool
 }
 
 // cases is the registry run by TestKitchenSink.
@@ -87,7 +77,7 @@ func caseGoldenPath(name string) string {
 
 // assertCaseGolden compares the whole document of a passing case with
 // its golden file. Cases that expect a panic produce no document and
-// have no golden; skipped cases have none either.
+// have no golden.
 func assertCaseGolden(t *testing.T, c Case, doc []byte) {
 	t.Helper()
 	if doc == nil {
@@ -103,75 +93,20 @@ func assertCaseGolden(t *testing.T, c Case, doc []byte) {
 // testdata/cases/<name>.json ("/" in the name becomes "__"); run the
 // tests with -update to create or refresh these goldens.
 //
-// A panic in Register is a failure unless the case sets Panics. Cases
-// with FixedBy still register and are checked, but are then skipped
-// with t.Skip("fixed by ..."), so a crash or a now-passing case is
-// visible in the skip message. Cases with Crashes are skipped before
-// Register runs. A skip summary is logged on t (visible with -v).
+// A panic in Register is a failure unless the case sets Panics.
 func Run(t *testing.T, cs []Case) {
 	t.Helper()
-	var passed, skipped, stale int
-	byTask := map[string]int{}
-
 	for _, c := range cs {
 		t.Run(c.Name, func(t *testing.T) {
-			if c.Crashes {
-				if c.FixedBy == "" {
-					t.Fatal("kitchensink: Crashes requires FixedBy")
-				}
-				if plan.IsDone(c.FixedBy) {
-					t.Fatal("task " + c.FixedBy + " is done, case still marked Crashes")
-				}
-				skipped++
-				byTask[c.FixedBy]++
-				t.Skip("fixed by " + c.FixedBy + " (crashes, not run)")
-			}
 			doc, problems := checkCase(c)
-			if c.FixedBy == "" {
-				for _, p := range problems {
-					t.Error(p)
-				}
-				if len(problems) == 0 {
-					passed++
-					assertCaseGolden(t, c, doc)
-				}
-				return
+			for _, p := range problems {
+				t.Error(p)
 			}
-			if len(problems) > 0 && plan.IsDone(c.FixedBy) {
-				t.Error("task " + c.FixedBy + " is done, case red:\n" + strings.Join(problems, "\n"))
-				return
-			}
-			skipped++
-			byTask[c.FixedBy]++
-			reason := "fixed by " + c.FixedBy
 			if len(problems) == 0 {
-				if plan.IsDone(c.FixedBy) {
-					skipped--
-					byTask[c.FixedBy]--
-					passed++
-					assertCaseGolden(t, c, doc)
-					return
-				}
-				stale++
-				if plan.StaleFail() {
-					t.Error("fixed by " + c.FixedBy + " (case passes now: drop FixedBy)")
-					return
-				}
-				reason += " (case passes now: drop FixedBy)"
-			} else {
-				reason += ": " + problems[0]
+				assertCaseGolden(t, c, doc)
 			}
-			t.Skip(reason)
 		})
 	}
-
-	tasks := make([]string, 0, len(byTask))
-	for task, n := range byTask {
-		tasks = append(tasks, fmt.Sprintf("%s=%d", task, n))
-	}
-	slices.Sort(tasks)
-	t.Logf("kitchensink: %d cases, %d passed, %d skipped [%s], %d skipped but passing",
-		len(cs), passed, skipped, strings.Join(tasks, " "), stale)
 }
 
 // runCase registers and checks one case, returning its problems.
@@ -205,9 +140,7 @@ func checkCase(c Case) (doc []byte, problems []string) {
 		return nil, append(rec.msgs, "build spec: "+err.Error())
 	}
 	AssertFragments(rec, doc, c.Expect)
-	if plan.IsDone("P2.6") {
-		rec.msgs = append(rec.msgs, MetaProblems(doc)...)
-	}
+	rec.msgs = append(rec.msgs, MetaProblems(doc)...)
 	return doc, rec.msgs
 }
 

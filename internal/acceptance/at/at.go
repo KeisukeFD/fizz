@@ -1,9 +1,5 @@
-// Package at is the acceptance-test harness: the red-until-done helper
-// Pending and small helpers to drive a fizz under test and assert on
-// what it serves.
-//
-// Acceptance tests wrap their assertions in Pending, naming the plan
-// task that makes them pass. See docs/plan/ACCEPTANCE.md.
+// Package at is the acceptance-test harness: small helpers to drive a
+// fizz under test and assert on what it serves.
 package at
 
 import (
@@ -20,23 +16,7 @@ import (
 
 	"github.com/KeisukeFD/fizz"
 	"github.com/KeisukeFD/fizz/internal/kitchensink"
-	"github.com/KeisukeFD/fizz/internal/plan"
 )
-
-// Pending runs fn, which the task fixedBy has yet to make pass.
-//
-//   - fn fails, task not done: t is skipped ("fixed by X: <first failure>").
-//   - fn fails, task in plan.Done: t fails ("task done, test red").
-//   - fn passes, task not done: t is skipped ("passes now: drop FixedBy"),
-//     or fails when FIZZ_STALE=fail.
-//   - fn passes, task done: green.
-//
-// Inside fn, Fatal aborts fn and a panic is recorded as a failure.
-// A data race cannot be recovered; gate it with plan.IsDone.
-func Pending(t testing.TB, fixedBy string, fn func(tb testing.TB)) {
-	t.Helper()
-	plan.Pending(t, fixedBy, fn)
-}
 
 // ReqOpt customizes the request built by Do.
 type ReqOpt func(*http.Request)
@@ -74,18 +54,16 @@ func Do(h http.Handler, method, target string, opts ...ReqOpt) *httptest.Respons
 }
 
 // Spec returns the JSON document of f (Info set to a placeholder). It
-// fails tb when the document cannot be built and, once plan.Done["P2.6"],
-// when it breaks the meta-schema or a lint.
+// fails tb when the document cannot be built or when it breaks the
+// meta-schema or a lint.
 func Spec(tb testing.TB, f *fizz.Fizz) []byte {
 	tb.Helper()
 	doc, err := kitchensink.BuildSpec(f)
 	if err != nil {
 		tb.Fatalf("build spec: %v", err)
 	}
-	if plan.IsDone("P2.6") {
-		for _, p := range kitchensink.MetaProblems(doc) {
-			tb.Error(p)
-		}
+	for _, p := range kitchensink.MetaProblems(doc) {
+		tb.Error(p)
 	}
 	return doc
 }
@@ -125,8 +103,8 @@ func YAMLToAny(tb testing.TB, b []byte) any {
 }
 
 // FromJSON unmarshals s into a T. It panics on invalid JSON (a bug in
-// the test), which Pending records as a failure. It compiles against any
-// shape of T, which is why acceptance tests build models this way.
+// the test). It compiles against any shape of T, which is why acceptance
+// tests build models this way.
 func FromJSON[T any](s string) T {
 	var v T
 	if err := json.Unmarshal([]byte(s), &v); err != nil {

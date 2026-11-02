@@ -41,59 +41,55 @@ func bRBPost[In any](f *fizz.Fizz, opts ...fizz.OperationOption) {
 
 // D01.
 func TestRequestBodyOverridesRequired(t *testing.T) {
-	at.Pending(t, "P6.6a", func(tb testing.TB) {
-		f := fizz.New()
-		bRBPost[dPet](f, fizz.RequestBody("Create", true))
-		doc := at.Spec(tb, f)
-		at.Frag(tb, doc, bRBBody+"/description", `"Create"`)
-		at.Frag(tb, doc, bRBBody+"/required", `true`)
-		at.Frag(tb, doc, bRBBody+"/content/application~1json/schema/$ref", `"#/components/schemas/BRBPostInput"`)
+	f := fizz.New()
+	bRBPost[dPet](f, fizz.RequestBody("Create", true))
+	doc := at.Spec(t, f)
+	at.Frag(t, doc, bRBBody+"/description", `"Create"`)
+	at.Frag(t, doc, bRBBody+"/required", `true`)
+	at.Frag(t, doc, bRBBody+"/content/application~1json/schema/$ref", `"#/components/schemas/BRBPostInput"`)
 
-		f = fizz.New()
-		bRBPost[dReqPet](f, fizz.RequestBody("", false))
-		doc = at.Spec(tb, f)
-		at.Absent(tb, doc, bRBBody+"/required")
-		at.Absent(tb, doc, bRBBody+"/description")
-		at.Frag(tb, doc, bRBBody+"/content/application~1json/schema/$ref", `"#/components/schemas/BRBPostInput"`)
-	})
+	f = fizz.New()
+	bRBPost[dReqPet](f, fizz.RequestBody("", false))
+	doc = at.Spec(t, f)
+	at.Absent(t, doc, bRBBody+"/required")
+	at.Absent(t, doc, bRBBody+"/description")
+	at.Frag(t, doc, bRBBody+"/content/application~1json/schema/$ref", `"#/components/schemas/BRBPostInput"`)
+
 }
 
 // D02.
 func TestRequestBodyContentReplaces(t *testing.T) {
-	at.Pending(t, "P6.6a", func(tb testing.TB) {
-		f := fizz.New()
-		bRBPost[dReqPet](f, fizz.RequestBody("", true, fizz.Content("application/xml", dPet{})))
-		doc := at.Spec(tb, f)
-		at.Frag(tb, doc, bRBBody+"/content", `{"application/xml":{"schema":{"$ref":"#/components/schemas/AcceptanceDPet"}}}`)
-		at.Frag(tb, doc, bRBBody+"/required", `true`)
-	})
+	f := fizz.New()
+	bRBPost[dReqPet](f, fizz.RequestBody("", true, fizz.Content("application/xml", dPet{})))
+	doc := at.Spec(t, f)
+	at.Frag(t, doc, bRBBody+"/content", `{"application/xml":{"schema":{"$ref":"#/components/schemas/AcceptanceDPet"}}}`)
+	at.Frag(t, doc, bRBBody+"/required", `true`)
+
 }
 
 // D03.
 func TestRequestBodyEncoding(t *testing.T) {
-	at.Pending(t, "P6.6a", func(tb testing.TB) {
-		f := fizz.New()
-		bRBPost[dPet](f, fizz.RequestBody("", false,
-			fizz.Content("multipart/form-data", dUpload{}, fizz.Encoding("file", "image/png"))))
-		doc := at.Spec(tb, f)
-		at.Frag(tb, doc, bRBBody+"/content/multipart~1form-data/encoding/file/contentType", `"image/png"`)
-		for _, err := range f.Generator().Errors() {
-			tb.Errorf("unexpected error: %v", err)
-		}
-	})
+	f := fizz.New()
+	bRBPost[dPet](f, fizz.RequestBody("", false,
+		fizz.Content("multipart/form-data", dUpload{}, fizz.Encoding("file", "image/png"))))
+	doc := at.Spec(t, f)
+	at.Frag(t, doc, bRBBody+"/content/multipart~1form-data/encoding/file/contentType", `"image/png"`)
+	for _, err := range f.Generator().Errors() {
+		t.Errorf("unexpected error: %v", err)
+	}
+
 }
 
 // D04.
 func TestRequestBodyOnGETIsError(t *testing.T) {
-	at.Pending(t, "P6.6a", func(tb testing.TB) {
-		f := fizz.New()
-		f.GET("/p", []fizz.OperationOption{fizz.ID("bRBGet"), fizz.RequestBody("x", true, fizz.Content("application/json", dPet{}))},
-			tonic.Handler(func(*gin.Context) error { return nil }, 200))
-		doc := at.Spec(tb, f)
-		at.Absent(tb, doc, "/paths/~1p/get/requestBody")
-		var oe *openapi.OperationError
-		if !errors.As(f.Err(), &oe) || oe.Method != "GET" || oe.Path != "/p" || !strings.Contains(oe.Error(), "bRBGet") {
-			tb.Errorf("Err = %v, want an OperationError naming GET /p (bRBGet)", f.Err())
-		}
-	})
+	f := fizz.New()
+	f.GET("/p", []fizz.OperationOption{fizz.ID("bRBGet"), fizz.RequestBody("x", true, fizz.Content("application/json", dPet{}))},
+		tonic.Handler(func(*gin.Context) error { return nil }, 200))
+	doc := at.Spec(t, f)
+	at.Absent(t, doc, "/paths/~1p/get/requestBody")
+	var oe *openapi.OperationError
+	if !errors.As(f.Err(), &oe) || oe.Method != "GET" || oe.Path != "/p" || !strings.Contains(oe.Error(), "bRBGet") {
+		t.Errorf("Err = %v, want an OperationError naming GET /p (bRBGet)", f.Err())
+	}
+
 }

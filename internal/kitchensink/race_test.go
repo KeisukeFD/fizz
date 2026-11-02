@@ -11,23 +11,13 @@ import (
 	"github.com/loopfz/gadgeto/tonic"
 
 	"github.com/KeisukeFD/fizz"
-	"github.com/KeisukeFD/fizz/internal/plan"
 	"github.com/KeisukeFD/fizz/openapi"
 )
 
 // TestConcurrentServeAndRegister serves the spec from several goroutines
 // while another registers new routes on the same generator.
-//
-// The race detector fails the whole test and cannot be recovered, so the
-// body only runs once P5.1 is done (it passes without -race today, which
-// would otherwise read as a stale skip).
 func TestConcurrentServeAndRegister(t *testing.T) {
-	plan.Pending(t, "P5.1", func(tb testing.TB) {
-		if !plan.IsDone("P5.1") {
-			tb.Fatal("Generator.API reads unlocked state; racy until P5.1")
-		}
-		concurrentServeAndRegister(t)
-	})
+	concurrentServeAndRegister(t)
 }
 
 type raceGetIn struct {

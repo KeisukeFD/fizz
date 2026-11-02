@@ -11,8 +11,6 @@ import (
 	"regexp"
 	"strings"
 	"testing"
-
-	"github.com/KeisukeFD/fizz/internal/acceptance/at"
 )
 
 // The snippet checker of the documentation (I10, I11). A go block of a
@@ -251,10 +249,10 @@ func (f *fakeTB) Logf(string, ...any)   {}
 
 // I10
 func TestREADMESnippetsMatchExamples(t *testing.T) {
-	at.Pending(t, "P9.2", checkREADME)
+	checkREADME(t)
 }
 
 // I11
 func TestMigrationCoversTopics(t *testing.T) {
-	at.Pending(t, "P9.1", checkMigration)
+	checkMigration(t)
 }

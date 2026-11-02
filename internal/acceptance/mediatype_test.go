@@ -47,24 +47,23 @@ func bDContentKeys(tb testing.TB, doc []byte, get func(op map[string]any) any) [
 
 // D15.
 func TestWithDefaultMediaType(t *testing.T) {
-	at.Pending(t, "P4.4", func(tb testing.TB) {
-		const mt = "application/vnd.api+json"
-		gin.SetMode(gin.TestMode)
-		f := fizz.New(fizz.WithDefaultMediaType(mt))
-		f.POST("/p", []fizz.OperationOption{fizz.ID("bDPost")},
-			tonic.Handler(func(*gin.Context, *bDIn) (*bDOut, error) { return nil, nil }, 201))
-		doc := at.Spec(tb, f)
-		req := bDContentKeys(tb, doc, func(op map[string]any) any {
-			return op["requestBody"].(map[string]any)["content"]
-		})
-		resp := bDContentKeys(tb, doc, func(op map[string]any) any {
-			return op["responses"].(map[string]any)["201"].(map[string]any)["content"]
-		})
-		if len(req) != 1 || req[0] != mt {
-			tb.Errorf("requestBody content keys = %v, want [%s]", req, mt)
-		}
-		if len(resp) != 1 || resp[0] != mt {
-			tb.Errorf("response content keys = %v, want [%s]", resp, mt)
-		}
+	const mt = "application/vnd.api+json"
+	gin.SetMode(gin.TestMode)
+	f := fizz.New(fizz.WithDefaultMediaType(mt))
+	f.POST("/p", []fizz.OperationOption{fizz.ID("bDPost")},
+		tonic.Handler(func(*gin.Context, *bDIn) (*bDOut, error) { return nil, nil }, 201))
+	doc := at.Spec(t, f)
+	req := bDContentKeys(t, doc, func(op map[string]any) any {
+		return op["requestBody"].(map[string]any)["content"]
 	})
+	resp := bDContentKeys(t, doc, func(op map[string]any) any {
+		return op["responses"].(map[string]any)["201"].(map[string]any)["content"]
+	})
+	if len(req) != 1 || req[0] != mt {
+		t.Errorf("requestBody content keys = %v, want [%s]", req, mt)
+	}
+	if len(resp) != 1 || resp[0] != mt {
+		t.Errorf("response content keys = %v, want [%s]", resp, mt)
+	}
+
 }

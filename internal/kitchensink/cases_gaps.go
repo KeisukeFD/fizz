@@ -160,7 +160,6 @@ func init() {
 			Name:     "types/interface-any",
 			Register: kGet[KAny],
 			Expect:   []Fragment{{Pointer: kProp("KAny", "v"), JSON: `{}`}},
-			FixedBy:  "P2.6",
 		},
 		Case{
 			Name:     "params/no-allow-empty-value",
@@ -177,25 +176,21 @@ func init() {
 			Name:     "params/query-duration-default-string-error",
 			Register: pRegister("GET", "/x", tonic.Handler(pHandler[KDurStrIn], 200)),
 			Errors:   []string{"default"},
-			FixedBy:  "P3.6",
 		},
 		Case{
 			Name:     "validate/ne-not-const",
 			Register: kGet[KNe],
 			Expect:   []Fragment{{Pointer: kProp("KNe", "s") + "/not", JSON: `{"const":"a"}`}},
-			FixedBy:  "P4.1b",
 		},
 		Case{
 			Name:     "validate/keys-property-names",
 			Register: kGet[KKeys],
 			Expect:   []Fragment{{Pointer: kProp("KKeys", "m") + "/propertyNames", JSON: `{"minLength":2}`}},
-			FixedBy:  "P4.1b",
 		},
 		Case{
 			Name:     "validate/unique-items",
 			Register: kGet[KUnique],
 			Expect:   []Fragment{{Pointer: kProp("KUnique", "l") + "/uniqueItems", JSON: `true`}},
-			FixedBy:  "P4.1b",
 		},
 		Case{
 			Name:     "validate/alpha-patterns",
@@ -206,7 +201,6 @@ func init() {
 				{Pointer: kProp("KAlpha", "c") + "/pattern", JSON: `"^[-+]?[0-9]+(?:\\.[0-9]+)?$"`},
 				{Pointer: kProp("KAlpha", "d") + "/pattern", JSON: `"^[0-9a-fA-F]+$"`},
 			},
-			FixedBy: "P4.1b",
 		},
 		Case{
 			Name:     "validate/formats",
@@ -221,7 +215,6 @@ func init() {
 				{Pointer: kProp("KFormats", "hostname") + "/format", JSON: `"hostname"`},
 				{Pointer: kProp("KFormats", "email") + "/format", JSON: `"email"`},
 			},
-			FixedBy: "P4.1b",
 		},
 		Case{
 			// datetime=<layout> has no OpenAPI format: ignored, no error.
@@ -241,7 +234,6 @@ func init() {
 			Name:     "validate/duration-bounds-ns",
 			Register: kGet[KDurBound],
 			Expect:   []Fragment{{Pointer: kProp("KDurBound", "d") + "/minimum", JSON: `1000000000`}},
-			FixedBy:  "P4.1b",
 		},
 		Case{
 			Name:     "validate/or-group-dropped-if-unmapped",
@@ -255,7 +247,6 @@ func init() {
 				{Pointer: kProp("KDecimal", "f") + "/minimum", JSON: `0.5`},
 				{Pointer: kProp("KDecimal", "f") + "/maximum", JSON: `1.5`},
 			},
-			FixedBy: "P4.1b",
 		},
 		Case{
 			Name:     "required/omitempty-required",
@@ -292,7 +283,6 @@ func init() {
 				{Pointer: "/paths/~1pets/post/requestBody/content/" + ctJSON + "/schema", JSON: `{"$ref":"#/components/schemas/KitchensinkKPet"}`},
 				{Pointer: schemas + "CreatePetInput", Absent: true},
 			},
-			FixedBy: "P4.6",
 		},
 		Case{
 			Name: "ops/body-required-if-any-field-required",
@@ -304,7 +294,6 @@ func init() {
 				{Pointer: "/paths/~1a/post/requestBody/required", JSON: `true`},
 				{Pointer: "/paths/~1b/post/requestBody/required", Absent: true},
 			},
-			FixedBy: "P4.6",
 		},
 		Case{
 			Name:     "params/get-body-not-documented",
@@ -320,7 +309,6 @@ func init() {
 			Name:     "ops/default-id-closure",
 			Register: kRegister,
 			Expect:   []Fragment{{Pointer: "/paths/~1c/get/operationId", JSON: `"kRegister"`}},
-			FixedBy:  "P4.7",
 		},
 		Case{
 			Name: "ops/default-id-collision-package-prefix",
@@ -332,7 +320,6 @@ func init() {
 				{Pointer: "/paths/~1a/get/operationId", JSON: `"Get"`},
 				{Pointer: "/paths/~1b/get/operationId", JSON: `"models.Get"`},
 			},
-			FixedBy: "P4.7",
 		},
 		Case{
 			// The same handler registered a third time clashes on Get and
@@ -348,7 +335,6 @@ func init() {
 				{Pointer: "/paths/~1b/get/operationId", JSON: `"models.Get"`},
 				{Pointer: "/paths/~1c~1{id}/get/operationId", JSON: `"get_c_id"`},
 			},
-			FixedBy: "P4.7",
 		},
 		Case{
 			Name: "ops/explicit-id-collision-error",
@@ -360,14 +346,12 @@ func init() {
 				{Pointer: "/paths/~1a/get/operationId", JSON: `"dup"`},
 				{Pointer: "/paths/~1b", Absent: true},
 			},
-			Errors:  []string{"dup"},
-			FixedBy: "P4.8",
+			Errors: []string{"dup"},
 		},
 		Case{
 			Name:     "ops/multiple-tonic-handlers-error",
 			Register: func(f *fizz.Fizz) { kTwoHandlers(f, "two", "/m") },
 			Errors:   []string{"/m"},
-			FixedBy:  "P4.8",
 		},
 		Case{
 			// A failed operation leaves its ID free.
@@ -380,15 +364,13 @@ func init() {
 				{Pointer: "/paths/~1bad", Absent: true},
 				{Pointer: "/paths/~1good/get/operationId", JSON: `"reuse"`},
 			},
-			Errors:  []string{"/bad"},
-			FixedBy: "P4.8",
+			Errors: []string{"/bad"},
 		},
 		Case{
 			Name:     "params/cookie-non-scalar-error",
 			Register: pRegister("GET", "/x", tonic.Handler(pHandler[KCookieStructIn], 200)),
 			Expect:   []Fragment{{Pointer: kPrm, Absent: true}},
 			Errors:   []string{"cookie"},
-			FixedBy:  "P4.2c",
 		},
 		Case{
 			Name:     "params/deep-object-struct",
@@ -398,7 +380,6 @@ func init() {
 				{Pointer: kPrm + "/schema/properties/name", JSON: `{"type":"string"}`},
 				{Pointer: kPrm + "/schema/properties/age", JSON: `{"type":"integer","format":"int32"}`},
 			},
-			FixedBy: "P7.1",
 		},
 		Case{
 			Name:     "params/deep-object-ptr-map",
@@ -407,28 +388,24 @@ func init() {
 				{Pointer: kPrm + "/style", JSON: `"deepObject"`},
 				{Pointer: kPrm + "/schema", JSON: `{"type":"object","additionalProperties":{"type":"string"}}`},
 			},
-			FixedBy: "P7.1",
 		},
 		Case{
 			Name:     "params/deep-object-nested-value-error",
 			Register: pRegister("GET", "/x", tonic.Handler(pHandler[KDeepNestedIn], 200)),
 			Expect:   []Fragment{{Pointer: kPrm, Absent: true}},
 			Errors:   []string{"deepObject"},
-			FixedBy:  "P7.1",
 		},
 		Case{
 			Name:     "params/deep-object-required-option-error",
 			Register: pRegister("GET", "/x", tonic.Handler(pHandler[KDeepRequiredIn], 200)),
 			Expect:   []Fragment{{Pointer: kPrm, Absent: true}},
 			Errors:   []string{"deepObject", "required"},
-			FixedBy:  "P7.1",
 		},
 		Case{
 			Name:     "params/deep-object-default-tag-error",
 			Register: pRegister("GET", "/x", tonic.Handler(pHandler[KDeepDefaultIn], 200)),
 			Expect:   []Fragment{{Pointer: kPrm, Absent: true}},
 			Errors:   []string{"deepObject", "default"},
-			FixedBy:  "P7.1",
 		},
 		Case{
 			Name:     "params/deep-object-validate-required",
@@ -438,7 +415,6 @@ func init() {
 				{Pointer: kPrm + "/style", JSON: `"deepObject"`},
 				{Pointer: kPrm + "/explode", JSON: `true`},
 			},
-			FixedBy: "P7.1",
 		},
 		Case{
 			Name:     "params/deep-object-slice-values",
@@ -448,7 +424,6 @@ func init() {
 				{Pointer: kPrm + "/explode", JSON: `true`},
 				{Pointer: kPrm + "/schema/additionalProperties", JSON: `{"type":"array","items":{"type":"string"}}`},
 			},
-			FixedBy: "P7.1",
 		},
 		Case{
 			// The exact wording is the target text for P4.3.
@@ -458,7 +433,6 @@ func init() {
 				Pointer: "/paths/~1f~1{path}/get/parameters/0/description",
 				JSON:    `"The value may contain '/'."`,
 			}},
-			FixedBy: "P4.3",
 		},
 		Case{
 			Name:     "params/gin-path-translation-multi",
@@ -466,7 +440,6 @@ func init() {
 			Expect: []Fragment{
 				{Pointer: "/paths/~1u~1{id}~1f~1{path}/get/operationId", JSON: `"op"`},
 			},
-			FixedBy: "P4.3",
 		},
 		Case{
 			// Plain gin handlers stay undocumented (D11).

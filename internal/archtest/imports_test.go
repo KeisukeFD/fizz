@@ -10,8 +10,6 @@ import (
 	"sort"
 	"strings"
 	"testing"
-
-	"github.com/KeisukeFD/fizz/internal/acceptance/at"
 )
 
 // bARoot returns the repository root (the directory holding go.mod).
@@ -135,12 +133,11 @@ func bAViolations(tb testing.TB, withTests bool, forbidden []string, patterns ..
 
 // A01: the router-agnostic packages never import gin or gadgeto.
 func TestRouterAgnostic(t *testing.T) {
-	at.Pending(t, "P1.3", func(tb testing.TB) {
-		v := bAViolations(tb, true, bAForbidden, "./openapi/...", "./bind/...", "./docsui/...")
-		for _, l := range v {
-			tb.Errorf("forbidden import: %s", l)
-		}
-	})
+	v := bAViolations(t, true, bAForbidden, "./openapi/...", "./bind/...", "./docsui/...")
+	for _, l := range v {
+		t.Errorf("forbidden import: %s", l)
+	}
+
 }
 
 // A02: the same checker flags the root package, so the rule is not vacuous.
@@ -176,7 +173,7 @@ func TestNoUUIDDep(t *testing.T) {
 		bANoDep(t, "github.com/gofrs/uuid")
 	})
 	t.Run("google", func(t *testing.T) {
-		at.Pending(t, "P1.3", func(tb testing.TB) { bANoDep(tb, "github.com/google/uuid") })
+		bANoDep(t, "github.com/google/uuid")
 	})
 }
 

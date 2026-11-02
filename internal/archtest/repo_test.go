@@ -7,8 +7,6 @@ import (
 	"strconv"
 	"strings"
 	"testing"
-
-	"github.com/KeisukeFD/fizz/internal/acceptance/at"
 )
 
 // A04: go.mod invariants.
@@ -54,21 +52,20 @@ func bASemver(v string) [3]int {
 
 // A10: yaml.v2 is gone and gin is new enough to not need it.
 func TestYAMLDepSwap(t *testing.T) {
-	at.Pending(t, "P2.5", func(tb testing.TB) {
-		for _, d := range strings.Fields(bAGo(tb, "list", "-deps", "./...")) {
-			if d == "gopkg.in/yaml.v2" {
-				tb.Errorf("non-test dependency on gopkg.in/yaml.v2")
-			}
+	for _, d := range strings.Fields(bAGo(t, "list", "-deps", "./...")) {
+		if d == "gopkg.in/yaml.v2" {
+			t.Errorf("non-test dependency on gopkg.in/yaml.v2")
 		}
-		ver := strings.TrimSpace(bAGo(tb, "list", "-m", "-f", "{{.Version}}", "github.com/gin-gonic/gin"))
-		got, want := bASemver(ver), [3]int{1, 12, 0}
-		for i := range got {
-			if got[i] != want[i] {
-				if got[i] < want[i] {
-					tb.Errorf("gin %s < v1.12.0", ver)
-				}
-				break
+	}
+	ver := strings.TrimSpace(bAGo(t, "list", "-m", "-f", "{{.Version}}", "github.com/gin-gonic/gin"))
+	got, want := bASemver(ver), [3]int{1, 12, 0}
+	for i := range got {
+		if got[i] != want[i] {
+			if got[i] < want[i] {
+				t.Errorf("gin %s < v1.12.0", ver)
 			}
+			break
 		}
-	})
+	}
+
 }

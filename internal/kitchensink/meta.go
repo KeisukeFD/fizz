@@ -12,7 +12,7 @@ import (
 // (specvalidate.LintSemantics). It returns one entry per failing check,
 // empty when the document is clean.
 //
-// Run applies it to every otherwise-passing case once plan.Done["P2.6"].
+// Run applies it to every case that registers without panicking.
 func MetaProblems(doc []byte) []string {
 	var problems []string
 	for _, check := range []struct {

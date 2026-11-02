@@ -11,8 +11,7 @@ import (
 
 // Minimal reproductions of the spec-model losses that the official corpus
 // round trip (internal/conformance TestCorpusRoundTrip) found. Each is
-// the smallest input that loses information, and is red until the task
-// named in FixedBy lands.
+// the smallest input that loses information.
 
 // exactRoundTrip decodes in into a T, re-encodes it and requires the same
 // JSON value back.

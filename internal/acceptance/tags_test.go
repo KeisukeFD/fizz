@@ -143,10 +143,9 @@ type bFTitleBody struct {
 }
 
 func TestTagTitle(t *testing.T) {
-	at.Pending(t, "P6.2", func(tb testing.TB) {
-		_, doc, s := bFBody[bFTitleBody](tb)
-		at.Frag(tb, doc, s+"/properties/name/title", `"Pet name"`)
-	})
+	_, doc, s := bFBody[bFTitleBody](t)
+	at.Frag(t, doc, s+"/properties/name/title", `"Pet name"`)
+
 }
 
 // F02.
@@ -155,10 +154,9 @@ type bFPatternBody struct {
 }
 
 func TestTagPattern(t *testing.T) {
-	at.Pending(t, "P6.2", func(tb testing.TB) {
-		_, doc, s := bFBody[bFPatternBody](tb)
-		at.Frag(tb, doc, s+"/properties/slug/pattern", `"^[a-z]+$"`)
-	})
+	_, doc, s := bFBody[bFPatternBody](t)
+	at.Frag(t, doc, s+"/properties/slug/pattern", `"^[a-z]+$"`)
+
 }
 
 // F03.
@@ -169,24 +167,23 @@ type bFMultipleOfBody struct {
 }
 
 func TestTagMultipleOf(t *testing.T) {
-	at.Pending(t, "P6.2", func(tb testing.TB) {
-		f, doc, s := bFBody[bFMultipleOfBody](tb)
-		at.Frag(tb, doc, s+"/properties/price/multipleOf", `0.01`)
-		if !bytes.Contains(doc, []byte(`"multipleOf":0.01`)) {
-			tb.Errorf(`raw document does not contain "multipleOf":0.01`)
+	f, doc, s := bFBody[bFMultipleOfBody](t)
+	at.Frag(t, doc, s+"/properties/price/multipleOf", `0.01`)
+	if !bytes.Contains(doc, []byte(`"multipleOf":0.01`)) {
+		t.Errorf(`raw document does not contain "multipleOf":0.01`)
+	}
+	at.Absent(t, doc, s+"/properties/zero/multipleOf")
+	at.Absent(t, doc, s+"/properties/bad/multipleOf")
+	n := 0
+	for _, e := range bFErrs(f) {
+		if strings.Contains(e, "multipleOf") {
+			n++
 		}
-		at.Absent(tb, doc, s+"/properties/zero/multipleOf")
-		at.Absent(tb, doc, s+"/properties/bad/multipleOf")
-		n := 0
-		for _, e := range bFErrs(f) {
-			if strings.Contains(e, "multipleOf") {
-				n++
-			}
-		}
-		if n != 2 {
-			tb.Errorf("want 2 errors mentioning multipleOf (0 and x), got %d: %q", n, bFErrs(f))
-		}
-	})
+	}
+	if n != 2 {
+		t.Errorf("want 2 errors mentioning multipleOf (0 and x), got %d: %q", n, bFErrs(f))
+	}
+
 }
 
 // F04.
@@ -201,24 +198,23 @@ type bFRWBothBody struct {
 }
 
 func TestTagReadWriteOnly(t *testing.T) {
-	at.Pending(t, "P6.2", func(tb testing.TB) {
-		f, doc, s := bFBody[bFRWBody](tb)
-		at.Frag(tb, doc, s+"/properties/ro/readOnly", `true`)
-		at.Frag(tb, doc, s+"/properties/wo/writeOnly", `true`)
-		at.Absent(tb, doc, s+"/properties/maybe/readOnly")
-		bFWantErr(tb, f, "readOnly")
+	f, doc, s := bFBody[bFRWBody](t)
+	at.Frag(t, doc, s+"/properties/ro/readOnly", `true`)
+	at.Frag(t, doc, s+"/properties/wo/writeOnly", `true`)
+	at.Absent(t, doc, s+"/properties/maybe/readOnly")
+	bFWantErr(t, f, "readOnly")
 
-		f2, _, _ := bFBody[bFRWBothBody](tb)
-		warned := false
-		for _, err := range f2.Errors() {
-			if w, ok := err.(interface{ IsWarning() bool }); ok && w.IsWarning() {
-				warned = true
-			}
+	f2, _, _ := bFBody[bFRWBothBody](t)
+	warned := false
+	for _, err := range f2.Errors() {
+		if w, ok := err.(interface{ IsWarning() bool }); ok && w.IsWarning() {
+			warned = true
 		}
-		if !warned {
-			tb.Errorf("readOnly and writeOnly both true: want a warning, got %q", bFErrs(f2))
-		}
-	})
+	}
+	if !warned {
+		t.Errorf("readOnly and writeOnly both true: want a warning, got %q", bFErrs(f2))
+	}
+
 }
 
 // F05.
@@ -229,12 +225,11 @@ type bFNullBody struct {
 }
 
 func TestTagNullable(t *testing.T) {
-	at.Pending(t, "P6.2", func(tb testing.TB) {
-		_, doc, s := bFBody[bFNullBody](tb)
-		at.Frag(tb, doc, s+"/properties/p", `{"type":"string"}`)
-		at.Frag(tb, doc, s+"/properties/s", `{"type":["string","null"]}`)
-		at.Frag(tb, doc, s+"/properties/r", `{"$ref":"`+bFAddrRef+`"}`)
-	})
+	_, doc, s := bFBody[bFNullBody](t)
+	at.Frag(t, doc, s+"/properties/p", `{"type":"string"}`)
+	at.Frag(t, doc, s+"/properties/s", `{"type":["string","null"]}`)
+	at.Frag(t, doc, s+"/properties/r", `{"$ref":"`+bFAddrRef+`"}`)
+
 }
 
 // F06.
@@ -247,18 +242,17 @@ type bFAPBody struct {
 }
 
 func TestTagAdditionalPropertiesFalse(t *testing.T) {
-	at.Pending(t, "P6.2", func(tb testing.TB) {
-		f, doc, s := bFBody[bFAPBody](tb)
-		at.Frag(tb, doc, s+"/properties/anon/additionalProperties", `false`)
-		// A sibling additionalProperties:false next to $ref would reject
-		// every property (ACCEPTANCE.md O11): unevaluatedProperties.
-		at.Frag(tb, doc, s+"/properties/named",
-			`{"$ref":"`+bFAddrRef+`","unevaluatedProperties":false}`)
-		at.Absent(tb, doc, s+"/properties/named/additionalProperties")
-		at.Absent(tb, doc, s+"/properties/n/additionalProperties")
-		at.Absent(tb, doc, s+"/properties/n/unevaluatedProperties")
-		bFWantErr(tb, f, "additionalProperties")
-	})
+	f, doc, s := bFBody[bFAPBody](t)
+	at.Frag(t, doc, s+"/properties/anon/additionalProperties", `false`)
+	// A sibling additionalProperties:false next to $ref would reject
+	// every property (ACCEPTANCE.md O11): unevaluatedProperties.
+	at.Frag(t, doc, s+"/properties/named",
+		`{"$ref":"`+bFAddrRef+`","unevaluatedProperties":false}`)
+	at.Absent(t, doc, s+"/properties/named/additionalProperties")
+	at.Absent(t, doc, s+"/properties/n/additionalProperties")
+	at.Absent(t, doc, s+"/properties/n/unevaluatedProperties")
+	bFWantErr(t, f, "additionalProperties")
+
 }
 
 // F07.
@@ -268,13 +262,12 @@ type bFInlineBody struct {
 }
 
 func TestTagInline(t *testing.T) {
-	at.Pending(t, "P6.2", func(tb testing.TB) {
-		_, doc, s := bFBody[bFInlineBody](tb)
-		at.Frag(tb, doc, s+"/properties/home/properties/city", `{"type":"string"}`)
-		at.Absent(tb, doc, s+"/properties/home/$ref")
-		at.Frag(tb, doc, s+"/properties/other", `{"$ref":"`+bFAddrRef+`"}`)
-		at.Frag(tb, doc, "/components/schemas/AcceptanceBFAddr/properties/city", `{"type":"string"}`)
-	})
+	_, doc, s := bFBody[bFInlineBody](t)
+	at.Frag(t, doc, s+"/properties/home/properties/city", `{"type":"string"}`)
+	at.Absent(t, doc, s+"/properties/home/$ref")
+	at.Frag(t, doc, s+"/properties/other", `{"$ref":"`+bFAddrRef+`"}`)
+	at.Frag(t, doc, "/components/schemas/AcceptanceBFAddr/properties/city", `{"type":"string"}`)
+
 }
 
 // F08.
@@ -284,14 +277,13 @@ type bFStyleQuery struct {
 }
 
 func TestParamTagStyle(t *testing.T) {
-	at.Pending(t, "P6.2", func(tb testing.TB) {
-		f := fizz.New()
-		bFGet[bFStyleQuery](f, "/q", "q")
-		doc := at.Spec(tb, f)
-		at.Frag(tb, doc, bFParamPtr(tb, doc, "/q", "get", "ids")+"/style", `"pipeDelimited"`)
-		at.Absent(tb, doc, bFParamPtr(tb, doc, "/q", "get", "m")+"/style")
-		bFWantErr(tb, f, "style")
-	})
+	f := fizz.New()
+	bFGet[bFStyleQuery](f, "/q", "q")
+	doc := at.Spec(t, f)
+	at.Frag(t, doc, bFParamPtr(t, doc, "/q", "get", "ids")+"/style", `"pipeDelimited"`)
+	at.Absent(t, doc, bFParamPtr(t, doc, "/q", "get", "m")+"/style")
+	bFWantErr(t, f, "style")
+
 }
 
 // F09.
@@ -301,14 +293,13 @@ type bFReservedQuery struct {
 }
 
 func TestParamTagAllowReserved(t *testing.T) {
-	at.Pending(t, "P6.2", func(tb testing.TB) {
-		f := fizz.New()
-		bFGet[bFReservedQuery](f, "/q", "q")
-		doc := at.Spec(tb, f)
-		at.Frag(tb, doc, bFParamPtr(tb, doc, "/q", "get", "u")+"/allowReserved", `true`)
-		at.Absent(tb, doc, bFParamPtr(tb, doc, "/q", "get", "X-H")+"/allowReserved")
-		bFWantErr(tb, f, "allowReserved")
-	})
+	f := fizz.New()
+	bFGet[bFReservedQuery](f, "/q", "q")
+	doc := at.Spec(t, f)
+	at.Frag(t, doc, bFParamPtr(t, doc, "/q", "get", "u")+"/allowReserved", `true`)
+	at.Absent(t, doc, bFParamPtr(t, doc, "/q", "get", "X-H")+"/allowReserved")
+	bFWantErr(t, f, "allowReserved")
+
 }
 
 // F10: a use-site annotation lands on the use site, never on the
@@ -319,12 +310,11 @@ type bFUseSiteBody struct {
 }
 
 func TestTagsUseSiteOnly(t *testing.T) {
-	at.Pending(t, "P6.2", func(tb testing.TB) {
-		_, doc, s := bFBody[bFUseSiteBody](tb)
-		at.Frag(tb, doc, s+"/properties/a", `{"$ref":"`+bFAddrRef+`","title":"T"}`)
-		at.Frag(tb, doc, s+"/properties/b", `{"$ref":"`+bFAddrRef+`"}`)
-		at.Absent(tb, doc, "/components/schemas/AcceptanceBFAddr/title")
-	})
+	_, doc, s := bFBody[bFUseSiteBody](t)
+	at.Frag(t, doc, s+"/properties/a", `{"$ref":"`+bFAddrRef+`","title":"T"}`)
+	at.Frag(t, doc, s+"/properties/b", `{"$ref":"`+bFAddrRef+`"}`)
+	at.Absent(t, doc, "/components/schemas/AcceptanceBFAddr/title")
+
 }
 
 // F11: a zero TagNames field keeps the default name; "-" disables.
@@ -339,22 +329,21 @@ type bFTagNamesQuery struct {
 }
 
 func TestTagNamesOverride(t *testing.T) {
-	at.Pending(t, "P6.1", func(tb testing.TB) {
-		f := fizz.New(fizz.WithTagNames(openapi.TagNames{Description: "doc"}))
-		bFPost[bFTagNamesBody](f, "/b", "b")
-		bFGet[bFTagNamesQuery](f, "/q", "q")
-		doc := at.Spec(tb, f)
-		s := bFBodyPtr(tb, doc, "/b")
-		at.Frag(tb, doc, s+"/properties/doc/description", `"x"`)
-		at.Frag(tb, doc, s+"/properties/ex/examples", `["hello"]`)
-		at.Frag(tb, doc, s+"/properties/mail/format", `"email"`)
-		at.Frag(tb, doc, bFParamPtr(tb, doc, "/q", "get", "q")+"/description", `"pd"`)
+	f := fizz.New(fizz.WithTagNames(openapi.TagNames{Description: "doc"}))
+	bFPost[bFTagNamesBody](f, "/b", "b")
+	bFGet[bFTagNamesQuery](f, "/q", "q")
+	doc := at.Spec(t, f)
+	s := bFBodyPtr(t, doc, "/b")
+	at.Frag(t, doc, s+"/properties/doc/description", `"x"`)
+	at.Frag(t, doc, s+"/properties/ex/examples", `["hello"]`)
+	at.Frag(t, doc, s+"/properties/mail/format", `"email"`)
+	at.Frag(t, doc, bFParamPtr(t, doc, "/q", "get", "q")+"/description", `"pd"`)
 
-		f = fizz.New(fizz.WithTagNames(openapi.TagNames{Format: "-"}))
-		bFPost[bFTagNamesBody](f, "/b", "b")
-		doc = at.Spec(tb, f)
-		at.Absent(tb, doc, bFBodyPtr(tb, doc, "/b")+"/properties/mail/format")
-	})
+	f = fizz.New(fizz.WithTagNames(openapi.TagNames{Format: "-"}))
+	bFPost[bFTagNamesBody](f, "/b", "b")
+	doc = at.Spec(t, f)
+	at.Absent(t, doc, bFBodyPtr(t, doc, "/b")+"/properties/mail/format")
+
 }
 
 type bFCookieIn struct {
@@ -364,16 +353,15 @@ type bFCookieIn struct {
 
 // F12.
 func TestTagNamesCookie(t *testing.T) {
-	at.Pending(t, "P4.2c", func(tb testing.TB) {
-		f := fizz.New(fizz.WithTagNames(openapi.TagNames{Cookie: "ck"}))
-		bFGet[bFCookieIn](f, "/c", "c")
-		doc := at.Spec(tb, f)
-		p := bFParamPtr(tb, doc, "/c", "get", "sid")
-		at.Frag(tb, doc, p+"/in", `"cookie"`)
-		at.Frag(tb, doc, p+"/name", `"sid"`)
-		// The cookie:"x" field is not a parameter on this instance.
-		at.Absent(tb, doc, "/paths/~1c/get/parameters/1")
-	})
+	f := fizz.New(fizz.WithTagNames(openapi.TagNames{Cookie: "ck"}))
+	bFGet[bFCookieIn](f, "/c", "c")
+	doc := at.Spec(t, f)
+	p := bFParamPtr(t, doc, "/c", "get", "sid")
+	at.Frag(t, doc, p+"/in", `"cookie"`)
+	at.Frag(t, doc, p+"/name", `"sid"`)
+	// The cookie:"x" field is not a parameter on this instance.
+	at.Absent(t, doc, "/paths/~1c/get/parameters/1")
+
 }
 
 // F34.
@@ -383,21 +371,20 @@ type bFPtrBody struct {
 }
 
 func TestPointersAreNullableOption(t *testing.T) {
-	at.Pending(t, "P6.1", func(tb testing.TB) {
-		f := fizz.New(fizz.WithPointersAreNullable(false))
-		bFPost[bFPtrBody](f, "/b", "b")
-		doc := at.Spec(tb, f)
-		s := bFBodyPtr(tb, doc, "/b")
-		at.Frag(tb, doc, s+"/properties/p", `{"type":"string"}`)
-		at.Frag(tb, doc, s+"/properties/a", `{"$ref":"`+bFAddrRef+`"}`)
+	f := fizz.New(fizz.WithPointersAreNullable(false))
+	bFPost[bFPtrBody](f, "/b", "b")
+	doc := at.Spec(t, f)
+	s := bFBodyPtr(t, doc, "/b")
+	at.Frag(t, doc, s+"/properties/p", `{"type":"string"}`)
+	at.Frag(t, doc, s+"/properties/a", `{"$ref":"`+bFAddrRef+`"}`)
 
-		f = fizz.New()
-		bFPost[bFPtrBody](f, "/b", "b")
-		doc = at.Spec(tb, f)
-		s = bFBodyPtr(tb, doc, "/b")
-		at.Frag(tb, doc, s+"/properties/p", `{"type":["string","null"]}`)
-		at.Frag(tb, doc, s+"/properties/a", `{"anyOf":[{"$ref":"`+bFAddrRef+`"},{"type":"null"}]}`)
-	})
+	f = fizz.New()
+	bFPost[bFPtrBody](f, "/b", "b")
+	doc = at.Spec(t, f)
+	s = bFBodyPtr(t, doc, "/b")
+	at.Frag(t, doc, s+"/properties/p", `{"type":["string","null"]}`)
+	at.Frag(t, doc, s+"/properties/a", `{"anyOf":[{"$ref":"`+bFAddrRef+`"},{"type":"null"}]}`)
+
 }
 
 // F35.
@@ -407,55 +394,53 @@ type bFWrapBody struct {
 }
 
 func TestAnnotationStyleAllOfWrap(t *testing.T) {
-	at.Pending(t, "P6.1", func(tb testing.TB) {
-		nullable := `{"anyOf":[{"$ref":"` + bFAddrRef + `"},{"type":"null"}],"description":"d"}`
-		for _, c := range []struct {
-			name  string
-			style openapi.AnnotationStyle
-			want  string
-		}{
-			{"sibling", openapi.SiblingAnnotations, `{"$ref":"` + bFAddrRef + `","description":"d"}`},
-			{"allOf", openapi.AllOfWrap, `{"allOf":[{"$ref":"` + bFAddrRef + `"}],"description":"d"}`},
-		} {
-			f := fizz.New(fizz.WithAnnotationStyle(c.style))
-			bFPost[bFWrapBody](f, "/b", "b")
-			doc := at.Spec(tb, f)
-			s := bFBodyPtr(tb, doc, "/b")
-			at.Frag(tb, doc, s+"/properties/a", c.want)
-			at.Frag(tb, doc, s+"/properties/n", nullable)
-		}
-	})
+	nullable := `{"anyOf":[{"$ref":"` + bFAddrRef + `"},{"type":"null"}],"description":"d"}`
+	for _, c := range []struct {
+		name  string
+		style openapi.AnnotationStyle
+		want  string
+	}{
+		{"sibling", openapi.SiblingAnnotations, `{"$ref":"` + bFAddrRef + `","description":"d"}`},
+		{"allOf", openapi.AllOfWrap, `{"allOf":[{"$ref":"` + bFAddrRef + `"}],"description":"d"}`},
+	} {
+		f := fizz.New(fizz.WithAnnotationStyle(c.style))
+		bFPost[bFWrapBody](f, "/b", "b")
+		doc := at.Spec(t, f)
+		s := bFBodyPtr(t, doc, "/b")
+		at.Frag(t, doc, s+"/properties/a", c.want)
+		at.Frag(t, doc, s+"/properties/n", nullable)
+	}
+
 }
 
 // F14. The renamed-binder-tag rule is B1: only fizz-owned tags are
 // configurable.
 func TestRenamedBinderTagRejected(t *testing.T) {
-	at.Pending(t, "P6.1", func(tb testing.TB) {
-		_, err := openapi.NewGenerator(&openapi.SpecGenConfig{
-			ValidatorTag:      tonic.ValidationTag,
-			PathLocationTag:   tonic.PathTag,
-			QueryLocationTag:  "q",
-			HeaderLocationTag: tonic.HeaderTag,
-			EnumTag:           tonic.EnumTag,
-			DefaultTag:        tonic.DefaultTag,
-		})
-		if err == nil {
-			tb.Fatal("QueryLocationTag \"q\": want an error")
-		}
-		if !strings.Contains(err.Error(), "QueryLocationTag") {
-			tb.Errorf("error does not name QueryLocationTag: %v", err)
-		}
-		if _, err := openapi.NewGenerator(&openapi.SpecGenConfig{
-			ValidatorTag:      tonic.ValidationTag,
-			PathLocationTag:   tonic.PathTag,
-			QueryLocationTag:  tonic.QueryTag,
-			HeaderLocationTag: tonic.HeaderTag,
-			EnumTag:           tonic.EnumTag,
-			DefaultTag:        tonic.DefaultTag,
-		}); err != nil {
-			tb.Errorf("all-tonic config: %v", err)
-		}
+	_, err := openapi.NewGenerator(&openapi.SpecGenConfig{
+		ValidatorTag:      tonic.ValidationTag,
+		PathLocationTag:   tonic.PathTag,
+		QueryLocationTag:  "q",
+		HeaderLocationTag: tonic.HeaderTag,
+		EnumTag:           tonic.EnumTag,
+		DefaultTag:        tonic.DefaultTag,
 	})
+	if err == nil {
+		t.Fatal("QueryLocationTag \"q\": want an error")
+	}
+	if !strings.Contains(err.Error(), "QueryLocationTag") {
+		t.Errorf("error does not name QueryLocationTag: %v", err)
+	}
+	if _, err := openapi.NewGenerator(&openapi.SpecGenConfig{
+		ValidatorTag:      tonic.ValidationTag,
+		PathLocationTag:   tonic.PathTag,
+		QueryLocationTag:  tonic.QueryTag,
+		HeaderLocationTag: tonic.HeaderTag,
+		EnumTag:           tonic.EnumTag,
+		DefaultTag:        tonic.DefaultTag,
+	}); err != nil {
+		t.Errorf("all-tonic config: %v", err)
+	}
+
 }
 
 // F21: the pre-v0.30 interfaces keep working (regression, passes today).
@@ -515,29 +500,28 @@ type (
 )
 
 func TestComponentNeverMutatedByUseSite(t *testing.T) {
-	at.Pending(t, "P3.4", func(tb testing.TB) {
-		build := func(annotatedFirst bool, both bool) string {
-			f := fizz.New()
-			switch {
-			case !both:
-				bFPost[bFPlainUse](f, "/plain", "plain")
-			case annotatedFirst:
-				bFPost[bFAnnotatedUse](f, "/anno", "anno")
-				bFPost[bFPlainUse](f, "/plain", "plain")
-			default:
-				bFPost[bFPlainUse](f, "/plain", "plain")
-				bFPost[bFAnnotatedUse](f, "/anno", "anno")
-			}
-			return bFComponent(tb, at.Spec(tb, f), "AcceptanceBFAddr")
+	build := func(annotatedFirst bool, both bool) string {
+		f := fizz.New()
+		switch {
+		case !both:
+			bFPost[bFPlainUse](f, "/plain", "plain")
+		case annotatedFirst:
+			bFPost[bFAnnotatedUse](f, "/anno", "anno")
+			bFPost[bFPlainUse](f, "/plain", "plain")
+		default:
+			bFPost[bFPlainUse](f, "/plain", "plain")
+			bFPost[bFAnnotatedUse](f, "/anno", "anno")
 		}
-		base := build(false, false)
-		for name, got := range map[string]string{
-			"plain then annotated": build(false, true),
-			"annotated then plain": build(true, true),
-		} {
-			if got != base {
-				tb.Errorf("%s: component changed\n got: %s\nwant: %s", name, got, base)
-			}
+		return bFComponent(t, at.Spec(t, f), "AcceptanceBFAddr")
+	}
+	base := build(false, false)
+	for name, got := range map[string]string{
+		"plain then annotated": build(false, true),
+		"annotated then plain": build(true, true),
+	} {
+		if got != base {
+			t.Errorf("%s: component changed\n got: %s\nwant: %s", name, got, base)
 		}
-	})
+	}
+
 }

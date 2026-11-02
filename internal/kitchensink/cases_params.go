@@ -73,7 +73,6 @@ func init() {
 				{Pointer: "/paths/~1x/get/parameters/0/name", JSON: `"kept"`},
 				{Pointer: "/paths/~1x/get/parameters/1", Absent: true},
 			},
-			FixedBy: "P4.2",
 		},
 		Case{
 			Name:     "params/query-required",
@@ -82,7 +81,6 @@ func init() {
 				{Pointer: "/paths/~1x/get/parameters/0/name", JSON: `"q"`},
 				{Pointer: "/paths/~1x/get/parameters/0/required", JSON: `true`},
 			},
-			FixedBy: "P4.2",
 		},
 		Case{
 			Name:     "params/query-default-option",
@@ -90,7 +88,6 @@ func init() {
 			Expect: []Fragment{
 				{Pointer: "/paths/~1x/get/parameters/0/schema/default", JSON: `3`},
 			},
-			FixedBy: "P4.2",
 		},
 		Case{
 			Name:     "params/query-omitempty-is-error-not-panic",
@@ -100,7 +97,6 @@ func init() {
 				{Pointer: "/paths/~1x/get/parameters/0/name", JSON: `"r"`},
 				{Pointer: "/paths/~1x/get/parameters/1", Absent: true},
 			},
-			FixedBy: "P4.2",
 		},
 		Case{
 			Name:     "params/gin-wildcard-path",
@@ -110,7 +106,6 @@ func init() {
 				{Pointer: "/paths/~1files~1{path}/get/parameters/0/in", JSON: `"path"`},
 				{Pointer: "/paths/~1files~1{path}/get/parameters/0/required", JSON: `true`},
 			},
-			FixedBy: "P4.3",
 		},
 		Case{
 			Name:     "params/path-param-without-input",
@@ -122,7 +117,6 @@ func init() {
 				{Pointer: "/paths/~1users~1{id}/get/parameters/0/required", JSON: `true`},
 				{Pointer: "/paths/~1users~1{id}/get/parameters/0/schema/type", JSON: `"string"`},
 			},
-			FixedBy: "P4.3",
 		},
 		Case{
 			Name:     "params/path-param-missing-from-input",
@@ -132,13 +126,11 @@ func init() {
 				{Pointer: "/paths/~1users~1{id}/get/parameters/0/name", JSON: `"id"`},
 				{Pointer: "/paths/~1users~1{id}/get/parameters/0/required", JSON: `true`},
 			},
-			FixedBy: "P4.3",
 		},
 		Case{
 			Name:     "params/conflicting-locations",
 			Register: pRegister("GET", "/users/:id", tonic.Handler(pHandler[PConflictIn], 200)),
 			Errors:   []string{"id"},
-			FixedBy:  "P4.8",
 		},
 		Case{
 			Name:     "params/query-explode-false",
@@ -146,7 +138,6 @@ func init() {
 			Expect: []Fragment{
 				{Pointer: "/paths/~1x/get/parameters/0/explode", JSON: `false`},
 			},
-			FixedBy: "P4.2",
 		},
 		Case{
 			Name:     "params/query-duration-default-ns-integer",
@@ -155,7 +146,6 @@ func init() {
 				{Pointer: "/paths/~1x/get/parameters/0/schema/type", JSON: `"integer"`},
 				{Pointer: "/paths/~1x/get/parameters/0/schema/default", JSON: `1000000000`},
 			},
-			FixedBy: "P3.3",
 		},
 		Case{
 			Name:     "params/default-with-required-drops-required",
@@ -165,7 +155,6 @@ func init() {
 				{Pointer: "/paths/~1x/get/parameters/0/required", Absent: true},
 				{Pointer: "/paths/~1x/get/parameters/0/schema/default", JSON: `3`},
 			},
-			FixedBy: "P3.6",
 		},
 		Case{
 			// PDeleteIn has a path parameter, so its body is named after
@@ -176,7 +165,6 @@ func init() {
 				{Pointer: "/paths/~1items~1{id}/delete/requestBody/content/application~1json/schema", JSON: `{"$ref":"#/components/schemas/OpInput"}`},
 				{Pointer: "/components/schemas/OpInput/properties/name", JSON: `{"type":"string"}`},
 			},
-			FixedBy: "P4.6",
 		},
 		Case{
 			Name:     "params/deep-object-placeholder",
@@ -187,7 +175,6 @@ func init() {
 				{Pointer: "/paths/~1x/get/parameters/0/explode", JSON: `true`},
 				{Pointer: "/paths/~1x/get/parameters/0/schema/type", JSON: `"object"`},
 			},
-			FixedBy: "P7.1",
 		},
 		Case{
 			Name:     "params/cookie-placeholder",
@@ -196,7 +183,6 @@ func init() {
 				{Pointer: "/paths/~1x/get/parameters/0/name", JSON: `"session"`},
 				{Pointer: "/paths/~1x/get/parameters/0/in", JSON: `"cookie"`},
 			},
-			FixedBy: "P4.2c",
 		},
 	)
 }

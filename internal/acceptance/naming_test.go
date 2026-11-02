@@ -92,63 +92,61 @@ func bERespRef(tb testing.TB, doc []byte, path string) string {
 }
 
 func TestBEDefaultComponentNameFormat(t *testing.T) {
-	at.Pending(t, "P4.5", func(tb testing.TB) {
-		f := fizz.New()
-		rows := []struct {
-			path string
-			h    gin.HandlerFunc
-			want string
-		}{
-			{"/foo", tonic.Handler(bEGetFoo, 200), "AcceptanceBEFoo"},
-			{"/box-string", bEOut[boxfix.Box[string]](), "FixturesBox_string"},
-			{"/box-item", bEOut[boxfix.Box[xmodels.Item]](), "FixturesBox_models.Item"},
-			{"/box-list", bEOut[boxfix.Box[[]string]](), "FixturesBox_List_string"},
-			{"/box-map", bEOut[boxfix.Box[map[string]int]](), "FixturesBox_Map_string_int"},
+	f := fizz.New()
+	rows := []struct {
+		path string
+		h    gin.HandlerFunc
+		want string
+	}{
+		{"/foo", tonic.Handler(bEGetFoo, 200), "AcceptanceBEFoo"},
+		{"/box-string", bEOut[boxfix.Box[string]](), "FixturesBox_string"},
+		{"/box-item", bEOut[boxfix.Box[xmodels.Item]](), "FixturesBox_models.Item"},
+		{"/box-list", bEOut[boxfix.Box[[]string]](), "FixturesBox_List_string"},
+		{"/box-map", bEOut[boxfix.Box[map[string]int]](), "FixturesBox_Map_string_int"},
+	}
+	for _, r := range rows {
+		f.GET(r.path, []fizz.OperationOption{fizz.ID("id" + strings.ReplaceAll(r.path, "/", "_"))}, r.h)
+	}
+	doc := at.Spec(t, f)
+	for _, r := range rows {
+		if got := bERespRef(t, doc, r.path); got != r.want {
+			t.Errorf("%s: component %q, want %q", r.path, got, r.want)
 		}
-		for _, r := range rows {
-			f.GET(r.path, []fizz.OperationOption{fizz.ID("id" + strings.ReplaceAll(r.path, "/", "_"))}, r.h)
+		if !bENameRE.MatchString(r.want) {
+			t.Errorf("%s: expected name %q is not a valid key", r.path, r.want)
 		}
-		doc := at.Spec(tb, f)
-		for _, r := range rows {
-			if got := bERespRef(tb, doc, r.path); got != r.want {
-				tb.Errorf("%s: component %q, want %q", r.path, got, r.want)
-			}
-			if !bENameRE.MatchString(r.want) {
-				tb.Errorf("%s: expected name %q is not a valid key", r.path, r.want)
-			}
+	}
+	// Box[*Item] renders like Box[Item] but is another type with
+	// another schema (nullable field): checked on its own spec, as
+	// both in one spec collide and the second is inlined.
+	fp := fizz.New()
+	fp.GET("/box-ptr", []fizz.OperationOption{fizz.ID("id_box_ptr")}, bEOut[boxfix.Box[*xmodels.Item]]())
+	if got := bERespRef(t, at.Spec(t, fp), "/box-ptr"); got != "FixturesBox_models.Item" {
+		t.Errorf("/box-ptr: component %q, want %q", got, "FixturesBox_models.Item")
+	}
+	for name := range bESchemas(t, doc) {
+		if !bENameRE.MatchString(name) {
+			t.Errorf("component name %q does not match %s", name, bENameRE)
 		}
-		// Box[*Item] renders like Box[Item] but is another type with
-		// another schema (nullable field): checked on its own spec, as
-		// both in one spec collide and the second is inlined.
-		fp := fizz.New()
-		fp.GET("/box-ptr", []fizz.OperationOption{fizz.ID("id_box_ptr")}, bEOut[boxfix.Box[*xmodels.Item]]())
-		if got := bERespRef(tb, at.Spec(tb, fp), "/box-ptr"); got != "FixturesBox_models.Item" {
-			tb.Errorf("/box-ptr: component %q, want %q", got, "FixturesBox_models.Item")
-		}
-		for name := range bESchemas(tb, doc) {
-			if !bENameRE.MatchString(name) {
-				tb.Errorf("component name %q does not match %s", name, bENameRE)
-			}
-		}
-	})
+	}
+
 }
 
 func TestBEComponentNamesSanitized(t *testing.T) {
-	at.Pending(t, "P4.5", func(tb testing.TB) {
-		f := fizz.New()
-		f.GET("/a", []fizz.OperationOption{fizz.ID("a")}, bEOut[boxfix.Box[string]]())
-		f.GET("/b", []fizz.OperationOption{fizz.ID("b")}, bEOut[boxfix.Box[map[string][]xmodels.Item]]())
-		f.GET("/c", []fizz.OperationOption{fizz.ID("c")}, bEOut[bETyper]())
-		f.GET("/d", []fizz.OperationOption{fizz.ID("d")}, bEOut[bEÜber]())
-		f.GET("/e", []fizz.OperationOption{fizz.ID("e")}, bEOut[boxfix.Box[ymodels.Item]]())
-		doc, err := bEBuild(f)
-		if err != nil {
-			tb.Fatal(err)
-		}
-		if err := specvalidate.LintComponentNames(doc); err != nil {
-			tb.Error(err)
-		}
-	})
+	f := fizz.New()
+	f.GET("/a", []fizz.OperationOption{fizz.ID("a")}, bEOut[boxfix.Box[string]]())
+	f.GET("/b", []fizz.OperationOption{fizz.ID("b")}, bEOut[boxfix.Box[map[string][]xmodels.Item]]())
+	f.GET("/c", []fizz.OperationOption{fizz.ID("c")}, bEOut[bETyper]())
+	f.GET("/d", []fizz.OperationOption{fizz.ID("d")}, bEOut[bEÜber]())
+	f.GET("/e", []fizz.OperationOption{fizz.ID("e")}, bEOut[boxfix.Box[ymodels.Item]]())
+	doc, err := bEBuild(f)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := specvalidate.LintComponentNames(doc); err != nil {
+		t.Error(err)
+	}
+
 }
 
 // bEBuild builds the spec without the meta-schema gate of at.Spec, which
@@ -159,20 +157,19 @@ func bEBuild(f *fizz.Fizz) ([]byte, error) {
 }
 
 func TestBEOverrideTypeNameCollision(t *testing.T) {
-	at.Pending(t, "P4.5", func(tb testing.TB) {
-		f := fizz.New()
-		f.GET("/a", []fizz.OperationOption{fizz.ID("getA")}, tonic.Handler(bEGetA, 200))
-		before := at.Spec(tb, f)
-		at.Frag(tb, before, "/components/schemas/AcceptanceBEA/properties/a", `{"type":"string"}`)
+	f := fizz.New()
+	f.GET("/a", []fizz.OperationOption{fizz.ID("getA")}, tonic.Handler(bEGetA, 200))
+	before := at.Spec(t, f)
+	at.Frag(t, before, "/components/schemas/AcceptanceBEA/properties/a", `{"type":"string"}`)
 
-		err := f.Generator().OverrideTypeName(reflect.TypeFor[bEB](), "AcceptanceBEA")
-		if err == nil {
-			tb.Error("OverrideTypeName onto an existing component name returned nil")
-		}
-		after := at.Spec(tb, f)
-		at.Frag(tb, after, "/components/schemas/AcceptanceBEA/properties/a", `{"type":"string"}`)
-		at.Absent(tb, after, "/components/schemas/AcceptanceBEA/properties/b")
-	})
+	err := f.Generator().OverrideTypeName(reflect.TypeFor[bEB](), "AcceptanceBEA")
+	if err == nil {
+		t.Error("OverrideTypeName onto an existing component name returned nil")
+	}
+	after := at.Spec(t, f)
+	at.Frag(t, after, "/components/schemas/AcceptanceBEA/properties/a", `{"type":"string"}`)
+	at.Absent(t, after, "/components/schemas/AcceptanceBEA/properties/b")
+
 }
 
 // --- operation IDs ---
@@ -220,98 +217,95 @@ func bESafe(fn func()) (err error) {
 }
 
 func TestBEDefaultOperationIDs(t *testing.T) {
-	at.Pending(t, "P4.7", func(tb testing.TB) {
-		f := fizz.New()
-		svc := &bESvc{}
-		regs := []struct {
-			path string
-			reg  func()
-			want string
-		}{
-			{"/pets", func() { f.GET("/pets", nil, tonic.Handler(bEListPets, 200)) }, "bEListPets"},
-			{"/svc", func() { f.GET("/svc", nil, tonic.Handler(svc.List, 200)) }, "List"},
-			{"/gen", func() { f.GET("/gen", nil, tonic.Handler(bEGen[int], 200)) }, "bEGen"},
-			{"/closure", func() { bERegister(f) }, "bERegister"},
-			{"/x", func() { f.GET("/x", nil, tonic.Handler(xmodels.Get, 200)) }, "Get"},
-			// The qualifier is the last import-path segment (y): the declared
-			// package name of a function is not available at run time (types
-			// use the declared name via reflect; functions cannot).
-			{"/y", func() { f.GET("/y", nil, tonic.Handler(ymodels.Get, 200)) }, "y.Get"},
-			{"/a/:id", func() { f.GET("/a/:id", nil, tonic.Handler(ymodels.Get, 200)) }, "get_a_id"},
+	f := fizz.New()
+	svc := &bESvc{}
+	regs := []struct {
+		path string
+		reg  func()
+		want string
+	}{
+		{"/pets", func() { f.GET("/pets", nil, tonic.Handler(bEListPets, 200)) }, "bEListPets"},
+		{"/svc", func() { f.GET("/svc", nil, tonic.Handler(svc.List, 200)) }, "List"},
+		{"/gen", func() { f.GET("/gen", nil, tonic.Handler(bEGen[int], 200)) }, "bEGen"},
+		{"/closure", func() { bERegister(f) }, "bERegister"},
+		{"/x", func() { f.GET("/x", nil, tonic.Handler(xmodels.Get, 200)) }, "Get"},
+		// The qualifier is the last import-path segment (y): the declared
+		// package name of a function is not available at run time (types
+		// use the declared name via reflect; functions cannot).
+		{"/y", func() { f.GET("/y", nil, tonic.Handler(ymodels.Get, 200)) }, "y.Get"},
+		{"/a/:id", func() { f.GET("/a/:id", nil, tonic.Handler(ymodels.Get, 200)) }, "get_a_id"},
+	}
+	for _, r := range regs {
+		if err := bESafe(r.reg); err != nil {
+			t.Errorf("register %s: %v", r.path, err)
 		}
-		for _, r := range regs {
-			if err := bESafe(r.reg); err != nil {
-				tb.Errorf("register %s: %v", r.path, err)
-			}
+	}
+	doc, err := bEBuild(f)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, r := range regs {
+		p := strings.ReplaceAll(r.path, ":id", "{id}")
+		if got := bEOpID(t, doc, p); got != r.want {
+			t.Errorf("GET %s: operationId %q, want %q", p, got, r.want)
 		}
-		doc, err := bEBuild(f)
-		if err != nil {
-			tb.Fatal(err)
-		}
-		for _, r := range regs {
-			p := strings.ReplaceAll(r.path, ":id", "{id}")
-			if got := bEOpID(tb, doc, p); got != r.want {
-				tb.Errorf("GET %s: operationId %q, want %q", p, got, r.want)
-			}
-		}
-	})
+	}
+
 }
 
 func TestBEOperationIDNamer(t *testing.T) {
-	at.Pending(t, "P4.7", func(tb testing.TB) {
-		var calls []string
-		f := fizz.New(fizz.WithOperationIDNamer(func(m, p, h string) string {
-			calls = append(calls, m+" "+p)
-			return "n_" + strings.ToLower(m) + strings.ReplaceAll(strings.ReplaceAll(p, "/", "_"), "{id}", "ID")
-		}))
-		f.GET("/pets/:id", nil, tonic.Handler(bEListPets, 200))
-		f.GET("/own", []fizz.OperationOption{fizz.ID("explicit")}, tonic.Handler(bEListPets, 200))
-		doc, err := bEBuild(f)
-		if err != nil {
-			tb.Fatal(err)
-		}
-		if got := bEOpID(tb, doc, "/pets/{id}"); got != "n_get_pets_ID" {
-			tb.Errorf("namer ID: got %q", got)
-		}
-		if got := bEOpID(tb, doc, "/own"); got != "explicit" {
-			tb.Errorf("explicit ID: got %q", got)
-		}
-		if len(calls) != 1 || calls[0] != "GET /pets/{id}" {
-			tb.Errorf("namer calls: %v", calls)
-		}
-	})
+	var calls []string
+	f := fizz.New(fizz.WithOperationIDNamer(func(m, p, h string) string {
+		calls = append(calls, m+" "+p)
+		return "n_" + strings.ToLower(m) + strings.ReplaceAll(strings.ReplaceAll(p, "/", "_"), "{id}", "ID")
+	}))
+	f.GET("/pets/:id", nil, tonic.Handler(bEListPets, 200))
+	f.GET("/own", []fizz.OperationOption{fizz.ID("explicit")}, tonic.Handler(bEListPets, 200))
+	doc, err := bEBuild(f)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := bEOpID(t, doc, "/pets/{id}"); got != "n_get_pets_ID" {
+		t.Errorf("namer ID: got %q", got)
+	}
+	if got := bEOpID(t, doc, "/own"); got != "explicit" {
+		t.Errorf("explicit ID: got %q", got)
+	}
+	if len(calls) != 1 || calls[0] != "GET /pets/{id}" {
+		t.Errorf("namer calls: %v", calls)
+	}
+
 }
 
 func TestBEExplicitIDCollision(t *testing.T) {
-	at.Pending(t, "P4.8", func(tb testing.TB) {
-		f := fizz.New()
-		f.GET("/one", []fizz.OperationOption{fizz.ID("dup")}, tonic.Handler(bEListPets, 200))
-		regErr := bESafe(func() {
-			f.GET("/two", []fizz.OperationOption{fizz.ID("dup")}, tonic.Handler(bEListPets, 200))
-		})
-		// Registration must not panic (the error is recorded), and the
-		// recorded error names the ID.
-		if regErr != nil {
-			tb.Errorf("registering the duplicate panicked: %v", regErr)
-		}
-		found := false
-		for _, e := range f.Errors() {
-			if strings.Contains(e.Error(), "dup") {
-				found = true
-			}
-		}
-		if !found {
-			tb.Errorf("no error mentions \"dup\": %v", f.Errors())
-		}
-		doc, err := bEBuild(f)
-		if err != nil {
-			tb.Fatal(err)
-		}
-		at.Absent(tb, doc, "/paths/~1two/get")
-		if w := at.Do(f, http.MethodGet, "/two"); w.Code != http.StatusOK {
-			tb.Errorf("GET /two: %d, want 200", w.Code)
-		}
+	f := fizz.New()
+	f.GET("/one", []fizz.OperationOption{fizz.ID("dup")}, tonic.Handler(bEListPets, 200))
+	regErr := bESafe(func() {
+		f.GET("/two", []fizz.OperationOption{fizz.ID("dup")}, tonic.Handler(bEListPets, 200))
 	})
+	// Registration must not panic (the error is recorded), and the
+	// recorded error names the ID.
+	if regErr != nil {
+		t.Errorf("registering the duplicate panicked: %v", regErr)
+	}
+	found := false
+	for _, e := range f.Errors() {
+		if strings.Contains(e.Error(), "dup") {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("no error mentions \"dup\": %v", f.Errors())
+	}
+	doc, err := bEBuild(f)
+	if err != nil {
+		t.Fatal(err)
+	}
+	at.Absent(t, doc, "/paths/~1two/get")
+	if w := at.Do(f, http.MethodGet, "/two"); w.Code != http.StatusOK {
+		t.Errorf("GET /two: %d, want 200", w.Code)
+	}
+
 }
 
 type bECreateIn struct {
@@ -332,12 +326,11 @@ func TestBERequestBodyNamer(t *testing.T) {
 
 // E03.
 func TestSchemaNamerOption(t *testing.T) {
-	at.Pending(t, "P4.5+P6.1", func(tb testing.TB) {
-		f := fizz.New(fizz.WithSchemaNamer(func(t reflect.Type) string { return "X_" + t.Name() }))
-		f.GET("/foo", []fizz.OperationOption{fizz.ID("foo")}, tonic.Handler(bEGetFoo, 200))
-		doc := at.Spec(tb, f)
-		if got := bERespRef(tb, doc, "/foo"); got != "X_bEFoo" {
-			tb.Errorf("component %q, want %q", got, "X_bEFoo")
-		}
-	})
+	f := fizz.New(fizz.WithSchemaNamer(func(t reflect.Type) string { return "X_" + t.Name() }))
+	f.GET("/foo", []fizz.OperationOption{fizz.ID("foo")}, tonic.Handler(bEGetFoo, 200))
+	doc := at.Spec(t, f)
+	if got := bERespRef(t, doc, "/foo"); got != "X_bEFoo" {
+		t.Errorf("component %q, want %q", got, "X_bEFoo")
+	}
+
 }

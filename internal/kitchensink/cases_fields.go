@@ -150,7 +150,6 @@ func init() {
 				Pointer: "/components/schemas/KitchensinkFAmbiguous/properties",
 				JSON:    `{"keep":{"type":"boolean"}}`,
 			}},
-			FixedBy: "P3.1a",
 		},
 		Case{
 			Name:     "fields/json-dash-skipped",
@@ -167,7 +166,6 @@ func init() {
 				Pointer: "/components/schemas/KitchensinkFDashComma/properties",
 				JSON:    `{"-":{"type":"string"}}`,
 			}},
-			FixedBy: "P3.1a",
 		},
 		Case{
 			Name:     "fields/json-string-option-on-int",
@@ -176,7 +174,6 @@ func init() {
 				Pointer: "/components/schemas/KitchensinkFStringOpt/properties/n",
 				JSON:    `{"type":"string"}`,
 			}},
-			FixedBy: "P3.1a",
 		},
 		Case{
 			Name:     "fields/tagged-embedded-struct-response",
@@ -187,21 +184,18 @@ func init() {
 			Name:     "fields/tagged-embedded-struct-request",
 			Register: fieldsReq[FTaggedEmb]("tagReq"),
 			Expect:   []Fragment{{Pointer: "/components/schemas/TagReqInput/properties", JSON: taggedEmbProps[0].JSON}},
-			FixedBy:  "P3.1b",
 		},
 		Case{
 			Name:     "fields/embedded-cycle-response",
 			Register: fieldsResp[FCycA]("x"),
 			Expect:   []Fragment{{Pointer: "/components/schemas/KitchensinkFCycA/type", JSON: `"object"`}},
-			FixedBy:  "P3.1a",
 		},
 		Case{
 			// Same cycle through the param walker (generator.go:523).
 			Name:     "fields/embedded-cycle-request",
 			Register: fieldsReq[FCycA]("cycReq"),
 			// No JSON members at all, so no request body; the point is that the walk ends.
-			Expect:  []Fragment{{Pointer: "/paths/~1cycReq/post/requestBody", Absent: true}},
-			FixedBy: "P3.1b",
+			Expect: []Fragment{{Pointer: "/paths/~1cycReq/post/requestBody", Absent: true}},
 		},
 		Case{
 			// The "-" field leaks as property "" (generator.go:623-647).
@@ -212,25 +206,21 @@ func init() {
 				{Pointer: "/components/schemas/DashReqInput/properties/", Absent: true},
 				{Pointer: "/components/schemas/DashReqInput/properties", JSON: `{"keep":{"type":"string"}}`},
 			},
-			FixedBy: "P3.1b",
 		},
 		Case{
 			Name:     "fields/shared-component-annotations-at-use-site",
 			Register: fieldsResp[FHolder]("x"),
 			Expect:   holderProps,
-			FixedBy:  "P3.4",
 		},
 		Case{
 			Name:     "fields/shared-component-order-holder-first",
 			Register: fieldsBoth(fieldsResp[FHolder]("h"), fieldsResp[FShared]("s")),
 			Expect:   holderProps,
-			FixedBy:  "P3.4",
 		},
 		Case{
 			Name:     "fields/shared-component-order-holder-last",
 			Register: fieldsBoth(fieldsResp[FShared]("s"), fieldsResp[FHolder]("h")),
 			Expect:   holderProps,
-			FixedBy:  "P3.4",
 		},
 		Case{
 			Name:     "fields/nullable-ptr-struct",
@@ -239,7 +229,6 @@ func init() {
 				Pointer: "/components/schemas/KitchensinkFNullable/properties/p",
 				JSON:    `{"anyOf":[{"$ref":"` + fSharedRef + `"},{"type":"null"}]}`,
 			}},
-			FixedBy: "P3.5",
 		},
 		Case{
 			Name:     "fields/nullable-ptr-slice",
@@ -248,7 +237,6 @@ func init() {
 				Pointer: "/components/schemas/KitchensinkFNullable/properties/s",
 				JSON:    `{"type":["array","null"],"items":{"type":"string"}}`,
 			}},
-			FixedBy: "P3.5",
 		},
 		Case{
 			Name:     "fields/nullable-ptr-map",
@@ -257,7 +245,6 @@ func init() {
 				Pointer: "/components/schemas/KitchensinkFNullable/properties/m",
 				JSON:    `{"type":["object","null"],"additionalProperties":{"type":"string"}}`,
 			}},
-			FixedBy: "P3.5",
 		},
 		Case{
 			Name:     "fields/embedded-non-struct",
@@ -266,7 +253,6 @@ func init() {
 				Pointer: "/components/schemas/KitchensinkFEmbedStr/properties",
 				JSON:    `{"FStr":{"type":"string"},"y":{"type":"integer","format":"int32"}}`,
 			}},
-			FixedBy: "P3.1a",
 		},
 	)
 }
@@ -317,8 +303,6 @@ type (
 	}
 )
 
-const fTagBase = "/components/schemas/KitchensinkFTag"
-
 // fieldsQuery registers GET /id (operation id) with T as the input.
 func fieldsQuery[T any](id string) func(*fizz.Fizz) {
 	return func(f *fizz.Fizz) {
@@ -332,7 +316,6 @@ func init() {
 			Name:     "fields/tag-title",
 			Register: fieldsReq[FTagTitle]("tagTitle"),
 			Expect:   []Fragment{{Pointer: "/components/schemas/TagTitleInput/properties/name/title", JSON: `"Pet name"`}},
-			FixedBy:  "P6.2",
 		},
 		Case{
 			Name:     "fields/tag-pattern",
@@ -341,8 +324,7 @@ func init() {
 				{Pointer: "/components/schemas/TagPatternInput/properties/slug/pattern", JSON: `"^[a-z]+$"`},
 				{Pointer: "/components/schemas/TagPatternInput/properties/bad/pattern", Absent: true},
 			},
-			Errors:  []string{"pattern"},
-			FixedBy: "P6.2",
+			Errors: []string{"pattern"},
 		},
 		Case{
 			Name:     "fields/tag-multipleof",
@@ -352,8 +334,7 @@ func init() {
 				{Pointer: "/components/schemas/TagMultipleOfInput/properties/zero/multipleOf", Absent: true},
 				{Pointer: "/components/schemas/TagMultipleOfInput/properties/bad/multipleOf", Absent: true},
 			},
-			Errors:  []string{"multipleOf"},
-			FixedBy: "P6.2",
+			Errors: []string{"multipleOf"},
 		},
 		Case{
 			Name:     "fields/tag-readonly-writeonly",
@@ -364,7 +345,6 @@ func init() {
 				{Pointer: "/components/schemas/TagRWInput/properties/both", JSON: `{"type":"string"}`},
 			},
 			Warnings: []string{"both"},
-			FixedBy:  "P6.2",
 		},
 		Case{
 			Name:     "fields/tag-nullable",
@@ -375,7 +355,6 @@ func init() {
 				{Pointer: "/components/schemas/TagNullableInput/properties/r", JSON: `{"$ref":"` + fSharedRef + `"}`},
 				{Pointer: "/components/schemas/TagNullableInput/properties/n", JSON: `{"anyOf":[{"$ref":"` + fSharedRef + `"},{"type":"null"}]}`},
 			},
-			FixedBy: "P6.2",
 		},
 		Case{
 			Name:     "fields/tag-additionalproperties-false",
@@ -385,8 +364,7 @@ func init() {
 				{Pointer: "/components/schemas/TagClosedInput/properties/named", JSON: `{"$ref":"` + fSharedRef + `","unevaluatedProperties":false}`},
 				{Pointer: "/components/schemas/TagClosedInput/properties/n", JSON: `{"type":"integer","format":"int64"}`},
 			},
-			Errors:  []string{"additionalProperties"},
-			FixedBy: "P6.2",
+			Errors: []string{"additionalProperties"},
 		},
 		Case{
 			Name:     "fields/tag-inline",
@@ -397,7 +375,6 @@ func init() {
 				{Pointer: "/components/schemas/TagInlineInput/properties/other", JSON: `{"$ref":"` + fSharedRef + `"}`},
 				{Pointer: "/components/schemas/KitchensinkFShared/type", JSON: `"object"`},
 			},
-			FixedBy: "P6.2",
 		},
 		Case{
 			Name:     "params/tag-style",
@@ -407,8 +384,7 @@ func init() {
 				{Pointer: "/paths/~1tagStyle/get/parameters/0/explode", JSON: `false`},
 				{Pointer: "/paths/~1tagStyle/get/parameters/1/style", Absent: true},
 			},
-			Errors:  []string{"style"},
-			FixedBy: "P6.2",
+			Errors: []string{"style"},
 		},
 		Case{
 			Name:     "params/tag-allowreserved",
@@ -417,8 +393,7 @@ func init() {
 				{Pointer: "/paths/~1tagReserved/get/parameters/0/allowReserved", JSON: `true`},
 				{Pointer: "/paths/~1tagReserved/get/parameters/1/allowReserved", Absent: true},
 			},
-			Errors:  []string{"allowReserved"},
-			FixedBy: "P6.2",
+			Errors: []string{"allowReserved"},
 		},
 	)
 }

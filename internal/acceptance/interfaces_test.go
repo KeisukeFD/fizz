@@ -52,13 +52,12 @@ type bIMoneyPBody struct {
 }
 
 func TestSchemaProviderReplaces(t *testing.T) {
-	at.Pending(t, "P6.3", func(tb testing.TB) {
-		want := `{"type":"string","pattern":"^\\d+\\.\\d{2}$"}`
-		_, doc, _ := bFBody[bIMoneyBody](tb)
-		at.Frag(tb, doc, "/components/schemas/AcceptanceBIMoney", want)
-		_, doc, _ = bFBody[bIMoneyPBody](tb)
-		at.Frag(tb, doc, "/components/schemas/AcceptanceBIMoneyP", want)
-	})
+	want := `{"type":"string","pattern":"^\\d+\\.\\d{2}$"}`
+	_, doc, _ := bFBody[bIMoneyBody](t)
+	at.Frag(t, doc, "/components/schemas/AcceptanceBIMoney", want)
+	_, doc, _ = bFBody[bIMoneyPBody](t)
+	at.Frag(t, doc, "/components/schemas/AcceptanceBIMoneyP", want)
+
 }
 
 // F16: a nil schema falls back to reflection; an error is recorded.
@@ -73,13 +72,12 @@ type bINilBody struct {
 }
 
 func TestSchemaProviderNilFallsBack(t *testing.T) {
-	at.Pending(t, "P6.3", func(tb testing.TB) {
-		f, doc, _ := bFBody[bINilBody](tb)
-		s := "/components/schemas/AcceptanceBINilProvider"
-		at.Frag(tb, doc, s+"/properties/n", `{"type":"string"}`)
-		at.Frag(tb, doc, s+"/type", `"object"`)
-		bFWantErr(tb, f, "OpenAPISchema returned nil")
-	})
+	f, doc, _ := bFBody[bINilBody](t)
+	s := "/components/schemas/AcceptanceBINilProvider"
+	at.Frag(t, doc, s+"/properties/n", `{"type":"string"}`)
+	at.Frag(t, doc, s+"/type", `"object"`)
+	bFWantErr(t, f, "OpenAPISchema returned nil")
+
 }
 
 // F17: a Customizer edits the component; an error discards its changes.
@@ -111,34 +109,31 @@ type bICustomFailBody struct {
 }
 
 func TestSchemaCustomizer(t *testing.T) {
-	at.Pending(t, "P6.3", func(tb testing.TB) {
-		_, doc, _ := bFBody[bICustomBody](tb)
-		at.Frag(tb, doc, "/components/schemas/AcceptanceBICustom/description", `"c"`)
+	_, doc, _ := bFBody[bICustomBody](t)
+	at.Frag(t, doc, "/components/schemas/AcceptanceBICustom/description", `"c"`)
 
-		f, doc, _ := bFBody[bICustomFailBody](tb)
-		s := "/components/schemas/AcceptanceBICustomFail"
-		at.Absent(tb, doc, s+"/description")
-		at.Absent(tb, doc, s+"/properties/n/description")
-		bFWantErr(tb, f, "bICustomFail", "boom")
-	})
+	f, doc, _ := bFBody[bICustomFailBody](t)
+	s := "/components/schemas/AcceptanceBICustomFail"
+	at.Absent(t, doc, s+"/description")
+	at.Absent(t, doc, s+"/properties/n/description")
+	bFWantErr(t, f, "bICustomFail", "boom")
+
 }
 
 // F18.
 func TestEnumerComponent(t *testing.T) {
-	at.Pending(t, "P6.3", func(tb testing.TB) {
-		_, doc, s := bFBody[bIColorBody](tb)
-		at.Frag(tb, doc, "/components/schemas/AcceptanceBIColor", `{"type":"string","enum":["red","green"]}`)
-		at.Frag(tb, doc, s+"/properties/c", `{"$ref":"`+bIColorRef+`"}`)
-	})
+	_, doc, s := bFBody[bIColorBody](t)
+	at.Frag(t, doc, "/components/schemas/AcceptanceBIColor", `{"type":"string","enum":["red","green"]}`)
+	at.Frag(t, doc, s+"/properties/c", `{"$ref":"`+bIColorRef+`"}`)
+
 }
 
 // F19: the field tag wins at the use site; the component keeps its enum.
 func TestEnumerVsFieldTag(t *testing.T) {
-	at.Pending(t, "P6.3", func(tb testing.TB) {
-		_, doc, s := bFBody[bIColorBody](tb)
-		at.Frag(tb, doc, s+"/properties/t", `{"$ref":"`+bIColorRef+`","enum":["red"]}`)
-		at.Frag(tb, doc, "/components/schemas/AcceptanceBIColor/enum", `["red","green"]`)
-	})
+	_, doc, s := bFBody[bIColorBody](t)
+	at.Frag(t, doc, s+"/properties/t", `{"$ref":"`+bIColorRef+`","enum":["red"]}`)
+	at.Frag(t, doc, "/components/schemas/AcceptanceBIColor/enum", `["red","green"]`)
+
 }
 
 // F20: the three interfaces declared on the pointer receiver.
@@ -159,13 +154,12 @@ type bIPtrBody struct {
 }
 
 func TestInterfacesPointerReceivers(t *testing.T) {
-	at.Pending(t, "P6.3", func(tb testing.TB) {
-		_, doc, s := bFBody[bIPtrBody](tb)
-		at.Frag(tb, doc, "/components/schemas/AcceptanceBIPtrAll/title", `"ptr"`)
-		at.Frag(tb, doc, "/components/schemas/AcceptanceBIMoneyP/pattern", `"^\\d+\\.\\d{2}$"`)
-		at.Frag(tb, doc, "/components/schemas/AcceptanceBIPtrEnum", `{"type":"string","enum":["a","b"]}`)
-		at.Frag(tb, doc, s+"/properties/e", `{"$ref":"#/components/schemas/AcceptanceBIPtrEnum"}`)
-	})
+	_, doc, s := bFBody[bIPtrBody](t)
+	at.Frag(t, doc, "/components/schemas/AcceptanceBIPtrAll/title", `"ptr"`)
+	at.Frag(t, doc, "/components/schemas/AcceptanceBIMoneyP/pattern", `"^\\d+\\.\\d{2}$"`)
+	at.Frag(t, doc, "/components/schemas/AcceptanceBIPtrEnum", `{"type":"string","enum":["a","b"]}`)
+	at.Frag(t, doc, s+"/properties/e", `{"$ref":"#/components/schemas/AcceptanceBIPtrEnum"}`)
+
 }
 
 // F22: a value of the wrong kind records an error and omits the enum.
@@ -178,9 +172,8 @@ type bIBadEnumBody struct {
 }
 
 func TestEnumerTypeMismatch(t *testing.T) {
-	at.Pending(t, "P6.3", func(tb testing.TB) {
-		f, doc, _ := bFBody[bIBadEnumBody](tb)
-		at.Frag(tb, doc, "/components/schemas/AcceptanceBIBadEnum", `{"type":"string"}`)
-		bFWantErr(tb, f, "bIBadEnum", "Enum()")
-	})
+	f, doc, _ := bFBody[bIBadEnumBody](t)
+	at.Frag(t, doc, "/components/schemas/AcceptanceBIBadEnum", `{"type":"string"}`)
+	bFWantErr(t, f, "bIBadEnum", "Enum()")
+
 }

@@ -10,8 +10,6 @@ import (
 	"slices"
 	"strings"
 	"testing"
-
-	"github.com/KeisukeFD/fizz/internal/plan"
 )
 
 // Target is an app under contract test.
@@ -32,13 +30,6 @@ type Target struct {
 	// Fields maps "in:name" to the key of the echoed JSON object. The
 	// default is the parameter name.
 	Fields map[string]string
-	// Pending maps "<op> <in>:<name>" to the plan task that fixes the
-	// drift (a red-until-done case). <op> is the operationId, else
-	// "METHOD path". The name "all" stands for the request that carries
-	// every parameter, "required-only" for the one that carries the
-	// required parameters only, and "<in>:<name>/default" for the omitted
-	// default.
-	Pending map[string]string
 }
 
 type operation struct {
@@ -109,7 +100,7 @@ func mergeParams(doc Doc, lists ...any) []map[string]any {
 //     ones), serialized as the document says;
 //   - one that carries the required parameters only;
 //   - for a parameter with a default, one that omits it (Echo only);
-//   - one that carries every parameter, unless one of them is pending.
+//   - one that carries every parameter.
 func Run(t *testing.T, tg Target) {
 	t.Helper()
 	var doc Doc
@@ -132,16 +123,8 @@ type client struct {
 	op  operation
 }
 
-func (c *client) pending(sub string) string { return c.tg.Pending[c.op.key()+" "+sub] }
-
-func (c *client) sub(t *testing.T, name, sub string, fn func(tb testing.TB)) {
-	t.Run(name, func(t *testing.T) {
-		if fb := c.pending(sub); fb != "" {
-			plan.Pending(t, fb, fn)
-			return
-		}
-		fn(t)
-	})
+func (c *client) sub(t *testing.T, name string, fn func(tb testing.TB)) {
+	t.Run(name, func(t *testing.T) { fn(t) })
 }
 
 func pname(p map[string]any) string {
@@ -151,18 +134,16 @@ func pname(p map[string]any) string {
 }
 
 func (c *client) run(t *testing.T) {
-	anyPending := c.pending("required-only") != ""
-	c.sub(t, "required_only", "required-only", func(tb testing.TB) { c.checkRequiredOnly(tb) })
+	c.sub(t, "required_only", func(tb testing.TB) { c.checkRequiredOnly(tb) })
 	for _, p := range c.op.params {
 		key := pname(p)
-		anyPending = anyPending || c.pending(key) != "" || c.pending(key+"/default") != ""
-		c.sub(t, strings.NewReplacer(":", "_", "/", "_").Replace(key), key, func(tb testing.TB) { c.checkParam(tb, p) })
+		c.sub(t, strings.NewReplacer(":", "_", "/", "_").Replace(key), func(tb testing.TB) { c.checkParam(tb, p) })
 		if _, ok := schemaOf(p)["default"]; ok && c.tg.Echo && p["in"] != "path" {
-			c.sub(t, strings.NewReplacer(":", "_", "/", "_").Replace(key)+"_default", key+"/default", func(tb testing.TB) { c.checkDefault(tb, p) })
+			c.sub(t, strings.NewReplacer(":", "_", "/", "_").Replace(key)+"_default", func(tb testing.TB) { c.checkDefault(tb, p) })
 		}
 	}
-	if len(c.op.params) > 1 && !anyPending {
-		c.sub(t, "all", "all", func(tb testing.TB) { c.checkAll(tb) })
+	if len(c.op.params) > 1 {
+		c.sub(t, "all", func(tb testing.TB) { c.checkAll(tb) })
 	}
 }
 

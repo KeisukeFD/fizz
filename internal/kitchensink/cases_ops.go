@@ -121,8 +121,7 @@ func init() {
 				{Pointer: schemas + "CreateUserInput/properties/a", JSON: `{"type":"string"}`},
 				{Pointer: schemas + "CreateUserInput/properties/b", Absent: true},
 			},
-			Errors:  []string{"CreateUserInput"},
-			FixedBy: "P4.6",
+			Errors: []string{"CreateUserInput"},
 		},
 		Case{
 			// The Go type OXInput is the component KitchensinkOXInput, and
@@ -137,8 +136,7 @@ func init() {
 				{Pointer: schemas + "KitchensinkOXInput/properties/fromGoType", JSON: `{"type":"string"}`},
 				{Pointer: schemas + "KitchensinkOXInput/properties/fromBody", Absent: true},
 			},
-			Errors:  []string{"KitchensinkOXInput"},
-			FixedBy: "P4.6",
+			Errors: []string{"KitchensinkOXInput"},
 		},
 		Case{
 			// Names must match ^[A-Za-z0-9._-]+$.
@@ -151,7 +149,6 @@ func init() {
 				{Pointer: "/paths/~1page/get/responses/200/content/" + ctJSON + "/schema/$ref", JSON: `"#/components/schemas/GenericPage_models.Item"`},
 				{Pointer: "/paths/~1pair/get/responses/200/content/" + ctJSON + "/schema/$ref", JSON: `"#/components/schemas/GenericPair_string_int"`},
 			},
-			FixedBy: "P4.5",
 		},
 		Case{
 			Name: "ops/same-name-packages",
@@ -164,8 +161,7 @@ func init() {
 				{Pointer: schemas + "ModelsItem/properties/id", JSON: `{"type":"integer","format":"int64"}`},
 				{Pointer: schemas + "ModelsItem/properties/sku", Absent: true},
 			},
-			Errors:  []string{"ModelsItem"},
-			FixedBy: "P4.5",
+			Errors: []string{"ModelsItem"},
 		},
 		Case{
 			Name: "ops/typer-name-collision",
@@ -177,8 +173,7 @@ func init() {
 				{Pointer: schemas + "OShared/properties/a", JSON: `{"type":"string"}`},
 				{Pointer: schemas + "OShared/properties/b", Absent: true},
 			},
-			Errors:  []string{"OShared"},
-			FixedBy: "P4.5",
+			Errors: []string{"OShared"},
 		},
 		Case{
 			// Default ID of a generic handler is "]" today.
@@ -186,8 +181,7 @@ func init() {
 			Register: func(f *fizz.Fizz) {
 				f.GET("/g", nil, tonic.Handler(oGenericHandler[OUser], 200))
 			},
-			Expect:  []Fragment{{Pointer: "/paths/~1g/get/operationId", JSON: `"oGenericHandler"`}},
-			FixedBy: "P4.7",
+			Expect: []Fragment{{Pointer: "/paths/~1g/get/operationId", JSON: `"oGenericHandler"`}},
 		},
 		Case{
 			// Default ID of a method value ends in "-fm" today.
@@ -195,8 +189,7 @@ func init() {
 			Register: func(f *fizz.Fizz) {
 				f.GET("/m", nil, tonic.Handler((&OSvc{}).List, 200))
 			},
-			Expect:  []Fragment{{Pointer: "/paths/~1m/get/operationId", JSON: `"List"`}},
-			FixedBy: "P4.7",
+			Expect: []Fragment{{Pointer: "/paths/~1m/get/operationId", JSON: `"List"`}},
 		},
 		Case{
 			Name: "ops/response-descriptions",
@@ -213,7 +206,6 @@ func init() {
 				{Pointer: "/paths/~1r/get/responses/4XX/description", JSON: `"4XX response"`},
 				{Pointer: "/paths/~1r/get/responses/299/description", JSON: `"Status 299"`},
 			},
-			FixedBy: "P4.4",
 		},
 		Case{
 			// An empty examples map must not create a media type.
@@ -224,8 +216,7 @@ func init() {
 					fizz.ResponseWithExamples("400", "bad", nil, nil, map[string]any{}),
 				), tonic.Handler(oPlain, 204))
 			},
-			Expect:  []Fragment{{Pointer: "/paths/~1e/get/responses/400/content", Absent: true}},
-			FixedBy: "P4.4",
+			Expect: []Fragment{{Pointer: "/paths/~1e/get/responses/400/content", Absent: true}},
 		},
 		Case{
 			// Panics today (fizz.go Handle) instead of recording an error.
@@ -236,8 +227,7 @@ func init() {
 					fizz.Response("200", "again", nil, nil, nil),
 				), tonic.Handler(oPlain, 200))
 			},
-			Errors:  []string{"200"},
-			FixedBy: "P4.8",
+			Errors: []string{"200"},
 		},
 		Case{
 			Name: "ops/security-nil-scopes",
@@ -246,8 +236,7 @@ func init() {
 					{"bearer": nil},
 				})
 			},
-			Expect:  []Fragment{{Pointer: "/security", JSON: `[{"bearer":[]}]`}},
-			FixedBy: "P2.3",
+			Expect: []Fragment{{Pointer: "/security", JSON: `[{"bearer":[]}]`}},
 		},
 		Case{
 			Name: "ops/oauth-flow-without-scopes",
@@ -265,7 +254,6 @@ func init() {
 				Pointer: "/components/securitySchemes/oauth/flows/clientCredentials",
 				JSON:    `{"tokenUrl":"https://example.com/token","scopes":{}}`,
 			}},
-			FixedBy: "P2.3",
 		},
 		Case{
 			// A later Group with an empty description wipes the first.
@@ -274,8 +262,7 @@ func init() {
 				f.Group("/g1", "grp", "First description")
 				f.Group("/g2", "grp", "")
 			},
-			Expect:  []Fragment{{Pointer: "/tags/0/description", JSON: `"First description"`}},
-			FixedBy: "P6.5",
+			Expect: []Fragment{{Pointer: "/tags/0/description", JSON: `"First description"`}},
 		},
 		Case{
 			// The brief asks for an error on the empty overwrite; the plan
@@ -286,9 +273,8 @@ func init() {
 				f.Group("/g1", "grp", "First description")
 				f.Group("/g2", "grp", "Second description")
 			},
-			Expect:  []Fragment{{Pointer: "/tags/0/description", JSON: `"First description"`}},
-			Errors:  []string{"grp"},
-			FixedBy: "P6.5",
+			Expect: []Fragment{{Pointer: "/tags/0/description", JSON: `"First description"`}},
+			Errors: []string{"grp"},
 		},
 		Case{
 			// The handler mutates the operation it is given. The document
@@ -302,7 +288,6 @@ func init() {
 				{Pointer: "/paths/~1op/get/summary", JSON: `"original"`},
 				{Pointer: "/paths/~1op/get/tags", Absent: true},
 			},
-			FixedBy: "P5.1",
 		},
 		Case{
 			// Handle wraps the variadic slice in place: the second route
@@ -317,7 +302,6 @@ func init() {
 				{Pointer: "/paths/~1one/get/operationId", JSON: `"one"`},
 				{Pointer: "/paths/~1two/get/operationId", JSON: `"two"`},
 			},
-			FixedBy: "P4.9",
 		},
 		Case{
 			// A json:"-" field must not appear in the YAML document.
@@ -346,7 +330,6 @@ func init() {
 			Expect: []Fragment{
 				{Pointer: "/paths/~1y/get/responses/400/content/" + ctJSON + "/example", JSON: `{"visible":"visible-value"}`},
 			},
-			FixedBy: "P2.5",
 		},
 		Case{
 			// Use-site description next to a $ref (valid in 3.1+).
@@ -358,7 +341,6 @@ func init() {
 				Pointer: schemas + "KitchensinkOHolder/properties/owner",
 				JSON:    `{"$ref":"#/components/schemas/KitchensinkOUser","description":"the owner"}`,
 			}},
-			FixedBy: "P3.4",
 		},
 		Case{
 			// Both fields nil must be reported, never emitted as {}.
@@ -369,9 +351,8 @@ func init() {
 				})
 				f.Generator().API() // validation runs at build
 			},
-			Expect:  []Fragment{{Pointer: "/components/securitySchemes/empty", Absent: true}},
-			Errors:  []string{"empty"},
-			FixedBy: "P4.8",
+			Expect: []Fragment{{Pointer: "/components/securitySchemes/empty", Absent: true}},
+			Errors: []string{"empty"},
 		},
 	)
 }

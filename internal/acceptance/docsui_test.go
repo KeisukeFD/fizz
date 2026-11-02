@@ -104,355 +104,340 @@ func TestBCGoldenHTML(t *testing.T) {
 		{"scalar", docsui.ScalarUI("/openapi.json", docsui.WithTitle("Pets"))},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			at.Pending(t, "P8.1", func(tb testing.TB) {
-				golden.Assert(tb, filepath.Join("..", "..", "docsui", "testdata", tc.name+".html"), []byte(bCServe(tb, tc.h)))
-			})
+			golden.Assert(t, filepath.Join("..", "..", "docsui", "testdata", tc.name+".html"), []byte(bCServe(t, tc.h)))
+
 		})
 	}
 }
 
 // C01. The default renderer is Swagger UI.
 func TestBCDocsDefaultIsSwaggerUI(t *testing.T) {
-	at.Pending(t, "P8.1", func(tb testing.TB) {
-		_, body := bCDocs(tb)
-		scripts := bCScripts(body)
-		if len(scripts) != 1 || scripts[0].Attr["src"] != docsui.SwaggerUIJS {
-			tb.Errorf("script src = %v, want only %s", scripts, docsui.SwaggerUIJS)
+	_, body := bCDocs(t)
+	scripts := bCScripts(body)
+	if len(scripts) != 1 || scripts[0].Attr["src"] != docsui.SwaggerUIJS {
+		t.Errorf("script src = %v, want only %s", scripts, docsui.SwaggerUIJS)
+	}
+	var css []string
+	for _, e := range at.Tags(at.HTML([]byte(body)), "link") {
+		if e.Attr["rel"] == "stylesheet" {
+			css = append(css, e.Attr["href"])
 		}
-		var css []string
-		for _, e := range at.Tags(at.HTML([]byte(body)), "link") {
-			if e.Attr["rel"] == "stylesheet" {
-				css = append(css, e.Attr["href"])
-			}
-		}
-		if len(css) != 1 || css[0] != docsui.SwaggerUICSS {
-			tb.Errorf("stylesheets = %v, want only %s", css, docsui.SwaggerUICSS)
-		}
-		bCNoSubstr(tb, body, "scalar")
-	})
+	}
+	if len(css) != 1 || css[0] != docsui.SwaggerUICSS {
+		t.Errorf("stylesheets = %v, want only %s", css, docsui.SwaggerUICSS)
+	}
+	bCNoSubstr(t, body, "scalar")
+
 }
 
 // C02. An explicit SwaggerUI never serves Scalar.
 func TestBCDocsExplicitSwaggerNeverScalar(t *testing.T) {
-	at.Pending(t, "P8.1", func(tb testing.TB) {
-		for name, ui := range map[string]fizz.DocsUI{
-			"plain":  fizz.SwaggerUI(),
-			"title":  fizz.SwaggerUI(docsui.WithTitle("T")),
-			"config": fizz.SwaggerUI(docsui.WithUIConfig(map[string]any{"deepLinking": true})),
-			"assets": fizz.SwaggerUI(docsui.WithAssetURLs("/a.js", "/a.css")),
-		} {
-			_, body := bCDocs(tb, ui)
-			bCNoSubstr(tb, body, "scalar")
-			if !strings.Contains(body, "SwaggerUIBundle") {
-				tb.Errorf("%s: no SwaggerUIBundle call", name)
-			}
+	for name, ui := range map[string]fizz.DocsUI{
+		"plain":  fizz.SwaggerUI(),
+		"title":  fizz.SwaggerUI(docsui.WithTitle("T")),
+		"config": fizz.SwaggerUI(docsui.WithUIConfig(map[string]any{"deepLinking": true})),
+		"assets": fizz.SwaggerUI(docsui.WithAssetURLs("/a.js", "/a.css")),
+	} {
+		_, body := bCDocs(t, ui)
+		bCNoSubstr(t, body, "scalar")
+		if !strings.Contains(body, "SwaggerUIBundle") {
+			t.Errorf("%s: no SwaggerUIBundle call", name)
 		}
-	})
+	}
+
 }
 
 // C03. An explicit ScalarUI never serves Swagger UI.
 func TestBCDocsExplicitScalarNeverSwagger(t *testing.T) {
-	at.Pending(t, "P8.1", func(tb testing.TB) {
-		_, body := bCDocs(tb, fizz.ScalarUI())
-		scripts := bCScripts(body)
-		if len(scripts) != 1 || scripts[0].Attr["src"] != docsui.ScalarJS {
-			tb.Errorf("script src = %v, want only %s", scripts, docsui.ScalarJS)
-		}
-		bCNoSubstr(tb, body, "swagger-ui")
-	})
+	_, body := bCDocs(t, fizz.ScalarUI())
+	scripts := bCScripts(body)
+	if len(scripts) != 1 || scripts[0].Attr["src"] != docsui.ScalarJS {
+		t.Errorf("script src = %v, want only %s", scripts, docsui.ScalarJS)
+	}
+	bCNoSubstr(t, body, "swagger-ui")
+
 }
 
 // C04. Two renderers are an error; the first is served.
 func TestBCDocsRendererConflict(t *testing.T) {
-	at.Pending(t, "P8.1", func(tb testing.TB) {
-		f, body := bCDocs(tb, fizz.SwaggerUI(), fizz.ScalarUI())
-		bCNoSubstr(tb, body, "scalar")
-		var found bool
-		for _, err := range f.Errors() {
-			if strings.Contains(err.Error(), "Swagger UI") && strings.Contains(err.Error(), "Scalar") {
-				found = true
-			}
+	f, body := bCDocs(t, fizz.SwaggerUI(), fizz.ScalarUI())
+	bCNoSubstr(t, body, "scalar")
+	var found bool
+	for _, err := range f.Errors() {
+		if strings.Contains(err.Error(), "Swagger UI") && strings.Contains(err.Error(), "Scalar") {
+			found = true
 		}
-		if !found {
-			tb.Errorf("no error naming both renderers in %v", f.Errors())
-		}
-	})
+	}
+	if !found {
+		t.Errorf("no error naming both renderers in %v", f.Errors())
+	}
+
 }
 
 // C05. Every external asset carries SRI, crossorigin and a referrer policy.
 func TestBCSRIAttributesMatchConstants(t *testing.T) {
-	at.Pending(t, "P8.1", func(tb testing.TB) {
-		for name, tc := range map[string]struct {
-			ui   fizz.DocsUI
-			want map[string]string // URL -> integrity
-		}{
-			"swagger": {fizz.SwaggerUI(), map[string]string{
-				docsui.SwaggerUIJS:  docsui.SwaggerUIJSIntegrity,
-				docsui.SwaggerUICSS: docsui.SwaggerUICSSIntegrity,
-			}},
-			"scalar": {fizz.ScalarUI(), map[string]string{docsui.ScalarJS: docsui.ScalarJSIntegrity}},
-		} {
-			_, body := bCDocs(tb, tc.ui)
-			els := at.HTML([]byte(body))
-			seen := 0
-			for _, e := range append(at.Tags(els, "script"), at.Tags(els, "link")...) {
-				url := e.Attr["src"]
-				if url == "" {
-					url = e.Attr["href"]
-				}
-				if url == "" {
-					continue
-				}
-				seen++
-				want, ok := tc.want[url]
-				switch {
-				case !ok:
-					tb.Errorf("%s: unexpected asset %s", name, url)
-				case e.Attr["integrity"] != want || !bCSRIRe.MatchString(want):
-					tb.Errorf("%s: %s integrity = %q, want %q", name, url, e.Attr["integrity"], want)
-				}
-				if e.Attr["crossorigin"] != "anonymous" || e.Attr["referrerpolicy"] != "no-referrer" {
-					tb.Errorf("%s: %s crossorigin=%q referrerpolicy=%q", name, url, e.Attr["crossorigin"], e.Attr["referrerpolicy"])
-				}
+	for name, tc := range map[string]struct {
+		ui   fizz.DocsUI
+		want map[string]string // URL -> integrity
+	}{
+		"swagger": {fizz.SwaggerUI(), map[string]string{
+			docsui.SwaggerUIJS:  docsui.SwaggerUIJSIntegrity,
+			docsui.SwaggerUICSS: docsui.SwaggerUICSSIntegrity,
+		}},
+		"scalar": {fizz.ScalarUI(), map[string]string{docsui.ScalarJS: docsui.ScalarJSIntegrity}},
+	} {
+		_, body := bCDocs(t, tc.ui)
+		els := at.HTML([]byte(body))
+		seen := 0
+		for _, e := range append(at.Tags(els, "script"), at.Tags(els, "link")...) {
+			url := e.Attr["src"]
+			if url == "" {
+				url = e.Attr["href"]
 			}
-			if seen != len(tc.want) {
-				tb.Errorf("%s: %d external assets, want %d", name, seen, len(tc.want))
+			if url == "" {
+				continue
+			}
+			seen++
+			want, ok := tc.want[url]
+			switch {
+			case !ok:
+				t.Errorf("%s: unexpected asset %s", name, url)
+			case e.Attr["integrity"] != want || !bCSRIRe.MatchString(want):
+				t.Errorf("%s: %s integrity = %q, want %q", name, url, e.Attr["integrity"], want)
+			}
+			if e.Attr["crossorigin"] != "anonymous" || e.Attr["referrerpolicy"] != "no-referrer" {
+				t.Errorf("%s: %s crossorigin=%q referrerpolicy=%q", name, url, e.Attr["crossorigin"], e.Attr["referrerpolicy"])
 			}
 		}
-	})
+		if seen != len(tc.want) {
+			t.Errorf("%s: %d external assets, want %d", name, seen, len(tc.want))
+		}
+	}
+
 }
 
 // C06. The pin table of docs/compat.md equals the docsui constants.
 func TestBCSRIConstantsMatchCompatDoc(t *testing.T) {
-	at.Pending(t, "P8.1", func(tb testing.TB) {
-		b, err := os.ReadFile(filepath.Join("..", "..", "docs", "compat.md"))
-		if err != nil {
-			tb.Fatal(err)
+	b, err := os.ReadFile(filepath.Join("..", "..", "docs", "compat.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	bIContains(t, "docs/compat.md", string(b), "AllOfWrap", "11065")
+	pins := bIPinRe.FindAllStringSubmatch(string(b), -1)
+	if len(pins) != 3 {
+		t.Fatalf("pin table has %d rows, want 3", len(pins))
+	}
+	type asset struct{ url, sum string }
+	want := map[asset]bool{
+		{docsui.SwaggerUIJS, docsui.SwaggerUIJSIntegrity}:   true,
+		{docsui.SwaggerUICSS, docsui.SwaggerUICSSIntegrity}: true,
+		{docsui.ScalarJS, docsui.ScalarJSIntegrity}:         true,
+	}
+	for _, p := range pins {
+		a := asset{"https://cdn.jsdelivr.net/npm/" + p[1] + "@" + p[2] + "/" + p[3], p[4]}
+		if !want[a] {
+			t.Errorf("pin %s@%s %s (%s) has no matching constants", p[1], p[2], p[3], p[4])
 		}
-		pins := bIPinRe.FindAllStringSubmatch(string(b), -1)
-		if len(pins) != 3 {
-			tb.Fatalf("pin table has %d rows, want 3", len(pins))
-		}
-		type asset struct{ url, sum string }
-		want := map[asset]bool{
-			{docsui.SwaggerUIJS, docsui.SwaggerUIJSIntegrity}:   true,
-			{docsui.SwaggerUICSS, docsui.SwaggerUICSSIntegrity}: true,
-			{docsui.ScalarJS, docsui.ScalarJSIntegrity}:         true,
-		}
-		for _, p := range pins {
-			a := asset{"https://cdn.jsdelivr.net/npm/" + p[1] + "@" + p[2] + "/" + p[3], p[4]}
-			if !want[a] {
-				tb.Errorf("pin %s@%s %s (%s) has no matching constants", p[1], p[2], p[3], p[4])
-			}
-			delete(want, a)
-		}
-		for a := range want {
-			tb.Errorf("constant %s (%s) is not in the pin table", a.url, a.sum)
-		}
-	})
+		delete(want, a)
+	}
+	for a := range want {
+		t.Errorf("constant %s (%s) is not in the pin table", a.url, a.sum)
+	}
+
 }
 
 // C07. validatorUrl is null in Swagger UI, whatever the user config says.
 func TestBCSwaggerValidatorURLNull(t *testing.T) {
-	at.Pending(t, "P8.1", func(tb testing.TB) {
-		for _, ui := range []fizz.DocsUI{
-			fizz.SwaggerUI(),
-			fizz.SwaggerUI(docsui.WithUIConfig(map[string]any{"validatorUrl": "https://validator.swagger.io"})),
-		} {
-			_, body := bCDocs(tb, ui)
-			v, ok := bCConfig(tb, body)["validatorUrl"]
-			if !ok || v != nil {
-				tb.Errorf("validatorUrl = %v (present %v), want null", v, ok)
-			}
+	for _, ui := range []fizz.DocsUI{
+		fizz.SwaggerUI(),
+		fizz.SwaggerUI(docsui.WithUIConfig(map[string]any{"validatorUrl": "https://validator.swagger.io"})),
+	} {
+		_, body := bCDocs(t, ui)
+		v, ok := bCConfig(t, body)["validatorUrl"]
+		if !ok || v != nil {
+			t.Errorf("validatorUrl = %v (present %v), want null", v, ok)
 		}
-	})
+	}
+
 }
 
 // C08. The user config is merged and cannot break out of the script.
 func TestBCDocsUIConfigMerged(t *testing.T) {
-	at.Pending(t, "P8.1", func(tb testing.TB) {
-		cfg := map[string]any{"deepLinking": true, "x": "</script><b>"}
-		for name, ui := range map[string]fizz.DocsUI{
-			"swagger": fizz.SwaggerUI(docsui.WithUIConfig(cfg)),
-			"scalar":  fizz.ScalarUI(docsui.WithUIConfig(cfg)),
-		} {
-			_, body := bCDocs(tb, ui)
-			m := bCConfig(tb, body)
-			if m["deepLinking"] != true || m["x"] != "</script><b>" {
-				tb.Errorf("%s: config = %v", name, m)
-			}
-			// config + 1 bootstrap + 1 asset script.
-			if n := strings.Count(body, "</script>"); n != 3 {
-				tb.Errorf("%s: %d </script> tags, want 3", name, n)
-			}
+	cfg := map[string]any{"deepLinking": true, "x": "</script><b>"}
+	for name, ui := range map[string]fizz.DocsUI{
+		"swagger": fizz.SwaggerUI(docsui.WithUIConfig(cfg)),
+		"scalar":  fizz.ScalarUI(docsui.WithUIConfig(cfg)),
+	} {
+		_, body := bCDocs(t, ui)
+		m := bCConfig(t, body)
+		if m["deepLinking"] != true || m["x"] != "</script><b>" {
+			t.Errorf("%s: config = %v", name, m)
 		}
-	})
+		// config + 1 bootstrap + 1 asset script.
+		if n := strings.Count(body, "</script>"); n != 3 {
+			t.Errorf("%s: %d </script> tags, want 3", name, n)
+		}
+	}
+
 }
 
 // C09. The title is HTML-escaped.
 func TestBCDocsTitleEscaped(t *testing.T) {
-	at.Pending(t, "P8.1", func(tb testing.TB) {
-		for _, ui := range []fizz.DocsUI{
-			fizz.SwaggerUI(docsui.WithTitle("A & <b>")),
-			fizz.ScalarUI(docsui.WithTitle("A & <b>")),
-		} {
-			_, body := bCDocs(tb, ui)
-			if !strings.Contains(body, "<title>A &amp; &lt;b&gt;</title>") {
-				tb.Errorf("title not escaped:\n%s", body)
-			}
+	for _, ui := range []fizz.DocsUI{
+		fizz.SwaggerUI(docsui.WithTitle("A & <b>")),
+		fizz.ScalarUI(docsui.WithTitle("A & <b>")),
+	} {
+		_, body := bCDocs(t, ui)
+		if !strings.Contains(body, "<title>A &amp; &lt;b&gt;</title>") {
+			t.Errorf("title not escaped:\n%s", body)
 		}
-	})
+	}
+
 }
 
 // C10. The spec URL only appears JSON-escaped, inside the config.
 func TestBCDocsSpecURLEscaped(t *testing.T) {
-	at.Pending(t, "P8.1", func(tb testing.TB) {
-		const spec = `/o.json?x="y'</script>`
-		for name, h := range map[string]http.Handler{
-			"swagger": docsui.SwaggerUI(spec),
-			"scalar":  docsui.ScalarUI(spec),
-		} {
-			body := bCServe(tb, h)
-			if strings.Contains(body, spec) || strings.Contains(body, "</script>\"") {
-				tb.Errorf("%s: raw spec URL in body:\n%s", name, body)
-			}
-			if got := bCConfig(tb, body)["url"]; got != spec {
-				tb.Errorf("%s: config url = %q, want %q", name, got, spec)
-			}
-			if n := strings.Count(body, "</script>"); n != 3 {
-				tb.Errorf("%s: %d </script> tags, want 3", name, n)
-			}
+	const spec = `/o.json?x="y'</script>`
+	for name, h := range map[string]http.Handler{
+		"swagger": docsui.SwaggerUI(spec),
+		"scalar":  docsui.ScalarUI(spec),
+	} {
+		body := bCServe(t, h)
+		if strings.Contains(body, spec) || strings.Contains(body, "</script>\"") {
+			t.Errorf("%s: raw spec URL in body:\n%s", name, body)
 		}
-	})
+		if got := bCConfig(t, body)["url"]; got != spec {
+			t.Errorf("%s: config url = %q, want %q", name, got, spec)
+		}
+		if n := strings.Count(body, "</script>"); n != 3 {
+			t.Errorf("%s: %d </script> tags, want 3", name, n)
+		}
+	}
+
 }
 
 // C11. WithAssetURLs drops SRI unless integrity values are given.
 func TestBCWithAssetURLsSRI(t *testing.T) {
-	at.Pending(t, "P8.1", func(tb testing.TB) {
-		body := bCServe(tb, docsui.SwaggerUI("/s", docsui.WithAssetURLs("/js", "/css")))
-		if strings.Contains(body, "integrity") {
-			tb.Errorf("integrity without values:\n%s", body)
-		}
-		body = bCServe(tb, docsui.SwaggerUI("/s", docsui.WithAssetURLs("/js", "/css", "sha384-JS", "sha384-CSS")))
-		els := at.HTML([]byte(body))
-		if got := at.Tags(els, "link")[0]; got.Attr["href"] != "/css" || got.Attr["integrity"] != "sha384-CSS" {
-			tb.Errorf("link = %v", got.Attr)
-		}
-		if got := bCScripts(body)[0]; got.Attr["src"] != "/js" || got.Attr["integrity"] != "sha384-JS" {
-			tb.Errorf("script = %v", got.Attr)
-		}
-		// Scalar ignores an empty css.
-		body = bCServe(tb, docsui.ScalarUI("/s", docsui.WithAssetURLs("/js", "")))
-		if strings.Contains(body, "<link") || strings.Contains(body, "integrity") {
-			tb.Errorf("scalar override:\n%s", body)
-		}
-	})
+	body := bCServe(t, docsui.SwaggerUI("/s", docsui.WithAssetURLs("/js", "/css")))
+	if strings.Contains(body, "integrity") {
+		t.Errorf("integrity without values:\n%s", body)
+	}
+	body = bCServe(t, docsui.SwaggerUI("/s", docsui.WithAssetURLs("/js", "/css", "sha384-JS", "sha384-CSS")))
+	els := at.HTML([]byte(body))
+	if got := at.Tags(els, "link")[0]; got.Attr["href"] != "/css" || got.Attr["integrity"] != "sha384-CSS" {
+		t.Errorf("link = %v", got.Attr)
+	}
+	if got := bCScripts(body)[0]; got.Attr["src"] != "/js" || got.Attr["integrity"] != "sha384-JS" {
+		t.Errorf("script = %v", got.Attr)
+	}
+	// Scalar ignores an empty css.
+	body = bCServe(t, docsui.ScalarUI("/s", docsui.WithAssetURLs("/js", "")))
+	if strings.Contains(body, "<link") || strings.Contains(body, "integrity") {
+		t.Errorf("scalar override:\n%s", body)
+	}
+
 }
 
 // C12. The nonce is on every script and there are no inline handlers.
 func TestBCCSPNonce(t *testing.T) {
-	at.Pending(t, "P8.1", func(tb testing.TB) {
-		for name, h := range map[string]http.Handler{
-			"swagger": docsui.SwaggerUI("/s", docsui.WithCSPNonce("n0nce")),
-			"scalar":  docsui.ScalarUI("/s", docsui.WithCSPNonce("n0nce")),
-		} {
-			els := at.HTML([]byte(bCServe(tb, h)))
-			scripts := at.Tags(els, "script")
-			if len(scripts) != 3 {
-				tb.Errorf("%s: %d scripts, want 3", name, len(scripts))
+	for name, h := range map[string]http.Handler{
+		"swagger": docsui.SwaggerUI("/s", docsui.WithCSPNonce("n0nce")),
+		"scalar":  docsui.ScalarUI("/s", docsui.WithCSPNonce("n0nce")),
+	} {
+		els := at.HTML([]byte(bCServe(t, h)))
+		scripts := at.Tags(els, "script")
+		if len(scripts) != 3 {
+			t.Errorf("%s: %d scripts, want 3", name, len(scripts))
+		}
+		for _, e := range scripts {
+			if e.Attr["nonce"] != "n0nce" {
+				t.Errorf("%s: script %v lacks the nonce", name, e.Attr)
 			}
-			for _, e := range scripts {
-				if e.Attr["nonce"] != "n0nce" {
-					tb.Errorf("%s: script %v lacks the nonce", name, e.Attr)
-				}
-			}
-			for _, e := range els {
-				for k := range e.Attr {
-					if strings.HasPrefix(k, "on") {
-						tb.Errorf("%s: <%s> has inline handler %s", name, e.Tag, k)
-					}
+		}
+		for _, e := range els {
+			for k := range e.Attr {
+				if strings.HasPrefix(k, "on") {
+					t.Errorf("%s: <%s> has inline handler %s", name, e.Tag, k)
 				}
 			}
 		}
-	})
+	}
+
 }
 
 // C13. The docs route is not in the spec and is not an error.
 func TestBCDocsRouteUndocumented(t *testing.T) {
-	at.Pending(t, "P8.1", func(tb testing.TB) {
-		f, _ := bCDocs(tb)
-		var doc struct {
-			Paths map[string]any `json:"paths"`
-		}
-		if err := json.Unmarshal(at.Spec(tb, f), &doc); err != nil {
-			tb.Fatal(err)
-		}
-		if _, ok := doc.Paths["/docs"]; ok {
-			tb.Errorf("/docs is in the spec: %v", doc.Paths)
-		}
-		if errs := f.Errors(); len(errs) != 0 {
-			tb.Errorf("Errors() = %v", errs)
-		}
-	})
+	f, _ := bCDocs(t)
+	var doc struct {
+		Paths map[string]any `json:"paths"`
+	}
+	if err := json.Unmarshal(at.Spec(t, f), &doc); err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := doc.Paths["/docs"]; ok {
+		t.Errorf("/docs is in the spec: %v", doc.Paths)
+	}
+	if errs := f.Errors(); len(errs) != 0 {
+		t.Errorf("Errors() = %v", errs)
+	}
+
 }
 
 // C14. The handlers need no router.
 func TestBCDocsHandlersOnNetHTTP(t *testing.T) {
-	at.Pending(t, "P8.1", func(tb testing.TB) {
-		mux := http.NewServeMux()
-		mux.Handle("/d", docsui.SwaggerUI("/s.json"))
-		mux.Handle("/e", docsui.ScalarUI("/s.json"))
-		for _, p := range []string{"/d", "/e"} {
-			w := httptest.NewRecorder()
-			mux.ServeHTTP(w, httptest.NewRequest(http.MethodGet, p, nil))
-			if w.Code != http.StatusOK || w.Header().Get("Content-Type") != "text/html; charset=utf-8" {
-				tb.Errorf("%s: %d %q", p, w.Code, w.Header().Get("Content-Type"))
-			}
+	mux := http.NewServeMux()
+	mux.Handle("/d", docsui.SwaggerUI("/s.json"))
+	mux.Handle("/e", docsui.ScalarUI("/s.json"))
+	for _, p := range []string{"/d", "/e"} {
+		w := httptest.NewRecorder()
+		mux.ServeHTTP(w, httptest.NewRequest(http.MethodGet, p, nil))
+		if w.Code != http.StatusOK || w.Header().Get("Content-Type") != "text/html; charset=utf-8" {
+			t.Errorf("%s: %d %q", p, w.Code, w.Header().Get("Content-Type"))
 		}
-	})
+	}
+
 }
 
 // C16. The godoc names the default and the Swagger UI gaps.
 func TestBCDocsGodoc(t *testing.T) {
-	at.Pending(t, "P8.1", func(tb testing.TB) {
-		fset := token.NewFileSet()
-		pkgs, err := parser.ParseDir(fset, filepath.Join("..", ".."), func(fi os.FileInfo) bool {
-			return !strings.HasSuffix(fi.Name(), "_test.go") && !strings.HasPrefix(fi.Name(), "zz_")
-		}, parser.ParseComments)
-		if err != nil {
-			tb.Fatal(err)
-		}
-		files := pkgs["fizz"]
-		if files == nil {
-			tb.Fatal("package fizz not found")
-		}
-		p, err := doc.NewFromFiles(fset, bCFiles(files.Files), "github.com/KeisukeFD/fizz")
-		if err != nil {
-			tb.Fatal(err)
-		}
-		docs := map[string]string{}
-		for _, f := range p.Funcs {
+	fset := token.NewFileSet()
+	pkgs, err := parser.ParseDir(fset, filepath.Join("..", ".."), func(fi os.FileInfo) bool {
+		return !strings.HasSuffix(fi.Name(), "_test.go") && !strings.HasPrefix(fi.Name(), "zz_")
+	}, parser.ParseComments)
+	if err != nil {
+		t.Fatal(err)
+	}
+	files := pkgs["fizz"]
+	if files == nil {
+		t.Fatal("package fizz not found")
+	}
+	p, err := doc.NewFromFiles(fset, bCFiles(files.Files), "github.com/KeisukeFD/fizz")
+	if err != nil {
+		t.Fatal(err)
+	}
+	docs := map[string]string{}
+	for _, f := range p.Funcs {
+		docs[f.Name] = f.Doc
+	}
+	for _, ty := range p.Types {
+		for _, f := range ty.Funcs {
 			docs[f.Name] = f.Doc
 		}
-		for _, ty := range p.Types {
-			for _, f := range ty.Funcs {
-				docs[f.Name] = f.Doc
-			}
-			for _, m := range ty.Methods {
-				docs[ty.Name+"."+m.Name] = m.Doc
+		for _, m := range ty.Methods {
+			docs[ty.Name+"."+m.Name] = m.Doc
+		}
+	}
+	for name, subs := range map[string][]string{
+		"Fizz.Docs": {"Swagger UI", "default"},
+		"SwaggerUI": {"ScalarUI", "itemSchema", "11065"},
+	} {
+		for _, s := range subs {
+			if !strings.Contains(docs[name], s) {
+				t.Errorf("doc of %s lacks %q:\n%s", name, s, docs[name])
 			}
 		}
-		for name, subs := range map[string][]string{
-			"Fizz.Docs": {"Swagger UI", "default"},
-			"SwaggerUI": {"ScalarUI", "itemSchema", "11065"},
-		} {
-			for _, s := range subs {
-				if !strings.Contains(docs[name], s) {
-					tb.Errorf("doc of %s lacks %q:\n%s", name, s, docs[name])
-				}
-			}
-		}
-	})
+	}
+
 }
 
 func bCFiles(m map[string]*ast.File) []*ast.File {

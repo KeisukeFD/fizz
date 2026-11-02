@@ -1,8 +1,7 @@
 package acceptance
 
 // Batch F (default build): generator hooks and the precedence table.
-// See docs/plan/ACCEPTANCE.md, F23-F32. The precedence row that
-// needs the option of P6.6c is in precedence_pending_test.go.
+// See docs/plan/ACCEPTANCE.md, F23-F32.
 //
 // Every package-level identifier is prefixed fH or starts with f, as
 // sibling files share the package.
@@ -64,104 +63,99 @@ func fHooked(h openapi.Hooks) *fizz.Fizz { return fizz.New(fizz.WithHooks(h)) }
 
 // F23: the SchemaHook runs once per component, with the type and name.
 func TestSchemaHookContext(t *testing.T) {
-	at.Pending(t, "P6.4", func(tb testing.TB) {
-		calls := map[string]int{}
-		var typ reflect.Type
-		f := fHooked(openapi.Hooks{Schema: func(c *openapi.SchemaContext, s *openapi.Schema) {
-			calls[c.Name]++
-			if c.Name == "AcceptanceFPet" {
-				typ = c.Type
-				s.Description = "hooked"
-			}
-		}})
-		f.POST("/a", []fizz.OperationOption{fizz.ID("a")}, fHandler[fPet]())
-		f.POST("/b", []fizz.OperationOption{fizz.ID("b")}, fHandler[fPetWrap]())
-		f.GET("/c", []fizz.OperationOption{fizz.ID("c")}, fGetPet())
+	calls := map[string]int{}
+	var typ reflect.Type
+	f := fHooked(openapi.Hooks{Schema: func(c *openapi.SchemaContext, s *openapi.Schema) {
+		calls[c.Name]++
+		if c.Name == "AcceptanceFPet" {
+			typ = c.Type
+			s.Description = "hooked"
+		}
+	}})
+	f.POST("/a", []fizz.OperationOption{fizz.ID("a")}, fHandler[fPet]())
+	f.POST("/b", []fizz.OperationOption{fizz.ID("b")}, fHandler[fPetWrap]())
+	f.GET("/c", []fizz.OperationOption{fizz.ID("c")}, fGetPet())
 
-		doc := at.Spec(tb, f)
-		if typ != reflect.TypeFor[fPet]() {
-			tb.Errorf("ctx.Type = %v, want %v", typ, reflect.TypeFor[fPet]())
-		}
-		if calls["AcceptanceFPet"] != 1 || calls["AcceptanceBFAddr"] != 1 {
-			tb.Errorf("calls = %v, want one per component", calls)
-		}
-		at.Frag(tb, doc, "/components/schemas/AcceptanceFPet/description", `"hooked"`)
-	})
+	doc := at.Spec(t, f)
+	if typ != reflect.TypeFor[fPet]() {
+		t.Errorf("ctx.Type = %v, want %v", typ, reflect.TypeFor[fPet]())
+	}
+	if calls["AcceptanceFPet"] != 1 || calls["AcceptanceBFAddr"] != 1 {
+		t.Errorf("calls = %v, want one per component", calls)
+	}
+	at.Frag(t, doc, "/components/schemas/AcceptanceFPet/description", `"hooked"`)
+
 }
 
 // F24: a skipped field is no property and no longer required.
 func TestFieldHookSkip(t *testing.T) {
-	at.Pending(t, "P6.4", func(tb testing.TB) {
-		f := fHooked(openapi.Hooks{Field: func(c *openapi.FieldContext, _ *openapi.Schema) bool {
-			return c.StructField.Name == "Secret"
-		}})
-		bFPost[fPet](f, "/b", "b")
-		doc := at.Spec(tb, f)
-		s := bFBodyPtr(tb, doc, "/b")
-		at.Absent(tb, doc, s+"/properties/secret")
-		at.Frag(tb, doc, s+"/required", `["name"]`)
-	})
+	f := fHooked(openapi.Hooks{Field: func(c *openapi.FieldContext, _ *openapi.Schema) bool {
+		return c.StructField.Name == "Secret"
+	}})
+	bFPost[fPet](f, "/b", "b")
+	doc := at.Spec(t, f)
+	s := bFBodyPtr(t, doc, "/b")
+	at.Absent(t, doc, s+"/properties/secret")
+	at.Frag(t, doc, s+"/required", `["name"]`)
+
 }
 
 // F25: the field context; an annotation on a $ref leaves the component alone.
 func TestFieldHookContext(t *testing.T) {
-	at.Pending(t, "P6.4", func(tb testing.TB) {
-		var parent reflect.Type
-		var sf, name string
-		f := fHooked(openapi.Hooks{Field: func(c *openapi.FieldContext, s *openapi.Schema) bool {
-			if c.StructField.Name == "Addr" {
-				parent, sf, name = c.Parent, c.StructField.Name, c.Name
-				s.Description = "the addr"
-			}
-			return false
-		}})
-		bFPost[fPet](f, "/b", "b")
-		doc := at.Spec(tb, f)
-		if parent != reflect.TypeFor[fPet]() || sf != "Addr" || name != "addr" {
-			tb.Errorf("context = %v, %q, %q", parent, sf, name)
+	var parent reflect.Type
+	var sf, name string
+	f := fHooked(openapi.Hooks{Field: func(c *openapi.FieldContext, s *openapi.Schema) bool {
+		if c.StructField.Name == "Addr" {
+			parent, sf, name = c.Parent, c.StructField.Name, c.Name
+			s.Description = "the addr"
 		}
-		at.Frag(tb, doc, bFBodyPtr(tb, doc, "/b")+"/properties/addr",
-			`{"$ref":"`+fAddrRef+`","description":"the addr"}`)
-		at.Absent(tb, doc, "/components/schemas/AcceptanceBFAddr/description")
-	})
+		return false
+	}})
+	bFPost[fPet](f, "/b", "b")
+	doc := at.Spec(t, f)
+	if parent != reflect.TypeFor[fPet]() || sf != "Addr" || name != "addr" {
+		t.Errorf("context = %v, %q, %q", parent, sf, name)
+	}
+	at.Frag(t, doc, bFBodyPtr(t, doc, "/b")+"/properties/addr",
+		`{"$ref":"`+fAddrRef+`","description":"the addr"}`)
+	at.Absent(t, doc, "/components/schemas/AcceptanceBFAddr/description")
+
 }
 
 // F26: the parameter context carries the OpenAPI path.
 func TestParameterHookContext(t *testing.T) {
-	at.Pending(t, "P6.4", func(tb testing.TB) {
-		got := map[string]openapi.ParameterContext{}
-		f := fHooked(openapi.Hooks{Parameter: func(c *openapi.ParameterContext, _ *openapi.Parameter) bool {
-			got[c.In] = *c
-			return false
-		}})
-		f.GET("/pets/:id", []fizz.OperationOption{fizz.ID("getPet")}, fHandler[fPathIn]())
-		at.Spec(tb, f)
-		for in, field := range map[string]string{"path": "ID", "query": "Q"} {
-			c := got[in]
-			if c.OperationID != "getPet" || c.Method != "GET" || c.Path != "/pets/{id}" || c.StructField.Name != field {
-				tb.Errorf("%s context = %+v", in, c)
-			}
+	got := map[string]openapi.ParameterContext{}
+	f := fHooked(openapi.Hooks{Parameter: func(c *openapi.ParameterContext, _ *openapi.Parameter) bool {
+		got[c.In] = *c
+		return false
+	}})
+	f.GET("/pets/:id", []fizz.OperationOption{fizz.ID("getPet")}, fHandler[fPathIn]())
+	at.Spec(t, f)
+	for in, field := range map[string]string{"path": "ID", "query": "Q"} {
+		c := got[in]
+		if c.OperationID != "getPet" || c.Method != "GET" || c.Path != "/pets/{id}" || c.StructField.Name != field {
+			t.Errorf("%s context = %+v", in, c)
 		}
-	})
+	}
+
 }
 
 // F27: the OperationHook wins over the options; an error keeps the op.
 func TestOperationHook(t *testing.T) {
-	at.Pending(t, "P6.4", func(tb testing.TB) {
-		f := fHooked(openapi.Hooks{Operation: func(c *openapi.OperationContext, op *openapi.Operation) error {
-			op.Summary = "from hook"
-			if c.OperationID == "y" {
-				return errors.New("boom")
-			}
-			return nil
-		}})
-		f.GET("/x", []fizz.OperationOption{fizz.ID("x"), fizz.Summary("option")}, fHandler[fEmpty]())
-		f.GET("/y", []fizz.OperationOption{fizz.ID("y"), fizz.Summary("option")}, fHandler[fEmpty]())
-		doc := at.Spec(tb, f)
-		at.Frag(tb, doc, "/paths/~1x/get/summary", `"from hook"`)
-		at.Frag(tb, doc, "/paths/~1y/get/summary", `"option"`)
-		bFWantErr(tb, f, "(y)", "boom")
-	})
+	f := fHooked(openapi.Hooks{Operation: func(c *openapi.OperationContext, op *openapi.Operation) error {
+		op.Summary = "from hook"
+		if c.OperationID == "y" {
+			return errors.New("boom")
+		}
+		return nil
+	}})
+	f.GET("/x", []fizz.OperationOption{fizz.ID("x"), fizz.Summary("option")}, fHandler[fEmpty]())
+	f.GET("/y", []fizz.OperationOption{fizz.ID("y"), fizz.Summary("option")}, fHandler[fEmpty]())
+	doc := at.Spec(t, f)
+	at.Frag(t, doc, "/paths/~1x/get/summary", `"from hook"`)
+	at.Frag(t, doc, "/paths/~1y/get/summary", `"option"`)
+	bFWantErr(t, f, "(y)", "boom")
+
 }
 
 // fTagGroupHook adds an x-tagGroups entry and a tag to the document.
@@ -173,87 +167,84 @@ func fTagGroupHook(doc *openapi.OpenAPI) error {
 
 // F28: the hook edits a clone: served, never in Generator().API().
 func TestDocumentHookOnClone(t *testing.T) {
-	at.Pending(t, "P6.4", func(tb testing.TB) {
-		f := fHooked(openapi.Hooks{Document: fTagGroupHook})
-		f.Engine().GET("/spec.json", gin.WrapH(f.SpecHandler("json")))
-		f.GET("/a", []fizz.OperationOption{fizz.ID("a")}, fHandler[fEmpty]())
+	f := fHooked(openapi.Hooks{Document: fTagGroupHook})
+	f.Engine().GET("/spec.json", gin.WrapH(f.SpecHandler("json")))
+	f.GET("/a", []fizz.OperationOption{fizz.ID("a")}, fHandler[fEmpty]())
 
-		doc := at.Do(f, "GET", "/spec.json").Body.Bytes()
-		at.Frag(tb, doc, "/x-tagGroups", `[{"name":"all","tags":["extra"]}]`)
-		at.Frag(tb, doc, "/tags", `[{"name":"extra"}]`)
-		api := f.Generator().API()
-		if len(api.XTagGroups) != 0 || len(api.Tags) != 0 {
-			tb.Errorf("API() holds the hook's changes: %v %v", api.XTagGroups, api.Tags)
-		}
-		// A second generation: the tag still appears once.
-		f.GET("/b", []fizz.OperationOption{fizz.ID("b")}, fHandler[fEmpty]())
-		doc = at.Do(f, "GET", "/spec.json").Body.Bytes()
-		at.Frag(tb, doc, "/tags", `[{"name":"extra"}]`)
-		at.Frag(tb, doc, "/x-tagGroups", `[{"name":"all","tags":["extra"]}]`)
-	})
+	doc := at.Do(f, "GET", "/spec.json").Body.Bytes()
+	at.Frag(t, doc, "/x-tagGroups", `[{"name":"all","tags":["extra"]}]`)
+	at.Frag(t, doc, "/tags", `[{"name":"extra"}]`)
+	api := f.Generator().API()
+	if len(api.XTagGroups) != 0 || len(api.Tags) != 0 {
+		t.Errorf("API() holds the hook's changes: %v %v", api.XTagGroups, api.Tags)
+	}
+	// A second generation: the tag still appears once.
+	f.GET("/b", []fizz.OperationOption{fizz.ID("b")}, fHandler[fEmpty]())
+	doc = at.Do(f, "GET", "/spec.json").Body.Bytes()
+	at.Frag(t, doc, "/tags", `[{"name":"extra"}]`)
+	at.Frag(t, doc, "/x-tagGroups", `[{"name":"all","tags":["extra"]}]`)
+
 }
 
 // F29: JSON and YAML share one run of the hook per generation.
 func TestDocumentHookCachedPerGeneration(t *testing.T) {
-	at.Pending(t, "P6.4", func(tb testing.TB) {
-		var n atomic.Int64
-		f := fHooked(openapi.Hooks{Document: func(*openapi.OpenAPI) error { n.Add(1); return nil }})
-		f.Engine().GET("/spec.json", gin.WrapH(f.SpecHandler("json")))
-		f.Engine().GET("/spec.yaml", gin.WrapH(f.SpecHandler("yaml")))
-		f.GET("/a", []fizz.OperationOption{fizz.ID("a")}, fHandler[fEmpty]())
+	var n atomic.Int64
+	f := fHooked(openapi.Hooks{Document: func(*openapi.OpenAPI) error { n.Add(1); return nil }})
+	f.Engine().GET("/spec.json", gin.WrapH(f.SpecHandler("json")))
+	f.Engine().GET("/spec.yaml", gin.WrapH(f.SpecHandler("yaml")))
+	f.GET("/a", []fizz.OperationOption{fizz.ID("a")}, fHandler[fEmpty]())
 
-		for range 3 {
-			at.Do(f, "GET", "/spec.json")
-		}
-		at.Do(f, "GET", "/spec.yaml")
-		if n.Load() != 1 {
-			tb.Errorf("hook ran %d times, want 1", n.Load())
-		}
-		f.GET("/b", []fizz.OperationOption{fizz.ID("b")}, fHandler[fEmpty]())
+	for range 3 {
 		at.Do(f, "GET", "/spec.json")
-		at.Do(f, "GET", "/spec.yaml")
-		if n.Load() != 2 {
-			tb.Errorf("hook ran %d times, want 2", n.Load())
-		}
-	})
+	}
+	at.Do(f, "GET", "/spec.yaml")
+	if n.Load() != 1 {
+		t.Errorf("hook ran %d times, want 1", n.Load())
+	}
+	f.GET("/b", []fizz.OperationOption{fizz.ID("b")}, fHandler[fEmpty]())
+	at.Do(f, "GET", "/spec.json")
+	at.Do(f, "GET", "/spec.yaml")
+	if n.Load() != 2 {
+		t.Errorf("hook ran %d times, want 2", n.Load())
+	}
+
 }
 
 // F30: a failing hook is a 500 without a document, recorded once per
 // generation.
 func TestDocumentHookError(t *testing.T) {
-	at.Pending(t, "P6.4", func(tb testing.TB) {
-		f := fHooked(openapi.Hooks{Document: func(*openapi.OpenAPI) error { return errors.New("nope") }})
-		f.Engine().GET("/spec.json", gin.WrapH(f.SpecHandler("json")))
-		f.Engine().GET("/spec.yaml", gin.WrapH(f.SpecHandler("yaml")))
-		f.GET("/a", []fizz.OperationOption{fizz.ID("a")}, fHandler[fEmpty]())
+	f := fHooked(openapi.Hooks{Document: func(*openapi.OpenAPI) error { return errors.New("nope") }})
+	f.Engine().GET("/spec.json", gin.WrapH(f.SpecHandler("json")))
+	f.Engine().GET("/spec.yaml", gin.WrapH(f.SpecHandler("yaml")))
+	f.GET("/a", []fizz.OperationOption{fizz.ID("a")}, fHandler[fEmpty]())
 
-		count := func() int {
-			n := 0
-			for _, e := range bFErrs(f) {
-				if strings.Contains(e, "DocumentHook") && strings.Contains(e, "nope") {
-					n++
-				}
-			}
-			return n
-		}
-		for _, p := range []string{"/spec.json", "/spec.json", "/spec.yaml"} {
-			w := at.Do(f, "GET", p)
-			if w.Code != http.StatusInternalServerError || strings.Contains(w.Body.String(), `"openapi"`) {
-				tb.Errorf("GET %s = %d %q", p, w.Code, w.Body.String())
+	count := func() int {
+		n := 0
+		for _, e := range bFErrs(f) {
+			if strings.Contains(e, "DocumentHook") && strings.Contains(e, "nope") {
+				n++
 			}
 		}
-		if count() != 1 {
-			tb.Errorf("recorded %d times, want 1: %q", count(), bFErrs(f))
+		return n
+	}
+	for _, p := range []string{"/spec.json", "/spec.json", "/spec.yaml"} {
+		w := at.Do(f, "GET", p)
+		if w.Code != http.StatusInternalServerError || strings.Contains(w.Body.String(), `"openapi"`) {
+			t.Errorf("GET %s = %d %q", p, w.Code, w.Body.String())
 		}
-		if _, err := f.Document(); err == nil {
-			tb.Error("Document() returned no error")
-		}
-		f.GET("/b", []fizz.OperationOption{fizz.ID("b")}, fHandler[fEmpty]())
-		at.Do(f, "GET", "/spec.json")
-		if count() != 2 {
-			tb.Errorf("recorded %d times after a new generation, want 2", count())
-		}
-	})
+	}
+	if count() != 1 {
+		t.Errorf("recorded %d times, want 1: %q", count(), bFErrs(f))
+	}
+	if _, err := f.Document(); err == nil {
+		t.Error("Document() returned no error")
+	}
+	f.GET("/b", []fizz.OperationOption{fizz.ID("b")}, fHandler[fEmpty]())
+	at.Do(f, "GET", "/spec.json")
+	if count() != 2 {
+		t.Errorf("recorded %d times after a new generation, want 2", count())
+	}
+
 }
 
 // Types of the precedence table.
@@ -396,6 +387,6 @@ func TestPrecedence(t *testing.T) {
 		}},
 	}
 	for _, r := range rows {
-		t.Run(r.name, func(t *testing.T) { at.Pending(t, "P6.4", r.run) })
+		t.Run(r.name, func(t *testing.T) { r.run(t) })
 	}
 }

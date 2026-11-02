@@ -23,7 +23,6 @@ func init() {
 				{Pointer: "/paths/~1x/get/parameters/0/description", JSON: `"how many"`},
 				{Pointer: "/paths/~1x/get/parameters/0/schema/description", Absent: true},
 			},
-			FixedBy: "P10.9d",
 		},
 	)
 }

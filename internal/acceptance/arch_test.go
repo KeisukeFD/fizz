@@ -13,31 +13,29 @@ import (
 	"testing"
 
 	"github.com/KeisukeFD/fizz"
-	"github.com/KeisukeFD/fizz/internal/acceptance/at"
 	"github.com/KeisukeFD/fizz/openapi"
 )
 
 // A09: only fizz-owned tags are configurable.
 func TestBinderTagsNotConfigurable(t *testing.T) {
-	at.Pending(t, "P6.1", func(tb testing.TB) {
-		want := []string{
-			"Description", "Example", "Format", "Deprecated", "Title", "Pattern",
-			"ReadOnly", "WriteOnly", "Nullable", "MultipleOf", "AdditionalProperties",
-			"Inline", "Style", "AllowReserved", "Cookie",
+	want := []string{
+		"Description", "Example", "Format", "Deprecated", "Title", "Pattern",
+		"ReadOnly", "WriteOnly", "Nullable", "MultipleOf", "AdditionalProperties",
+		"Inline", "Style", "AllowReserved", "Cookie",
+	}
+	var got []string
+	for f := range reflect.TypeFor[openapi.TagNames]().Fields() {
+		got = append(got, f.Name)
+	}
+	if !slices.Equal(got, want) {
+		t.Errorf("TagNames fields = %v, want %v", got, want)
+	}
+	for _, banned := range []string{"Path", "Query", "Header", "Enum", "Default", "Validate", "Explode"} {
+		if slices.Contains(got, banned) {
+			t.Errorf("TagNames has binder tag field %s", banned)
 		}
-		var got []string
-		for f := range reflect.TypeFor[openapi.TagNames]().Fields() {
-			got = append(got, f.Name)
-		}
-		if !slices.Equal(got, want) {
-			tb.Errorf("TagNames fields = %v, want %v", got, want)
-		}
-		for _, banned := range []string{"Path", "Query", "Header", "Enum", "Default", "Validate", "Explode"} {
-			if slices.Contains(got, banned) {
-				tb.Errorf("TagNames has binder tag field %s", banned)
-			}
-		}
-	})
+	}
+
 }
 
 // bAWalk reports the types reachable from t, through fields, element
@@ -73,21 +71,20 @@ func bAWalk(t reflect.Type, seen map[reflect.Type]bool, bad *[]string) {
 
 // A07: the option and hook types expose no gin or gadgeto type.
 func TestNoGinTypesInPublicSignatures(t *testing.T) {
-	at.Pending(t, "P6.4", func(tb testing.TB) {
-		for _, typ := range []reflect.Type{
-			reflect.TypeFor[fizz.OperationOption](),
-			reflect.TypeFor[openapi.OperationInfo](),
-			reflect.TypeFor[openapi.Hooks](),
-			reflect.TypeFor[openapi.SchemaContext](),
-			reflect.TypeFor[openapi.FieldContext](),
-			reflect.TypeFor[openapi.ParameterContext](),
-			reflect.TypeFor[openapi.OperationContext](),
-		} {
-			var bad []string
-			bAWalk(typ, map[reflect.Type]bool{}, &bad)
-			if len(bad) > 0 {
-				tb.Errorf("%s reaches %v", typ, bad)
-			}
+	for _, typ := range []reflect.Type{
+		reflect.TypeFor[fizz.OperationOption](),
+		reflect.TypeFor[openapi.OperationInfo](),
+		reflect.TypeFor[openapi.Hooks](),
+		reflect.TypeFor[openapi.SchemaContext](),
+		reflect.TypeFor[openapi.FieldContext](),
+		reflect.TypeFor[openapi.ParameterContext](),
+		reflect.TypeFor[openapi.OperationContext](),
+	} {
+		var bad []string
+		bAWalk(typ, map[reflect.Type]bool{}, &bad)
+		if len(bad) > 0 {
+			t.Errorf("%s reaches %v", typ, bad)
 		}
-	})
+	}
+
 }

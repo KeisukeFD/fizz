@@ -116,7 +116,6 @@ func init() {
 			Expect: []Fragment{
 				{Pointer: vProp("VPtrDefault", "n") + "/default", JSON: `10`},
 			},
-			FixedBy: "P3.6",
 		},
 		Case{
 			Name:     "values/duration-default-enum-body",
@@ -132,7 +131,6 @@ func init() {
 			Expect: []Fragment{
 				{Pointer: vProp("VEnumTrim", "s") + "/enum", JSON: `["a","b"]`},
 			},
-			FixedBy: "P3.6",
 		},
 		Case{
 			Name:     "values/invalid-bool-default",
@@ -141,7 +139,6 @@ func init() {
 			Expect: []Fragment{
 				{Pointer: vProp("VBadBool", "b") + "/default", Absent: true},
 			},
-			FixedBy: "P3.6",
 		},
 		Case{
 			// D15: body fields never get tonic defaults, so required is
@@ -160,7 +157,6 @@ func init() {
 			Expect: []Fragment{
 				{Pointer: vProp("VFloat32Default", "f") + "/default", JSON: `0.1`},
 			},
-			FixedBy: "P3.6",
 		},
 		Case{
 			Name: "values/nan-example-recorded",
@@ -181,7 +177,6 @@ func init() {
 			Expect: []Fragment{
 				{Pointer: "/paths/~1x/get/responses/400/content/application~1json/examples/bad", Absent: true},
 			},
-			FixedBy: "P2.5",
 		},
 		Case{
 			Name: "values/default-response-examples-no-output",
@@ -195,7 +190,6 @@ func init() {
 				{Pointer: "/paths/~1x/get/responses/204/content/application~1json/schema", Absent: true},
 				{Pointer: "/paths/~1x/get/responses/204/content/application~1json/examples/a/value", JSON: `"b"`},
 			},
-			FixedBy: "P2.1c",
 		},
 		Case{
 			Name: "values/empty-examples-map",
@@ -207,7 +201,6 @@ func init() {
 			Expect: []Fragment{
 				{Pointer: "/paths/~1x/get/responses/400/content", Absent: true},
 			},
-			FixedBy: "P4.4",
 		},
 		Case{
 			Name:     "values/example-tag-to-examples",
@@ -217,7 +210,6 @@ func init() {
 				{Pointer: vProp("VExample", "n") + "/examples", JSON: `[7]`},
 				{Pointer: vProp("VExample", "s") + "/example", Absent: true},
 			},
-			FixedBy: "P2.2",
 		},
 		Case{
 			Name:     "validate/min-zero-and-decimal",
@@ -226,7 +218,6 @@ func init() {
 				{Pointer: vProp("VMinZero", "i") + "/minimum", JSON: `0`},
 				{Pointer: vProp("VMinZero", "f") + "/minimum", JSON: `1.5`},
 			},
-			FixedBy: "P4.1b",
 		},
 		Case{
 			Name:     "validate/float-exclusive-bounds",
@@ -237,7 +228,6 @@ func init() {
 				{Pointer: vProp("VExclusive", "f") + "/minimum", Absent: true},
 				{Pointer: vProp("VExclusive", "f") + "/maximum", Absent: true},
 			},
-			FixedBy: "P4.1b",
 		},
 		Case{
 			Name:     "validate/dive-min-on-items",
@@ -246,7 +236,6 @@ func init() {
 				{Pointer: vProp("VDive", "l") + "/items/minimum", JSON: `2`},
 				{Pointer: vProp("VDive", "l") + "/minItems", Absent: true},
 			},
-			FixedBy: "P4.1b",
 		},
 		Case{
 			// An OR group is anyOf or dropped, never ANDed.
@@ -257,7 +246,6 @@ func init() {
 				{Pointer: vProp("VOrGroup", "i") + "/minimum", Absent: true},
 				{Pointer: vProp("VOrGroup", "i") + "/maximum", Absent: true},
 			},
-			FixedBy: "P4.1b",
 		},
 		Case{
 			Name:     "validate/email-keeps-maxlength",
@@ -267,7 +255,6 @@ func init() {
 				{Pointer: vProp("VEmail", "e") + "/maxLength", JSON: `20`},
 				{Pointer: vComp("VEmail") + "/required", JSON: `["e"]`},
 			},
-			FixedBy: "P4.1b",
 		},
 		Case{
 			Name:     "validate/oneof-enum",
@@ -275,7 +262,6 @@ func init() {
 			Expect: []Fragment{
 				{Pointer: vProp("VOneof", "s") + "/enum", JSON: `["a","b"]`},
 			},
-			FixedBy: "P4.1b",
 		},
 		Case{
 			Name:     "validate/len-eq-const",
@@ -286,7 +272,6 @@ func init() {
 				{Pointer: vProp("VConst", "i") + "/const", JSON: `5`},
 				{Pointer: vProp("VConst", "t") + "/const", JSON: `"x"`},
 			},
-			FixedBy: "P4.1b",
 		},
 		Case{
 			// Duration bounds are parsed into ns; []byte gets no length rules.
@@ -300,7 +285,6 @@ func init() {
 				{Pointer: vProp("VGating", "b") + "/minItems", Absent: true},
 				{Pointer: vProp("VGating", "b") + "/maxItems", Absent: true},
 			},
-			FixedBy: "P4.1b",
 		},
 	)
 }
